@@ -1,0 +1,96 @@
+<?php declare(strict_types = 1);
+
+use FastyBird\ModulesMetadata;
+
+return [
+	'create' => [
+		[
+			'id'        => 'b41efd22-42e0-4e30-aab4-de471741cd30',
+			'device'    => 'device-name',
+			'property'  => 'property-name',
+			'name'      => null,
+			'settable'  => true,
+			'queryable' => true,
+			'datatype'  => null,
+			'unit'      => null,
+			'format'    => null,
+		],
+		[
+			'routing_key' => ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_PROPERTY_CREATED_ENTITY_ROUTING_KEY,
+			'origin'      => ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
+			'data'        => [
+				'id'        => 'b41efd22-42e0-4e30-aab4-de471741cd30',
+				'device'    => 'device-name',
+				'property'  => 'property-name',
+				'name'      => null,
+				'settable'  => true,
+				'queryable' => true,
+				'datatype'  => null,
+				'unit'      => null,
+				'format'    => null,
+			],
+		],
+		ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_PROPERTY_CREATED_ENTITY_ROUTING_KEY,
+		ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
+	],
+	'update' => [
+		[
+			'id'        => 'b41efd22-42e0-4e30-aab4-de471741cd30',
+			'device'    => 'device-name',
+			'property'  => 'property-name',
+			'name'      => null,
+			'settable'  => true,
+			'queryable' => true,
+			'datatype'  => null,
+			'unit'      => null,
+			'format'    => null,
+		],
+		[
+			'routing_key' => ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_PROPERTY_UPDATED_ENTITY_ROUTING_KEY,
+			'origin'      => ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
+			'data'        => [
+				'id'        => 'b41efd22-42e0-4e30-aab4-de471741cd30',
+				'device'    => 'device-name',
+				'property'  => 'property-name',
+				'name'      => null,
+				'settable'  => true,
+				'queryable' => true,
+				'datatype'  => null,
+				'unit'      => null,
+				'format'    => null,
+			],
+		],
+		ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_PROPERTY_UPDATED_ENTITY_ROUTING_KEY,
+		ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
+	],
+	'delete' => [
+		[
+			'id'        => 'b41efd22-42e0-4e30-aab4-de471741cd30',
+			'device'    => 'device-name',
+			'property'  => 'property-name',
+			'name'      => null,
+			'settable'  => true,
+			'queryable' => true,
+			'datatype'  => null,
+			'unit'      => null,
+			'format'    => null,
+		],
+		[
+			'routing_key' => ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_PROPERTY_DELETED_ENTITY_ROUTING_KEY,
+			'origin'      => ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
+			'data'        => [
+				'id'        => 'b41efd22-42e0-4e30-aab4-de471741cd30',
+				'device'    => 'device-name',
+				'property'  => 'property-name',
+				'name'      => null,
+				'settable'  => true,
+				'queryable' => true,
+				'datatype'  => null,
+				'unit'      => null,
+				'format'    => null,
+			],
+		],
+		ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_PROPERTY_DELETED_ENTITY_ROUTING_KEY,
+		ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
+	],
+];
