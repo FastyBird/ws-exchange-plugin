@@ -73,18 +73,19 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 	public function actionCall(
 		array $args
 	): void {
-		if (!array_key_exists('routing_key', $args)) {
+		if (!array_key_exists('routing_key', $args) || !array_key_exists('origin', $args)) {
 			throw new Exceptions\InvalidArgumentException('Provided message has invalid format');
 		}
 
 		switch ($args['routing_key']) {
 			case ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_PROPERTIES_DATA_ROUTING_KEY:
-				$schema = $this->schemaLoader->load(ModulesMetadata\Constants::NOT_SPECIFIED_ORIGIN, $args['routing_key']);
+				$schema = $this->schemaLoader->load($args['origin'], $args['routing_key']);
 
 				$data = $this->parse($args, $schema);
 
 				if ($this->publisher !== null) {
 					$this->publisher->publish(
+						$args['origin'],
 						$args['routing_key'],
 						[
 							'device'   => $data->offsetGet('device'),
@@ -96,12 +97,13 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 				break;
 
 			case ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_CONFIGURATION_DATA_ROUTING_KEY:
-				$schema = $this->schemaLoader->load(ModulesMetadata\Constants::NOT_SPECIFIED_ORIGIN, $args['routing_key']);
+				$schema = $this->schemaLoader->load($args['origin'], $args['routing_key']);
 
 				$data = $this->parse($args, $schema);
 
 				if ($this->publisher !== null) {
 					$this->publisher->publish(
+						$args['origin'],
 						$args['routing_key'],
 						[
 							'device'   => $data->offsetGet('device'),
@@ -113,12 +115,13 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 				break;
 
 			case ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_PROPERTIES_DATA_ROUTING_KEY:
-				$schema = $this->schemaLoader->load(ModulesMetadata\Constants::NOT_SPECIFIED_ORIGIN, $args['routing_key']);
+				$schema = $this->schemaLoader->load($args['origin'], $args['routing_key']);
 
 				$data = $this->parse($args, $schema);
 
 				if ($this->publisher !== null) {
 					$this->publisher->publish(
+						$args['origin'],
 						$args['routing_key'],
 						[
 							'device'   => $data->offsetGet('device'),
@@ -131,12 +134,13 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 				break;
 
 			case ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_CONFIGURATION_DATA_ROUTING_KEY:
-				$schema = $this->schemaLoader->load(ModulesMetadata\Constants::NOT_SPECIFIED_ORIGIN, $args['routing_key']);
+				$schema = $this->schemaLoader->load($args['origin'], $args['routing_key']);
 
 				$data = $this->parse($args, $schema);
 
 				if ($this->publisher !== null) {
 					$this->publisher->publish(
+						$args['origin'],
 						$args['routing_key'],
 						[
 							'device'   => $data->offsetGet('device'),
