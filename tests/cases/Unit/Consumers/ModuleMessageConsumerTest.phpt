@@ -47,7 +47,7 @@ final class ModuleMessageConsumerTest extends BaseTestCase
 		$logger = Mockery::mock(Log\LoggerInterface::class);
 		$logger
 			->shouldReceive('info')
-			->with('[CONSUMER] Successfully consumed entity message', [
+			->with('[FB:PLUGIN:WSSERVER] Successfully consumed entity message', [
 				'routing_key' => $routingKey,
 				'origin'      => ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
 				'data'        => $data,
@@ -90,7 +90,7 @@ final class ModuleMessageConsumerTest extends BaseTestCase
 		$logger = Mockery::mock(Log\LoggerInterface::class);
 		$logger
 			->shouldReceive('info')
-			->with('[CONSUMER] Successfully consumed entity message', [
+			->with('[FB:PLUGIN:WSSERVER] Successfully consumed entity message', [
 				'routing_key' => $routingKey,
 				'origin'      => ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
 				'data'        => $data,
@@ -133,7 +133,7 @@ final class ModuleMessageConsumerTest extends BaseTestCase
 		$logger = Mockery::mock(Log\LoggerInterface::class);
 		$logger
 			->shouldReceive('info')
-			->with('[CONSUMER] Successfully consumed entity message', [
+			->with('[FB:PLUGIN:WSSERVER] Successfully consumed entity message', [
 				'routing_key' => $routingKey,
 				'origin'      => ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
 				'data'        => $data,
@@ -176,7 +176,7 @@ final class ModuleMessageConsumerTest extends BaseTestCase
 		$logger = Mockery::mock(Log\LoggerInterface::class);
 		$logger
 			->shouldReceive('info')
-			->with('[CONSUMER] Successfully consumed entity message', [
+			->with('[FB:PLUGIN:WSSERVER] Successfully consumed entity message', [
 				'routing_key' => $routingKey,
 				'origin'      => ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
 				'data'        => $data,
