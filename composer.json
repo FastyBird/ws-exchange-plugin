@@ -7,7 +7,8 @@
     "fb",
     "libs",
     "library",
-    "mqtt"
+    "ws",
+    "realtime"
   ],
 
   "homepage" : "https://www.fastybird.com",
@@ -32,27 +33,26 @@
 
   "require" : {
     "php": ">=7.4.0",
-    "cweagans/composer-patches": "^1.6",
-    "fastybird/application-events": "@dev",
-    "fastybird/application-exchange": "@dev",
-    "fastybird/modules-metadata": "@dev",
-    "fastybird/web-server": "@dev",
+    "cweagans/composer-patches": "^1.7",
+    "fastybird/application-exchange": "^0.1",
+    "fastybird/modules-metadata": "^0.2",
+    "fastybird/web-server": "^0.1",
     "ipub/websockets-wamp": "^1.3",
-    "nette/bootstrap": "^3.0",
+    "nette/bootstrap": "^3.1",
     "nette/di": "^3.0"
   },
 
   "require-dev" : {
-    "mockery/mockery" : "^1.3",
-    "ninjify/nunjuck" : "^0.3",
-    "ninjify/qa" : "^0.10",
-    "pds/skeleton" : "~1.0",
-    "phpstan/extension-installer" : "^1.0",
-    "phpstan/phpstan" : "^0.12",
-    "phpstan/phpstan-deprecation-rules" : "^0.12",
-    "phpstan/phpstan-doctrine" : "^0.12",
-    "phpstan/phpstan-nette" : "^0.12",
-    "tracy/tracy" : "~2.4"
+    "mockery/mockery": "^1.4",
+    "ninjify/nunjuck": "^0.3",
+    "ninjify/qa": "^0.12",
+    "pds/skeleton": "~1.0",
+    "phpstan/extension-installer": "^1.1",
+    "phpstan/phpstan": "^0.12",
+    "phpstan/phpstan-deprecation-rules": "^0.12",
+    "phpstan/phpstan-nette": "^0.12",
+    "phpstan/phpstan-strict-rules" : "^0.12",
+    "tracy/tracy": "^2.8"
   },
 
   "autoload" : {

@@ -83,17 +83,15 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 
 				$data = $this->parse($args, $schema);
 
-				if ($this->publisher !== null) {
-					$this->publisher->publish(
-						$args['origin'],
-						$args['routing_key'],
-						[
-							'device'   => $data->offsetGet('device'),
-							'property' => $data->offsetGet('property'),
-							'expected' => $data->offsetGet('expected'),
-						]
-					);
-				}
+				$this->publisher->publish(
+					$args['origin'],
+					$args['routing_key'],
+					[
+						'device'   => $data->offsetGet('device'),
+						'property' => $data->offsetGet('property'),
+						'expected' => $data->offsetGet('expected'),
+					]
+				);
 				break;
 
 			case ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_CONFIGURATION_DATA_ROUTING_KEY:
@@ -101,17 +99,15 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 
 				$data = $this->parse($args, $schema);
 
-				if ($this->publisher !== null) {
-					$this->publisher->publish(
-						$args['origin'],
-						$args['routing_key'],
-						[
-							'device'   => $data->offsetGet('device'),
-							'name'     => $data->offsetGet('name'),
-							'expected' => $data->offsetGet('expected'),
-						]
-					);
-				}
+				$this->publisher->publish(
+					$args['origin'],
+					$args['routing_key'],
+					[
+						'device'   => $data->offsetGet('device'),
+						'name'     => $data->offsetGet('name'),
+						'expected' => $data->offsetGet('expected'),
+					]
+				);
 				break;
 
 			case ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_PROPERTIES_DATA_ROUTING_KEY:
@@ -119,18 +115,16 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 
 				$data = $this->parse($args, $schema);
 
-				if ($this->publisher !== null) {
-					$this->publisher->publish(
-						$args['origin'],
-						$args['routing_key'],
-						[
-							'device'   => $data->offsetGet('device'),
-							'channel'  => $data->offsetGet('channel'),
-							'property' => $data->offsetGet('property'),
-							'expected' => $data->offsetGet('expected'),
-						]
-					);
-				}
+				$this->publisher->publish(
+					$args['origin'],
+					$args['routing_key'],
+					[
+						'device'   => $data->offsetGet('device'),
+						'channel'  => $data->offsetGet('channel'),
+						'property' => $data->offsetGet('property'),
+						'expected' => $data->offsetGet('expected'),
+					]
+				);
 				break;
 
 			case ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_CONFIGURATION_DATA_ROUTING_KEY:
@@ -138,22 +132,20 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 
 				$data = $this->parse($args, $schema);
 
-				if ($this->publisher !== null) {
-					$this->publisher->publish(
-						$args['origin'],
-						$args['routing_key'],
-						[
-							'device'   => $data->offsetGet('device'),
-							'channel'  => $data->offsetGet('channel'),
-							'name'     => $data->offsetGet('name'),
-							'expected' => $data->offsetGet('expected'),
-						]
-					);
-				}
+				$this->publisher->publish(
+					$args['origin'],
+					$args['routing_key'],
+					[
+						'device'   => $data->offsetGet('device'),
+						'channel'  => $data->offsetGet('channel'),
+						'name'     => $data->offsetGet('name'),
+						'expected' => $data->offsetGet('expected'),
+					]
+				);
 				break;
 
 			default:
-				throw new Exceptions\InvalidArgumentException('Provided message has unknown routing key');
+				throw new Exceptions\InvalidArgumentException('Provided message has unsupported routing key');
 		}
 
 		$this->payload->data = [
@@ -177,7 +169,7 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 			return $this->jsonValidator->validate(Utils\Json::encode($data), $schema);
 
 		} catch (Utils\JsonException $ex) {
-			$this->logger->error('[FB:UI_MODULE:CONTROLLER] Received message could not be validated', [
+			$this->logger->error('[FB:PLUGIN:WSSERVER] Received message could not be validated', [
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code'    => $ex->getCode(),
@@ -187,7 +179,7 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 			throw new Exceptions\InvalidArgumentException('Provided data are not valid json format', 0, $ex);
 
 		} catch (ModulesMetadataExceptions\InvalidDataException $ex) {
-			$this->logger->debug('[FB:UI_MODULE:CONTROLLER] Received message is not valid', [
+			$this->logger->debug('[FB:PLUGIN:WSSERVER] Received message is not valid', [
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code'    => $ex->getCode(),
@@ -197,7 +189,7 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 			throw new Exceptions\InvalidArgumentException('Provided data are not in valid structure', 0, $ex);
 
 		} catch (Throwable $ex) {
-			$this->logger->error('[FB:UI_MODULE:CONTROLLER] Received message is not valid', [
+			$this->logger->error('[FB:PLUGIN:WSSERVER] Received message is not valid', [
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code'    => $ex->getCode(),

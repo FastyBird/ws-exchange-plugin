@@ -15,7 +15,7 @@
 
 namespace FastyBird\WsServerPlugin\Subscribers;
 
-use FastyBird\ApplicationEvents\Events as ApplicationEventsEvents;
+use FastyBird\WebServer\Events as WebServerEvents;
 use IPub\WebSockets;
 use Nette\Utils;
 use Psr\Log;
@@ -35,9 +35,6 @@ use Throwable;
 class ApplicationSubscriber implements EventDispatcher\EventSubscriberInterface
 {
 
-	/** @var Socket\Server */
-	private Socket\Server $socketServer;
-
 	/** @var EventLoop\LoopInterface */
 	private EventLoop\LoopInterface $loop;
 
@@ -51,24 +48,22 @@ class ApplicationSubscriber implements EventDispatcher\EventSubscriberInterface
 	private Log\LoggerInterface $logger;
 
 	/**
-	 * @return string[]
+	 * @return array<string, mixed>
 	 */
 	public static function getSubscribedEvents(): array
 	{
 		return [
-			ApplicationEventsEvents\StartupEvent::class  => 'initialize',
+			WebServerEvents\InitializeEvent::class  => 'initialize',
 		];
 	}
 
 	public function __construct(
 		EventLoop\LoopInterface $loop,
-		Socket\Server $socketServer,
 		WebSockets\Server\Handlers $handlers,
 		WebSockets\Server\Configuration $configuration,
 		?Log\LoggerInterface $logger = null
 	) {
 		$this->loop = $loop;
-		$this->socketServer = $socketServer;
 		$this->handlers = $handlers;
 		$this->configuration = $configuration;
 
@@ -78,7 +73,7 @@ class ApplicationSubscriber implements EventDispatcher\EventSubscriberInterface
 	/**
 	 * @return void
 	 */
-	public function initialize(): void
+	public function initialize(WebServerEvents\InitializeEvent $event): void
 	{
 		$client = $this->configuration->getAddress() . ':' . $this->configuration->getPort();
 		$socket = new Socket\Server($client, $this->loop);
@@ -88,12 +83,12 @@ class ApplicationSubscriber implements EventDispatcher\EventSubscriberInterface
 		});
 
 		$socket->on('error', function (Throwable $ex): void {
-			$this->logger->error('Could not establish connection: ' . $ex->getMessage());
+			$this->logger->error('[FB:PLUGIN:WSSERVER] Could not establish connection: ' . $ex->getMessage());
 		});
 
-		$this->logger->debug(sprintf('Launching WebSockets WS Server on: %s:%s', $this->configuration->getAddress(), $this->configuration->getPort()));
+		$this->logger->debug(sprintf('[FB:PLUGIN:WSSERVER] Launching WebSockets WS Server on: %s:%s', $this->configuration->getAddress(), $this->configuration->getPort()));
 
-		$this->socketServer->on('connection', function (Socket\ConnectionInterface $connection): void {
+		$event->getServer()->on('connection', function (Socket\ConnectionInterface $connection): void {
 			if ($connection->getLocalAddress() === null) {
 				return;
 			}

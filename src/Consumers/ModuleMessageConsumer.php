@@ -185,7 +185,7 @@ final class ModuleMessageConsumer implements ApplicationExchangeConsumer\IConsum
 		}
 
 		if ($result) {
-			$this->logger->info('[CONSUMER] Successfully consumed entity message', [
+			$this->logger->info('[FB:PLUGIN:WSSERVER] Successfully consumed entity message', [
 				'routing_key' => $routingKey,
 				'origin'      => $origin,
 				'data'        => $this->dataToArray($message),
