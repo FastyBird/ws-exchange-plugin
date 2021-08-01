@@ -307,6 +307,11 @@ class WampClient(WampClientInterface):
                             "Provided data could not be validated",
                         )
 
+                        self.__logger.error("Schema file for origin: {} and routing key: {} could not be loaded".format(
+                            module_origin.value,
+                            routing_key.value,
+                        ))
+
                         return
 
                     except metadata_exceptions.InvalidArgumentException:
@@ -314,6 +319,13 @@ class WampClient(WampClientInterface):
                             rpc_id,
                             topic_id,
                             "Provided data could not be validated",
+                        )
+
+                        self.__logger.error(
+                            "Schema file for origin: {} and routing key: {} is not configured in mapping".format(
+                                module_origin.value,
+                                routing_key.value,
+                            )
                         )
 
                         return
@@ -325,7 +337,7 @@ class WampClient(WampClientInterface):
                         self.__reply_rpc_error(
                             rpc_id,
                             topic_id,
-                            "Provided data are not valid json format",
+                            "Provided data are not in valid json format",
                         )
 
                         return
@@ -335,6 +347,13 @@ class WampClient(WampClientInterface):
                             rpc_id,
                             topic_id,
                             "Provided data could not be validated",
+                        )
+
+                        self.__logger.error(
+                            "Schema file for origin: {} and routing key: {} could not be parsed & compiled".format(
+                                module_origin.value,
+                                routing_key.value,
+                            )
                         )
 
                         return
