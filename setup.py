@@ -14,10 +14,12 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 
+# Library dependencies
 import codecs
 import re
-from setuptools import setup
+from setuptools import setup, find_packages
 from os import path
+
 
 this_directory = path.abspath(path.dirname(__file__))
 
@@ -55,9 +57,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     python_requires=">=3.5",
-    packages=[
-        "ws_server_plugin",
-    ],
+    packages=find_packages(),
     install_requires=[
         "fastybird-modules-metadata",
         "setuptools",
