@@ -26,7 +26,7 @@ from threading import Thread
 from typing import Callable, Dict, List
 
 # App libs
-from ws_server_plugin.client import WampClient, WampClientInterface
+from ws_server_plugin.client import WampClient
 from ws_server_plugin.exceptions import ClientException, HandleDataException
 from ws_server_plugin.types import OPCodes
 
@@ -46,9 +46,9 @@ class WebsocketsServer(Thread):
 
     __secured_context: ssl.SSLContext or None
 
-    __subscribe_callback: Callable[[WampClientInterface], None] or None = None
-    __unsubscribe_callback: Callable[[WampClientInterface], None] or None = None
-    __rpc_callback: Callable[[ModuleOrigin, RoutingKey, Dict], None] or None = None
+    __subscribe_callback: Callable[[WampClient], None] or None = None
+    __unsubscribe_callback: Callable[[WampClient], None] or None = None
+    __rpc_callback: Callable[[ModuleOrigin, RoutingKey, Dict or None], None] or None = None
 
     __iterator_index = 0
 
@@ -102,17 +102,17 @@ class WebsocketsServer(Thread):
 
     # -----------------------------------------------------------------------------
 
-    def set_subscribe_callback(self, callback: Callable[[WampClientInterface], None]) -> None:
+    def set_subscribe_callback(self, callback: Callable[[WampClient], None]) -> None:
         self.__subscribe_callback = callback
 
     # -----------------------------------------------------------------------------
 
-    def set_unsubscribe_callback(self, callback: Callable[[WampClientInterface], None]) -> None:
+    def set_unsubscribe_callback(self, callback: Callable[[WampClient], None]) -> None:
         self.__unsubscribe_callback = callback
 
     # -----------------------------------------------------------------------------
 
-    def set_rpc_callback(self, callback: Callable[[ModuleOrigin, RoutingKey, Dict], None]) -> None:
+    def set_rpc_callback(self, callback: Callable[[ModuleOrigin, RoutingKey, Dict or None], None]) -> None:
         self.__rpc_callback = callback
 
     # -----------------------------------------------------------------------------

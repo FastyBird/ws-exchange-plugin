@@ -27,7 +27,6 @@ import struct
 import sys
 import random
 import time
-from abc import ABC, abstractmethod
 from codecs import IncrementalDecoder
 from collections import deque
 from io import BytesIO
@@ -39,30 +38,11 @@ from modules_metadata.types import ModuleOrigin
 from typing import Callable, Dict, List, Union, Tuple
 
 # App libs
-from ws_server_plugin.exceptions import HandleDataException
+from ws_server_plugin.exceptions import HandleDataException, HandleRpcDataException
 from ws_server_plugin.types import OPCodes, WampCodes
 
 
-class WampClientInterface(ABC):
-
-    @abstractmethod
-    def get_id(self) -> str:
-        pass
-
-    # -----------------------------------------------------------------------------
-
-    @abstractmethod
-    def publish(self, message: str) -> None:
-        pass
-
-    # -----------------------------------------------------------------------------
-
-    @abstractmethod
-    def close(self, status: int = 1000, reason: str = u"") -> None:
-        pass
-
-
-class WampClient(WampClientInterface):
+class WampClient:
     __handshake_finished: bool = False
     __request_header_buffer: bytearray = bytearray()
     __request_header_parsed: HTTPMessage or None = None
@@ -89,9 +69,9 @@ class WampClient(WampClientInterface):
 
     __prefixes: Dict[str, str] = {}
 
-    __subscribe_callback: Callable[[WampClientInterface], None] or None = None
-    __unsubscribe_callback: Callable[[WampClientInterface], None] or None = None
-    __rpc_callback: Callable[[ModuleOrigin, RoutingKey, Dict], None] or None = None
+    __subscribe_callback: Callable[["WampClient"], None] or None = None
+    __unsubscribe_callback: Callable[["WampClient"], None] or None = None
+    __rpc_callback: Callable[[ModuleOrigin, RoutingKey, Dict or None], None] or None = None
 
     __logger: logging.Logger
 
@@ -149,13 +129,13 @@ class WampClient(WampClientInterface):
     # -----------------------------------------------------------------------------
 
     def __init__(
-            self,
-            sock: socket.socket,
-            address: Tuple[str, int, int, int],
-            subscribe_callback: Callable[[WampClientInterface], None] or None = None,
-            unsubscribe_callback: Callable[[WampClientInterface], None] or None = None,
-            rpc_callback: Callable[[ModuleOrigin, RoutingKey, Dict], None] or None = None,
-            logger: logging.Logger or None = None,
+        self,
+        sock: socket.socket,
+        address: Tuple[str, int, int, int],
+        subscribe_callback: Callable[["WampClient"], None] or None = None,
+        unsubscribe_callback: Callable[["WampClient"], None] or None = None,
+        rpc_callback: Callable[[ModuleOrigin, RoutingKey, Dict or None], None] or None = None,
+        logger: logging.Logger or None = None,
     ) -> None:
         self.sock: socket.socket = sock
         self.address: Tuple[str, int, int, int] = address
@@ -293,84 +273,33 @@ class WampClient(WampClientInterface):
                         return
 
                     # Transform message routing key
-                    routing_key: RoutingKey = RoutingKey(parsed_data.get("routing_key"))
-                    # Transform message module origin
-                    module_origin: ModuleOrigin = ModuleOrigin(parsed_data.get("origin"))
+                    message_routing_key: RoutingKey = RoutingKey(parsed_data.get("routing_key"))
+                    # Transform message origin
+                    message_origin: ModuleOrigin = ModuleOrigin(parsed_data.get("origin"))
+                    # Just prepare variable
+                    message_data: Dict or None = None
 
-                    try:
-                        schema: str = load_schema(module_origin, routing_key)
-
-                    except metadata_exceptions.FileNotFoundException:
-                        self.__reply_rpc_error(
-                            rpc_id,
-                            topic_id,
-                            "Provided data could not be validated",
-                        )
-
-                        self.__logger.error("Schema file for origin: {} and routing key: {} could not be loaded".format(
-                            module_origin.value,
-                            routing_key.value,
-                        ))
-
-                        return
-
-                    except metadata_exceptions.InvalidArgumentException:
-                        self.__reply_rpc_error(
-                            rpc_id,
-                            topic_id,
-                            "Provided data could not be validated",
-                        )
-
-                        self.__logger.error(
-                            "Schema file for origin: {} and routing key: {} is not configured in mapping".format(
-                                module_origin.value,
-                                routing_key.value,
+                    if "data" in parsed_data:
+                        try:
+                            message_data = self.__validate_rpc_data(
+                                message_origin,
+                                message_routing_key,
+                                parsed_data.get("data"),
                             )
-                        )
 
-                        return
-
-                    try:
-                        validated_data = validate(json.dumps(parsed_data), schema)
-
-                    except metadata_exceptions.MalformedInputException:
-                        self.__reply_rpc_error(
-                            rpc_id,
-                            topic_id,
-                            "Provided data are not in valid json format",
-                        )
-
-                        return
-
-                    except metadata_exceptions.LogicException:
-                        self.__reply_rpc_error(
-                            rpc_id,
-                            topic_id,
-                            "Provided data could not be validated",
-                        )
-
-                        self.__logger.error(
-                            "Schema file for origin: {} and routing key: {} could not be parsed & compiled".format(
-                                module_origin.value,
-                                routing_key.value,
+                        except HandleRpcDataException as ex:
+                            self.__reply_rpc_error(
+                                rpc_id,
+                                topic_id,
+                                str(ex),
                             )
-                        )
 
-                        return
-
-                    except metadata_exceptions.InvalidDataException:
-                        self.__reply_rpc_error(
-                            rpc_id,
-                            topic_id,
-                            "Provided data are not in valid structure",
-                        )
-
-                        return
+                            return
 
                     self.__rpc_callback(
-                        module_origin,
-                        routing_key,
-                        validated_data,
+                        message_origin,
+                        message_routing_key,
+                        message_data,
                     )
 
                     self.__send_message(
@@ -872,6 +801,49 @@ class WampClient(WampClientInterface):
                     raise HandleDataException("Fragmentation protocol error")
 
                 self.handle_message()
+
+    # -----------------------------------------------------------------------------
+
+    def __validate_rpc_data(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Dict) -> Dict:
+        try:
+            schema: str = load_schema(origin, routing_key)
+
+        except metadata_exceptions.FileNotFoundException:
+            self.__logger.error("Schema file for origin: {} and routing key: {} could not be loaded".format(
+                origin.value,
+                routing_key.value,
+            ))
+
+            raise HandleRpcDataException("Provided data could not be validated")
+
+        except metadata_exceptions.InvalidArgumentException:
+            self.__logger.error(
+                "Schema file for origin: {} and routing key: {} is not configured in mapping".format(
+                    origin.value,
+                    routing_key.value,
+                )
+            )
+
+            raise HandleRpcDataException("Provided data could not be validated")
+
+        try:
+            return validate(json.dumps(data), schema)
+
+        except metadata_exceptions.MalformedInputException:
+            raise HandleRpcDataException("Provided data are not in valid json format")
+
+        except metadata_exceptions.LogicException:
+            self.__logger.error(
+                "Schema file for origin: {} and routing key: {} could not be parsed & compiled".format(
+                    origin.value,
+                    routing_key.value,
+                )
+            )
+
+            raise HandleRpcDataException("Provided data could not be validated")
+
+        except metadata_exceptions.InvalidDataException:
+            raise HandleRpcDataException("Provided data are not in valid structure")
 
     # -----------------------------------------------------------------------------
 

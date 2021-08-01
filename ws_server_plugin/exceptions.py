@@ -37,3 +37,15 @@ class ClientException(Exception):
 #
 class HandleDataException(Exception):
     pass
+
+
+#
+# Handling client data exception
+#
+# @package        FastyBird:WsServerPlugin!
+# @subpackage     Exceptions
+#
+# @author         Adam Kadlec <adam.kadlec@fastybird.com>
+#
+class HandleRpcDataException(Exception):
+    pass
