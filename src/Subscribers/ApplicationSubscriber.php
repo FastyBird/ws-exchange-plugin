@@ -76,7 +76,7 @@ class ApplicationSubscriber implements EventDispatcher\EventSubscriberInterface
 	public function initialize(WebServerEvents\InitializeEvent $event): void
 	{
 		$client = $this->configuration->getAddress() . ':' . $this->configuration->getPort();
-		$socket = new Socket\Server($client, $this->loop);
+		$socket = new Socket\SocketServer($client, [], $this->loop);
 
 		$socket->on('connection', function (Socket\ConnectionInterface $connection): void {
 			$this->handlers->handleConnect($connection);
