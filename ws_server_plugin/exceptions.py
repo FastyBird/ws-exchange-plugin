@@ -14,38 +14,39 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 
+"""
+Package exceptions classes
+"""
 
-#
-# Client raised exception
-#
-# @package        FastyBird:WsServerPlugin!
-# @subpackage     Exceptions
-#
-# @author         Adam Kadlec <adam.kadlec@fastybird.com>
-#
+
 class ClientException(Exception):
-    pass
+    """
+    Exception raised by connected client
+
+    @package        FastyBird:WsServerPlugin!
+    @module         exceptions
+
+    @author         Adam Kadlec <adam.kadlec@fastybird.com>
+    """
 
 
-#
-# Handling client data exception
-#
-# @package        FastyBird:WsServerPlugin!
-# @subpackage     Exceptions
-#
-# @author         Adam Kadlec <adam.kadlec@fastybird.com>
-#
 class HandleDataException(Exception):
-    pass
+    """
+    Exception raised by invalid client data handling
+
+    @package        FastyBird:WsServerPlugin!
+    @module         exceptions
+
+    @author         Adam Kadlec <adam.kadlec@fastybird.com>
+    """
 
 
-#
-# Handling client data exception
-#
-# @package        FastyBird:WsServerPlugin!
-# @subpackage     Exceptions
-#
-# @author         Adam Kadlec <adam.kadlec@fastybird.com>
-#
 class HandleRpcDataException(Exception):
-    pass
+    """
+    Exception raised by invalid remote procedure call
+
+    @package        FastyBird:WsServerPlugin!
+    @module         exceptions
+
+    @author         Adam Kadlec <adam.kadlec@fastybird.com>
+    """

@@ -14,14 +14,17 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 
-# App dependencies
+"""
+Connected WAMP client
+"""
+
+# Library dependencies
 import base64
 import codecs
 import errno
 import hashlib
 import json
 import logging
-import modules_metadata.exceptions as metadata_exceptions
 import socket
 import struct
 import sys
@@ -31,18 +34,27 @@ from codecs import IncrementalDecoder
 from collections import deque
 from io import BytesIO
 from http.client import parse_headers, HTTPMessage
+from typing import Callable, Dict, List, Union, Tuple
+import modules_metadata.exceptions as metadata_exceptions
 from modules_metadata.loader import load_schema
 from modules_metadata.routing import RoutingKey
 from modules_metadata.validator import validate
 from modules_metadata.types import ModuleOrigin
-from typing import Callable, Dict, List, Union, Tuple
 
-# App libs
+# Library libs
 from ws_server_plugin.exceptions import HandleDataException, HandleRpcDataException
-from ws_server_plugin.types import OPCodes, WampCodes
+from ws_server_plugin.types import OPCode, WampCodes
 
 
 class WampClient:
+    """
+    Web socket WAMP client
+
+    @package        FastyBird:WsServerPlugin!
+    @module         client
+
+    @author         Adam Kadlec <adam.kadlec@fastybird.com>
+    """
     __handshake_finished: bool = False
     __request_header_buffer: bytearray = bytearray()
     __request_header_parsed: HTTPMessage or None = None
@@ -57,7 +69,7 @@ class WampClient:
     __index: int = 0
 
     __frag_start: bool = False
-    __frag_type: int = OPCodes(OPCodes.BINARY).value
+    __frag_type: int = OPCode(OPCode.BINARY).value
     __frag_buffer: bytearray or None = None
     __frag_decoder: IncrementalDecoder = codecs.getincrementaldecoder("utf-8")(errors="strict")
 
@@ -145,9 +157,9 @@ class WampClient:
         self.__request_header_buffer = bytearray()
 
         self.__wamp_session = (
-                str(random.randint(0, sys.maxsize))
-                + hex(int(time.time()))[2:10]
-                + hex(int(time.time() * 1000000) % 0x100000)[2:7]
+            str(random.randint(0, sys.maxsize))
+            + hex(int(time.time()))[2:10]
+            + hex(int(time.time() * 1000000) % 0x100000)[2:7]
         ).replace(".", "")
 
         self.__subscribe_callback = subscribe_callback
@@ -159,13 +171,16 @@ class WampClient:
     # -----------------------------------------------------------------------------
 
     def get_id(self) -> str:
+        """
+        Get client unique identifier
+        """
         return self.__wamp_session
 
     # -----------------------------------------------------------------------------
 
     def publish(self, message: str) -> None:
         """
-        Send websocket data frame to the client.
+        Send data frame to the client
         """
         data: str = json.dumps(
             [
@@ -175,7 +190,7 @@ class WampClient:
             ]
         )
 
-        self.__send_message(False, OPCodes(OPCodes.TEXT), data)
+        self.__send_message(False, OPCode(OPCode.TEXT), data)
 
     # -----------------------------------------------------------------------------
 
@@ -189,7 +204,7 @@ class WampClient:
         try:
             if self.__is_closed is False:
                 close_msg = bytearray()
-                close_msg.extend(struct.pack("!H", status))
+                close_msg.extend(struct.pack("!H", status))  # pylint: disable=no-member
 
                 if isinstance(reason, str):
                     close_msg.extend(reason.encode("utf-8"))
@@ -197,201 +212,25 @@ class WampClient:
                 else:
                     close_msg.extend(reason)
 
-                self.__send_message(False, OPCodes(OPCodes.CLOSE), close_msg)
+                self.__send_message(False, OPCode(OPCode.CLOSE), close_msg)
 
         finally:
             self.__is_closed = True
 
     # -----------------------------------------------------------------------------
 
-    def handshake_finished(self) -> bool:
+    def is_handshake_finished(self) -> bool:
+        """
+        Flag informing that client has finished handshake process
+        """
         return self.__handshake_finished
 
     # -----------------------------------------------------------------------------
 
-    def handle_message(self) -> None:
-        """
-        Called when websocket frame is received
-        To access the frame data call self.__received_data
-        The self.__received_data is a bytearray object
-        """
-
-        try:
-            parsed_data: dict = json.loads(self.__received_data)
-
-            if int(parsed_data[0]) == WampCodes(WampCodes.MSG_PREFIX).value:
-                self.__prefixes[str(parsed_data[1])] = str(parsed_data[2])
-
-                self.__send_message(
-                    False,
-                    OPCodes(OPCodes.TEXT),
-                    json.dumps(
-                        [
-                            WampCodes(WampCodes.MSG_PREFIX).value,
-                            parsed_data[1],
-                            str(parsed_data[2]),
-                        ]
-                    ),
-                )
-
-            # RPC from client
-            elif int(parsed_data[0]) == WampCodes(WampCodes.MSG_CALL).value:
-                parsed_data.pop(0)
-
-                rpc_id = str(parsed_data.pop(0))
-                topic_id = str(parsed_data.pop(0))
-
-                if topic_id == self.__WS_SERVER_TOPIC:
-                    # RPC callback have to be configured
-                    if self.__rpc_callback is None:
-                        self.__reply_rpc_error(
-                            rpc_id,
-                            topic_id,
-                            "Server has not configured RPC callback",
-                        )
-
-                        self.__logger.error("RPC callback is not configured. RPC could not be handled")
-
-                        return
-
-                    if len(parsed_data) == 1:
-                        parsed_data = parsed_data[0]
-
-                    if (
-                        "routing_key" not in parsed_data
-                        or RoutingKey.has_value(parsed_data.get("routing_key")) is False
-                        or "origin" not in parsed_data
-                        or ModuleOrigin.has_value(parsed_data.get("origin")) is False
-                    ):
-                        self.__reply_rpc_error(
-                            rpc_id,
-                            topic_id,
-                            "Invalid message data format provided",
-                            json.dumps(parsed_data),
-                        )
-
-                        return
-
-                    # Transform message routing key
-                    message_routing_key: RoutingKey = RoutingKey(parsed_data.get("routing_key"))
-                    # Transform message origin
-                    message_origin: ModuleOrigin = ModuleOrigin(parsed_data.get("origin"))
-                    # Just prepare variable
-                    message_data: Dict or None = None
-
-                    if "data" in parsed_data:
-                        try:
-                            message_data = self.__validate_rpc_data(
-                                message_origin,
-                                message_routing_key,
-                                parsed_data.get("data"),
-                            )
-
-                        except HandleRpcDataException as ex:
-                            self.__reply_rpc_error(
-                                rpc_id,
-                                topic_id,
-                                str(ex),
-                            )
-
-                            return
-
-                    self.__rpc_callback(
-                        message_origin,
-                        message_routing_key,
-                        message_data,
-                    )
-
-                    self.__send_message(
-                        False,
-                        OPCodes(OPCodes.TEXT),
-                        json.dumps(
-                            [
-                                WampCodes(WampCodes.MSG_CALL_RESULT).value,
-                                rpc_id,
-                                {
-                                    "response": "accepted",
-                                },
-                            ]
-                        )
-                    )
-
-                else:
-                    self.__reply_rpc_error(
-                        rpc_id,
-                        topic_id,
-                        "Invalid topic provided",
-                        json.dumps(parsed_data),
-                    )
-
-            # Subscribe client to defined topic
-            elif int(parsed_data[0]) == WampCodes(WampCodes.MSG_SUBSCRIBE).value:
-                if str(parsed_data[1]) == self.__WS_SERVER_TOPIC:
-                    # TODO: Do some access check validation
-
-                    self.__logger.debug("New client: {} has subscribed to exchanges topic".format(self.get_id()))
-
-                    if self.__subscribe_callback is not None:
-                        self.__subscribe_callback(self)
-
-                else:
-                    # TODO: reply error
-                    pass
-
-            # Unsubscribe client from defined topic
-            elif int(parsed_data[0]) == WampCodes(WampCodes.MSG_UNSUBSCRIBE).value:
-                if str(parsed_data[1]) == self.__WS_SERVER_TOPIC:
-                    self.__logger.debug("Client: {} has unsubscribed from exchanges topic".format(self.get_id()))
-
-                    if self.__unsubscribe_callback is not None:
-                        self.__unsubscribe_callback(self)
-
-                else:
-                    # TODO: reply error
-                    pass
-
-            elif int(parsed_data[0]) == WampCodes(WampCodes.MSG_PUBLISH).value:
-                pass
-
-            else:
-                self.close(1007, "Invalid WAMP message type")
-
-        except json.JSONDecodeError:
-            self.close(1007)
-
-    # -----------------------------------------------------------------------------
-
-    def handle_open(self) -> None:
-        """
-        Called when a websocket client connects to the server.
-        """
-
-        self.__send_message(
-            False,
-            OPCodes(OPCodes.TEXT),
-            json.dumps(
-                [
-                    WampCodes(WampCodes.MSG_WELCOME).value,
-                    self.__wamp_session,
-                    1,
-                    "FB/WebSockets/1.0.0",
-                ]
-            ),
-        )
-
-    # -----------------------------------------------------------------------------
-
-    def handle_close(self) -> None:
-        """
-        Called when a websocket server gets a Close frame from a client.
-        """
-
-        if self.__unsubscribe_callback is not None:
-            self.__unsubscribe_callback(self)
-
-    # -----------------------------------------------------------------------------
-
     def receive_data(self) -> None:
+        """
+        Process received frame
+        """
         # Do the HTTP header and handshake
         if self.__handshake_finished is False:
             data = self.sock.recv(self.__HEADER_SIZE)
@@ -417,21 +256,32 @@ class WampClient:
                     key = self.__request_header_parsed.get("sec-websocket-key")
                     k = key.encode("ascii") + self.__GUID_STR.encode("ascii")
                     k_s = base64.b64encode(hashlib.sha1(k).digest()).decode("ascii")
-                    hs = self.__HANDSHAKE_STR % {"accept__str": k_s}
+                    handshake = self.__HANDSHAKE_STR % {"accept__str": k_s}
 
-                    self.__send_queue.append((OPCodes(OPCodes.BINARY).value, hs.encode("ascii")))
+                    self.__send_queue.append((OPCode(OPCode.BINARY).value, handshake.encode("ascii")))
 
                     self.__handshake_finished = True
 
-                    self.handle_open()
+                    self.__send_message(
+                        False,
+                        OPCode(OPCode.TEXT),
+                        json.dumps(
+                            [
+                                WampCodes(WampCodes.MSG_WELCOME).value,
+                                self.__wamp_session,
+                                1,
+                                "FB/WebSockets/1.0.0",
+                            ]
+                        ),
+                    )
 
-                except Exception as e:
-                    hs = self.__FAILED_HANDSHAKE_STR
+                except Exception as ex:
+                    handshake = self.__FAILED_HANDSHAKE_STR
 
-                    self.send_buffer(hs.encode("ascii"), True)
+                    self.send_buffer(handshake.encode("ascii"), True)
                     self.sock.close()
 
-                    raise HandleDataException("Handshake failed: {}".format(e))
+                    raise HandleDataException("Handshake failed: {}".format(ex)) from ex
 
         else:
             data = self.sock.recv(16384)
@@ -439,12 +289,15 @@ class WampClient:
             if not data:
                 raise HandleDataException("Remote socket closed")
 
-            for d in data:
-                self.__parse_message(d)
+            for data_row in data:
+                self.__process_message(data_row)
 
     # -----------------------------------------------------------------------------
 
     def send_buffer(self, buff: bytes, send_all: bool = False) -> Union[int, bytes] or None:
+        """
+        Send buffer content to client
+        """
         size = len(buff)
         to_send = size
         already_sent = 0
@@ -460,64 +313,29 @@ class WampClient:
                 already_sent += sent
                 to_send -= sent
 
-            except socket.error as e:
+            except socket.error as ex:  # pylint: disable=no-member
                 # if we have full buffers then wait for them to drain and try again
-                if e.errno in [errno.EAGAIN, errno.EWOULDBLOCK]:
+                if ex.errno in [errno.EAGAIN, errno.EWOULDBLOCK]:
                     if send_all:
                         continue
 
                     return buff[already_sent:]
 
-                raise e
+                raise ex
 
         return None
 
     # -----------------------------------------------------------------------------
 
     def get_send_queue(self) -> deque:
+        """
+        Get client payload queue
+        """
         return self.__send_queue
 
     # -----------------------------------------------------------------------------
 
-    def __send_message(self, fin: bool, opcode: OPCodes, data: bytearray or str) -> None:
-        payload = bytearray()
-
-        b1 = 0
-        b2 = 0
-
-        if fin is False:
-            b1 |= 0x80
-
-        b1 |= opcode.value
-
-        if isinstance(data, str):
-            data = data.encode("utf-8")
-
-        length = len(data)
-        payload.append(b1)
-
-        if length <= 125:
-            b2 |= length
-            payload.append(b2)
-
-        elif 126 <= length <= 65535:
-            b2 |= 126
-            payload.append(b2)
-            payload.extend(struct.pack("!H", length))
-
-        else:
-            b2 |= 127
-            payload.append(b2)
-            payload.extend(struct.pack("!Q", length))
-
-        if length > 0:
-            payload.extend(data)
-
-        self.__send_queue.append((opcode.value, payload))
-
-    # -----------------------------------------------------------------------------
-
-    def __parse_message(self, byte) -> None:
+    def __process_message(self, byte) -> None:
         # read in the header
         if self.__state == self.__HEADER_B1:
             self.__fin = byte & 0x80
@@ -538,7 +356,7 @@ class WampClient:
             mask = byte & 0x80
             length = byte & 0x7F
 
-            if self.__opcode == OPCodes(OPCodes.PING).value and length > 125:
+            if self.__opcode == OPCode(OPCode.PING).value and length > 125:
                 raise HandleDataException("Ping packet is too large")
 
             self.__has_mask = mask == 128
@@ -582,7 +400,7 @@ class WampClient:
                 raise HandleDataException("Short length exceeded allowable size")
 
             if len(self.__length_array) == 2:
-                self.__length = struct.unpack_from("!H", self.__length_array)[0]
+                self.__length = struct.unpack_from("!H", self.__length_array)[0]  # pylint: disable=no-member
 
                 if self.__has_mask is True:
                     self.__mask_array = bytearray()
@@ -611,7 +429,7 @@ class WampClient:
                 raise HandleDataException("Long length exceeded allowable size")
 
             if len(self.__length_array) == 8:
-                self.__length = struct.unpack_from("!Q", self.__length_array)[0]
+                self.__length = struct.unpack_from("!Q", self.__length_array)[0]  # pylint: disable=no-member
 
                 if self.__has_mask is True:
                     self.__mask_array = bytearray()
@@ -684,27 +502,18 @@ class WampClient:
     # -----------------------------------------------------------------------------
 
     def __handle_packet(self) -> None:
-        if self.__opcode == OPCodes(OPCodes.CLOSE).value:
-            pass
-
-        elif self.__opcode == OPCodes(OPCodes.STREAM).value:
-            pass
-
-        elif self.__opcode == OPCodes(OPCodes.TEXT).value:
-            pass
-
-        elif self.__opcode == OPCodes(OPCodes.BINARY).value:
-            pass
-
-        elif self.__opcode == OPCodes(OPCodes.PONG).value or self.__opcode == OPCodes(OPCodes.PING).value:
+        """
+        Unpack packet content
+        """
+        if self.__opcode == OPCode(OPCode.PONG).value or self.__opcode == OPCode(OPCode.PING).value:
             if len(self.__received_data) > 125:
                 raise HandleDataException("Control frame length can not be > 125")
 
-        else:
+        elif OPCode.has_value(self.__opcode) is False:
             # unknown or reserved opcode so just close
             raise HandleDataException("Unknown opcode")
 
-        if self.__opcode == OPCodes(OPCodes.CLOSE).value:
+        if self.__opcode == OPCode(OPCode.CLOSE).value:
             status = 1000
             reason = u""
             length = len(self.__received_data)
@@ -713,7 +522,7 @@ class WampClient:
                 pass
 
             elif length >= 2:
-                status = struct.unpack_from("!H", self.__received_data[:2])[0]
+                status = struct.unpack_from("!H", self.__received_data[:2])[0]  # pylint: disable=no-member
                 reason = self.__received_data[2:]
 
                 if status not in self.__VALID_STATUS_CODES:
@@ -732,15 +541,15 @@ class WampClient:
             self.close(status, reason)
 
         elif self.__fin == 0:
-            if self.__opcode != OPCodes(OPCodes.STREAM).value:
-                if self.__opcode == OPCodes(OPCodes.PING).value or self.__opcode == OPCodes(OPCodes.PONG).value:
+            if self.__opcode != OPCode(OPCode.STREAM).value:
+                if self.__opcode == OPCode(OPCode.PING).value or self.__opcode == OPCode(OPCode.PONG).value:
                     raise HandleDataException("Control messages can not be fragmented")
 
                 self.__frag_type = self.__opcode
                 self.__frag_start = True
                 self.__frag_decoder.reset()
 
-                if self.__frag_type == OPCodes(OPCodes.TEXT).value:
+                if self.__frag_type == OPCode(OPCode.TEXT).value:
                     self.__frag_buffer = bytearray()
 
                     utf_str = self.__frag_decoder.decode(self.__received_data, final=False)
@@ -756,7 +565,7 @@ class WampClient:
                 if self.__frag_start is False:
                     raise HandleDataException("Fragmentation protocol error")
 
-                if self.__frag_type == OPCodes(OPCodes.TEXT).value:
+                if self.__frag_type == OPCode(OPCode.TEXT).value:
                     utf_str = self.__frag_decoder.decode(self.__received_data, final=False)
 
                     if utf_str:
@@ -766,11 +575,11 @@ class WampClient:
                     self.__frag_buffer.extend(self.__received_data)
 
         else:
-            if self.__opcode == OPCodes(OPCodes.STREAM).value:
+            if self.__opcode == OPCode(OPCode.STREAM).value:
                 if self.__frag_start is False:
                     raise HandleDataException("Fragmentation protocol error")
 
-                if self.__frag_type == OPCodes(OPCodes.TEXT).value:
+                if self.__frag_type == OPCode(OPCode.TEXT).value:
                     utf_str = self.__frag_decoder.decode(self.__received_data, final=True)
 
                     self.__frag_buffer.append(int(utf_str))
@@ -783,74 +592,310 @@ class WampClient:
 
                     self.__received_data = self.__frag_buffer
 
-                self.handle_message()
+                self.__handle_message(self.__received_data)
 
                 self.__frag_decoder.reset()
-                self.__frag_type = OPCodes(OPCodes.BINARY).value
+                self.__frag_type = OPCode(OPCode.BINARY).value
                 self.__frag_start = False
                 self.__frag_buffer = None
 
-            elif self.__opcode == OPCodes(OPCodes.PING).value:
-                self.__send_message(False, OPCodes(OPCodes.PONG), self.__received_data)
+            elif self.__opcode == OPCode(OPCode.PING).value:
+                self.__send_message(False, OPCode(OPCode.PONG), self.__received_data)
 
-            elif self.__opcode == OPCodes(OPCodes.PONG).value:
+            elif self.__opcode == OPCode(OPCode.PONG).value:
                 pass
 
             else:
                 if self.__frag_start is True:
                     raise HandleDataException("Fragmentation protocol error")
 
-                self.handle_message()
+                self.__handle_message(self.__received_data)
+
+    # -----------------------------------------------------------------------------
+
+    def __handle_message(self, received_data: bytearray) -> None:
+        """
+        Called when websocket frame is received
+        """
+        try:
+            parsed_data: dict = json.loads(received_data)
+
+            if int(parsed_data[0]) == WampCodes(WampCodes.MSG_PREFIX).value:
+                self.__handle_wamp_prefix(parsed_data)
+
+            # RPC from client
+            elif int(parsed_data[0]) == WampCodes(WampCodes.MSG_CALL).value:
+                self.__handle_wamp_call(parsed_data)
+
+            # Subscribe client to defined topic
+            elif int(parsed_data[0]) == WampCodes(WampCodes.MSG_SUBSCRIBE).value:
+                self.__handle_wamp_subscribe(parsed_data)
+
+            # Unsubscribe client from defined topic
+            elif int(parsed_data[0]) == WampCodes(WampCodes.MSG_UNSUBSCRIBE).value:
+                self.__handle_wamp_unsubscribe(parsed_data)
+
+            elif int(parsed_data[0]) == WampCodes(WampCodes.MSG_PUBLISH).value:
+                self.__handle_wamp_publish(parsed_data)
+
+            else:
+                self.close(1007, "Invalid WAMP message type")
+
+        except json.JSONDecodeError:
+            self.close(1007)
+
+    # -----------------------------------------------------------------------------
+
+    def __send_message(self, fin: bool, opcode: OPCode, data: bytearray or str) -> None:
+        """
+        Append payload to client buffer
+        """
+        payload = bytearray()
+
+        first_byte = 0
+        second_byte = 0
+
+        if fin is False:
+            first_byte |= 0x80
+
+        first_byte |= opcode.value
+
+        if isinstance(data, str):
+            data = data.encode("utf-8")
+
+        length = len(data)
+        payload.append(first_byte)
+
+        if length <= 125:
+            second_byte |= length
+            payload.append(second_byte)
+
+        elif 126 <= length <= 65535:
+            second_byte |= 126
+            payload.append(second_byte)
+            payload.extend(struct.pack("!H", length))  # pylint: disable=no-member
+
+        else:
+            second_byte |= 127
+            payload.append(second_byte)
+            payload.extend(struct.pack("!Q", length))  # pylint: disable=no-member
+
+        if length > 0:
+            payload.extend(data)
+
+        self.__send_queue.append((opcode.value, payload))
+
+    # -----------------------------------------------------------------------------
+
+    def __handle_wamp_prefix(self, parsed_data: Dict) -> None:
+        """
+        Handle client set prefix message request
+        """
+        self.__prefixes[str(parsed_data[1])] = str(parsed_data[2])
+
+        self.__send_message(
+            False,
+            OPCode(OPCode.TEXT),
+            json.dumps(
+                [
+                    WampCodes(WampCodes.MSG_PREFIX).value,
+                    parsed_data[1],
+                    str(parsed_data[2]),
+                ]
+            ),
+        )
+
+    # -----------------------------------------------------------------------------
+
+    def __handle_wamp_call(self, parsed_data: Dict) -> None:
+        """
+        Handle client RPC message request
+        """
+        parsed_data.pop(0)
+
+        rpc_id = str(parsed_data.pop(0))
+        topic_id = str(parsed_data.pop(0))
+
+        if topic_id != self.__WS_SERVER_TOPIC:
+            self.__reply_rpc_error(
+                rpc_id,
+                topic_id,
+                "Invalid topic provided",
+                json.dumps(parsed_data),
+            )
+
+            return
+
+        # RPC callback have to be configured
+        if self.__rpc_callback is None:
+            self.__reply_rpc_error(
+                rpc_id,
+                topic_id,
+                "Server has not configured RPC callback",
+            )
+
+            self.__logger.error("RPC callback is not configured. RPC could not be handled")
+
+            return
+
+        if len(parsed_data) == 1:
+            parsed_data = parsed_data[0]
+
+        if (
+            isinstance(parsed_data, Dict) is False
+            or "routing_key" not in parsed_data
+            or RoutingKey.has_value(parsed_data.get("routing_key")) is False
+            or "origin" not in parsed_data
+            or ModuleOrigin.has_value(parsed_data.get("origin")) is False
+        ):
+            self.__reply_rpc_error(
+                rpc_id,
+                topic_id,
+                "Invalid message data format provided",
+                json.dumps(parsed_data),
+            )
+
+            return
+
+        # Transform message routing key
+        message_routing_key: RoutingKey = RoutingKey(parsed_data.get("routing_key"))
+        # Transform message origin
+        message_origin: ModuleOrigin = ModuleOrigin(parsed_data.get("origin"))
+        # Just prepare variable
+        message_data: Dict or None = parsed_data.get("data", None)
+
+        if "data" in parsed_data:
+            try:
+                message_data = self.__validate_rpc_data(
+                    message_origin,
+                    message_routing_key,
+                    message_data,
+                )
+
+            except HandleRpcDataException as ex:
+                self.__reply_rpc_error(
+                    rpc_id,
+                    topic_id,
+                    str(ex),
+                )
+
+                return
+
+        self.__rpc_callback(
+            message_origin,
+            message_routing_key,
+            message_data,
+        )
+
+        self.__send_message(
+            False,
+            OPCode(OPCode.TEXT),
+            json.dumps(
+                [
+                    WampCodes(WampCodes.MSG_CALL_RESULT).value,
+                    rpc_id,
+                    {
+                        "response": "accepted",
+                    },
+                ]
+            )
+        )
+
+    # -----------------------------------------------------------------------------
+
+    def __handle_wamp_subscribe(self, parsed_data: Dict) -> None:
+        """
+        Handle client subscribe message request
+        """
+        if str(parsed_data[1]) == self.__WS_SERVER_TOPIC:
+            # TODO: Do some access check validation
+
+            self.__logger.debug("New client: %s has subscribed to exchanges topic", self.get_id())
+
+            if self.__subscribe_callback is not None:
+                self.__subscribe_callback(self)
+
+        else:
+            # TODO: reply error
+            pass
+
+    # -----------------------------------------------------------------------------
+
+    def __handle_wamp_unsubscribe(self, parsed_data: Dict) -> None:
+        """
+        Handle client unsubscribe message request
+        """
+        if str(parsed_data[1]) == self.__WS_SERVER_TOPIC:
+            self.__logger.debug("Client: %s has unsubscribed from exchanges topic", self.get_id())
+
+            if self.__unsubscribe_callback is not None:
+                self.__unsubscribe_callback(self)
+
+        else:
+            # TODO: reply error
+            pass
+
+    # -----------------------------------------------------------------------------
+
+    def __handle_wamp_publish(self, parsed_data: Dict) -> None:
+        """
+        Handle client publish message request
+        """
 
     # -----------------------------------------------------------------------------
 
     def __validate_rpc_data(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Dict) -> Dict:
+        """
+        Validate received RPC message against defined schema
+        """
         try:
             schema: str = load_schema(origin, routing_key)
 
-        except metadata_exceptions.FileNotFoundException:
-            self.__logger.error("Schema file for origin: {} and routing key: {} could not be loaded".format(
+        except metadata_exceptions.FileNotFoundException as ex:
+            self.__logger.error(
+                "Schema file for origin: %s and routing key: %s could not be loaded",
                 origin.value,
                 routing_key.value,
-            ))
-
-            raise HandleRpcDataException("Provided data could not be validated")
-
-        except metadata_exceptions.InvalidArgumentException:
-            self.__logger.error(
-                "Schema file for origin: {} and routing key: {} is not configured in mapping".format(
-                    origin.value,
-                    routing_key.value,
-                )
             )
 
-            raise HandleRpcDataException("Provided data could not be validated")
+            raise HandleRpcDataException("Provided data could not be validated") from ex
+
+        except metadata_exceptions.InvalidArgumentException as ex:
+            self.__logger.error(
+                "Schema file for origin: %s and routing key: %s is not configured in mapping",
+                origin.value,
+                routing_key.value,
+            )
+
+            raise HandleRpcDataException("Provided data could not be validated") from ex
 
         try:
             return validate(json.dumps(data), schema)
 
-        except metadata_exceptions.MalformedInputException:
-            raise HandleRpcDataException("Provided data are not in valid json format")
+        except metadata_exceptions.MalformedInputException as ex:
+            raise HandleRpcDataException("Provided data are not in valid json format") from ex
 
-        except metadata_exceptions.LogicException:
+        except metadata_exceptions.LogicException as ex:
             self.__logger.error(
-                "Schema file for origin: {} and routing key: {} could not be parsed & compiled".format(
-                    origin.value,
-                    routing_key.value,
-                )
+                "Schema file for origin: %s and routing key: %s could not be parsed & compiled",
+                origin.value,
+                routing_key.value,
             )
 
-            raise HandleRpcDataException("Provided data could not be validated")
+            raise HandleRpcDataException("Provided data could not be validated") from ex
 
-        except metadata_exceptions.InvalidDataException:
-            raise HandleRpcDataException("Provided data are not in valid structure")
+        except metadata_exceptions.InvalidDataException as ex:
+            raise HandleRpcDataException("Provided data are not valid") from ex
 
     # -----------------------------------------------------------------------------
 
     def __reply_rpc_error(self, rpc_id: str, topic_id: str, message: str, params: str or None = None) -> None:
+        """
+        Send RPC error result to client
+        """
         self.__send_message(
             False,
-            OPCodes(OPCodes.TEXT),
+            OPCode(OPCode.TEXT),
             json.dumps(
                 [
                     WampCodes(WampCodes.MSG_CALL_ERROR).value,

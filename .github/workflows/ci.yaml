@@ -78,10 +78,10 @@ jobs:
         run: "${{ env.composer-install }}"
 
       - name: "Coding Standard"
-        run: "make cs"
+        run: "make php_cs"
 
   php-static-analysis:
-    name: "Static analysis of PHP code"
+    name: "Static analysis for PHP code"
     runs-on: "${{ matrix.operating-system }}"
 
     strategy:
@@ -193,7 +193,7 @@ jobs:
         run: "${{ env.composer-install }} ${{ matrix.composer-args }}"
 
       - name: "Tests"
-        run: "make tests"
+        run: "make php_tests"
 
       - name: "Upload test output"
         if: ${{ failure() }}
@@ -239,7 +239,8 @@ jobs:
         with:
           php-version: "${{ matrix.php-version }}"
           extensions: "${{ env.extensions }}"
-          tools: "composer:${{ env.composer-version }} "
+          tools: "composer:${{ env.composer-version }}"
+          coverage: "pcov"
 
       - name: "Setup problem matchers for PHP"
         run: 'echo "::add-matcher::${{ runner.tool_cache }}/php.json"'
@@ -256,10 +257,10 @@ jobs:
           restore-keys: "${{ runner.os }}-composer-"
 
       - name: "Install dependencies"
-        run: "${{ env.composer-install }}"
+        run: "${{ env.composer-install }} ${{ matrix.composer-args }}"
 
       - name: "Tests"
-        run: "make coverage"
+        run: "make php_coverage"
 
       - name: "Coveralls.io"
         env:
@@ -287,28 +288,38 @@ jobs:
         with:
           python-version: 3.7
 
-      - name: "Install build dependencies"
+      - name: "Extract version"
+        uses: "battila7/get-version-action@v2"
+        id: "get_version"
+
+      - name: "Install dependencies"
         run: |
-          python -m pip install wheel --user
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: "Install build dependencies"
+        run: "python -m pip install wheel --user"
 
       - name: "Build a binary wheel and a source tarball"
-        run: |
-          python setup.py sdist bdist_wheel
+        run: "python setup.py sdist bdist_wheel"
+
+      - name: "Run code lint"
+        run: "make python_qa"
 
       - name: "Upload build result"
-        uses: actions/upload-artifact@v1
+        uses: "actions/upload-artifact@v1"
         with:
           name: dist
           path: dist
 
   test-install-python:
-    name: "Installation tests for Python"
+    name: "Test installation for Python code"
     runs-on: "${{ matrix.operating-system }}"
     needs: "build-python"
 
     strategy:
       matrix:
-        python: ["3.7", "3.8"]
+        python: ["3.7", "3.8", "3.9"]
         operating-system: ["ubuntu-latest"]
         installable: ["wheel", "sdist"]
 
@@ -326,16 +337,14 @@ jobs:
 
       - name: "Install wheel"
         if: matrix.installable == 'wheel'
-        run: |
-          pip install dist/fastybird_ws_server_plugin-*-py3-none-any.whl
+        run: "pip install dist/fastybird_ws_server_plugin-*-py3-none-any.whl"
 
       - name: "Install source tarball"
         if: matrix.installable == 'sdist'
-        run: |
-          pip install dist/fastybird-ws-server-plugin-*.tar.gz
+        run: "pip install dist/fastybird-ws-server-plugin-*.tar.gz"
 
   publish-on-testpypi:
-    name: "Publish on TestPyPI"
+    name: "Publish Python package on TestPyPI"
     runs-on: "${{ matrix.operating-system }}"
     needs: "test-install-python"
 
@@ -354,13 +363,12 @@ jobs:
 
       - name: "Publish to index"
         uses: "pypa/gh-action-pypi-publish@master"
-        continue-on-error: true
         with:
           password: ${{ secrets.testpypi_password }}
           repository_url: "https://test.pypi.org/legacy/"
 
   publish-on-pypi:
-    name: "Publish tagged releases to PyPI"
+    name: "Publish Python package to PyPI"
     runs-on: "${{ matrix.operating-system }}"
     needs: "publish-on-testpypi"
 

@@ -14,24 +14,36 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 
-# App dependencies
+"""
+Web sockets server thread
+"""
+
+# Library dependencies
 import json
 import logging
 import socket
 import ssl
-from modules_metadata.routing import RoutingKey
-from modules_metadata.types import ModuleOrigin
-from select import select
+import select
 from threading import Thread
 from typing import Callable, Dict, List
+from modules_metadata.routing import RoutingKey
+from modules_metadata.types import ModuleOrigin
 
-# App libs
+# Library libs
 from ws_server_plugin.client import WampClient
 from ws_server_plugin.exceptions import ClientException, HandleDataException
-from ws_server_plugin.types import OPCodes
+from ws_server_plugin.types import OPCode
 
 
 class WebsocketsServer(Thread):
+    """
+    Main web sockets server instance
+
+    @package        FastyBird:WsServerPlugin!
+    @module         server
+
+    @author         Adam Kadlec <adam.kadlec@fastybird.com>
+    """
     __stopped: bool = False
 
     __request_queue_size: int = 5
@@ -70,12 +82,19 @@ class WebsocketsServer(Thread):
         if host == "":
             host = None
 
-        fam = socket.AF_INET6 if host is None else 0
+        fam = socket.AF_INET6 if host is None else 0  # pylint: disable=no-member
 
-        host_info = socket.getaddrinfo(host, port, fam, socket.SOCK_STREAM, socket.IPPROTO_TCP, socket.AI_PASSIVE)
+        host_info = socket.getaddrinfo(
+            host,
+            port,
+            fam,
+            socket.SOCK_STREAM,  # pylint: disable=no-member
+            socket.IPPROTO_TCP,  # pylint: disable=no-member
+            socket.AI_PASSIVE,  # pylint: disable=no-member
+        )
 
         self.__server_socket = socket.socket(host_info[0][0], host_info[0][1], host_info[0][2])
-        self.__server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.__server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # pylint: disable=no-member
         self.__server_socket.bind(host_info[0][4])
         self.__server_socket.listen(self.__request_queue_size)
 
@@ -98,26 +117,41 @@ class WebsocketsServer(Thread):
     # -----------------------------------------------------------------------------
 
     def set_logger(self, logger: logging.Logger) -> None:
+        """
+        Configure custom logger handler
+        """
         self.__logger = logger
 
     # -----------------------------------------------------------------------------
 
     def set_subscribe_callback(self, callback: Callable[[WampClient], None]) -> None:
+        """
+        Set client subscribed callback
+        """
         self.__subscribe_callback = callback
 
     # -----------------------------------------------------------------------------
 
     def set_unsubscribe_callback(self, callback: Callable[[WampClient], None]) -> None:
+        """
+        Set client unsubscribed callback
+        """
         self.__unsubscribe_callback = callback
 
     # -----------------------------------------------------------------------------
 
     def set_rpc_callback(self, callback: Callable[[ModuleOrigin, RoutingKey, Dict or None], None]) -> None:
+        """
+        Set WAMP RPC callback
+        """
         self.__rpc_callback = callback
 
     # -----------------------------------------------------------------------------
 
     def run(self) -> None:
+        """
+        Process server communication
+        """
         self.__stopped = False
 
         while not self.__stopped:
@@ -126,11 +160,14 @@ class WebsocketsServer(Thread):
     # -----------------------------------------------------------------------------
 
     def close(self) -> None:
+        """
+        Close all opened connections & stop server thread
+        """
         self.__stopped = True
 
         self.__server_socket.close()
 
-        for desc, conn in self.__connections.items():
+        for desc, conn in self.__connections.items():  # pylint: disable=unused-variable
             conn.close()
 
             self.__handle_close(conn)
@@ -138,6 +175,9 @@ class WebsocketsServer(Thread):
     # -----------------------------------------------------------------------------
 
     def publish(self, routing_key: RoutingKey, origin: ModuleOrigin, data: Dict):
+        """
+        Publish message to all clients
+        """
         raw_message: dict = {
             "routing_key": routing_key.value,
             "origin": origin.value,
@@ -164,10 +204,19 @@ class WebsocketsServer(Thread):
                 writers.append(fileno)
 
         if self.__select_interval:
-            r_list, w_list, x_list = select(self.__listeners, writers, self.__listeners, self.__select_interval)
+            r_list, w_list, x_list = select.select(  # pylint: disable=c-extension-no-member
+                self.__listeners,
+                writers,
+                self.__listeners,
+                self.__select_interval,
+            )
 
         else:
-            r_list, w_list, x_list = select(self.__listeners, writers, self.__listeners)
+            r_list, w_list, x_list = select.select(  # pylint: disable=c-extension-no-member
+                self.__listeners,
+                writers,
+                self.__listeners,
+            )
 
         for ready in w_list:
             client = self.__connections[ready]
@@ -181,7 +230,7 @@ class WebsocketsServer(Thread):
                         client.get_send_queue().appendleft((opcode, remaining))
                         break
 
-                    if opcode == OPCodes(OPCodes.CLOSE).value:
+                    if opcode == OPCode(OPCode.CLOSE).value:
                         raise ClientException("Received client close")
 
             except ClientException:
@@ -214,7 +263,7 @@ class WebsocketsServer(Thread):
 
                     self.__listeners.append(fileno)
 
-                except Exception:
+                except Exception:  # pylint: disable=broad-except
                     if sock is not None:
                         sock.close()
 
@@ -266,9 +315,9 @@ class WebsocketsServer(Thread):
         client.sock.close()
 
         # only call handle_close when we have a successful websocket connection
-        if client.handshake_finished():
+        if client.is_handshake_finished():
             try:
-                client.handle_close()
+                client.close()
 
             except HandleDataException:
                 pass
@@ -288,7 +337,7 @@ class WebsocketsServer(Thread):
 
     # -----------------------------------------------------------------------------
 
-    def __next__(self) -> __connections:
+    def __next__(self) -> WampClient:
         if self.__iterator_index < len(self.__connections):
             clients = list(self.__connections.values())
 

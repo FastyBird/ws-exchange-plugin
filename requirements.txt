@@ -1,2 +1,2 @@
-fastybird-modules-metadata>=0.3
+fastybird-modules-metadata>=0.4
 setuptools>=57.4

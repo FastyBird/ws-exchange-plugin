@@ -14,20 +14,24 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 
-# App dependencies
+"""
+Package enums and types
+"""
+
+# Library dependencies
 from enum import Enum, unique
 
 
-#
-# Sockets OP codes
-#
-# @package        FastyBird:MiniServer!
-# @subpackage     Exchange
-#
-# @author         Adam Kadlec <adam.kadlec@fastybird.com>
-#
 @unique
-class OPCodes(Enum):
+class OPCode(Enum):
+    """
+    Sockets OP code
+
+    @package        FastyBird:WsServerPlugin!
+    @module         types
+
+    @author         Adam Kadlec <adam.kadlec@fastybird.com>
+    """
     STREAM: int = 0x00
     TEXT: int = 0x01
     BINARY: int = 0x02
@@ -35,17 +39,22 @@ class OPCodes(Enum):
     PING: int = 0x09
     PONG: int = 0x0A
 
+    @classmethod
+    def has_value(cls, value: int) -> bool:
+        """Check if provided value is valid enum value"""
+        return value in cls._value2member_map_  # pylint: disable=no-member
 
-#
-# WAMP messages codes
-#
-# @package        FastyBird:MiniServer!
-# @subpackage     Exchange
-#
-# @author         Adam Kadlec <adam.kadlec@fastybird.com>
-#
+
 @unique
 class WampCodes(Enum):
+    """
+    WAMP message code
+
+    @package        FastyBird:WsServerPlugin!
+    @module         types
+
+    @author         Adam Kadlec <adam.kadlec@fastybird.com>
+    """
     MSG_WELCOME: int = 0
     MSG_PREFIX: int = 1
     MSG_CALL: int = 2
