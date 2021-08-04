@@ -19,6 +19,28 @@ Package exceptions classes
 """
 
 
+class HandleRequestException(Exception):
+    """
+    Exception raised when incoming request could not be handled
+
+    @package        FastyBird:WsServerPlugin!
+    @module         exceptions
+
+    @author         Adam Kadlec <adam.kadlec@fastybird.com>
+    """
+
+
+class HandleResponseException(Exception):
+    """
+    Exception raised when response could not be sent to client
+
+    @package        FastyBird:WsServerPlugin!
+    @module         exceptions
+
+    @author         Adam Kadlec <adam.kadlec@fastybird.com>
+    """
+
+
 class ClientException(Exception):
     """
     Exception raised by connected client
@@ -41,7 +63,7 @@ class HandleDataException(Exception):
     """
 
 
-class HandleRpcDataException(Exception):
+class HandleRpcException(Exception):
     """
     Exception raised by invalid remote procedure call
 

@@ -31,7 +31,12 @@ from modules_metadata.types import ModuleOrigin
 
 # Library libs
 from ws_server_plugin.client import WampClient
-from ws_server_plugin.exceptions import ClientException, HandleDataException
+from ws_server_plugin.exceptions import (
+    ClientException,
+    HandleDataException,
+    HandleRequestException,
+    HandleResponseException,
+)
 from ws_server_plugin.types import OPCode
 
 
@@ -198,6 +203,9 @@ class WebsocketsServer(Thread):
             if fileno == self.__server_socket:
                 continue
 
+            if fileno not in self.__connections:
+                continue
+
             client = self.__connections[fileno]
 
             if client.get_send_queue():
@@ -233,7 +241,7 @@ class WebsocketsServer(Thread):
                     if opcode == OPCode(OPCode.CLOSE).value:
                         raise ClientException("Received client close")
 
-            except ClientException:
+            except (ClientException, HandleResponseException):
                 self.__handle_close(client)
 
                 del self.__connections[ready]
@@ -242,30 +250,23 @@ class WebsocketsServer(Thread):
 
         for ready in r_list:
             if ready == self.__server_socket:
-                sock = None
+                sock, address = self.__server_socket.accept()
 
-                try:
-                    sock, address = self.__server_socket.accept()
+                client_socket = self.__decorate_socket(sock)
+                client_socket.setblocking(False)
 
-                    client_socket = self.__decorate_socket(sock)
-                    client_socket.setblocking(False)
+                fileno = client_socket.fileno()
 
-                    fileno = client_socket.fileno()
+                self.__connections[fileno] = WampClient(
+                    client_socket,
+                    address,
+                    self.__subscribe_callback,
+                    self.__unsubscribe_callback,
+                    self.__rpc_callback,
+                    self.__logger,
+                )
 
-                    self.__connections[fileno] = WampClient(
-                        client_socket,
-                        address,
-                        self.__subscribe_callback,
-                        self.__unsubscribe_callback,
-                        self.__rpc_callback,
-                        self.__logger,
-                    )
-
-                    self.__listeners.append(fileno)
-
-                except Exception:  # pylint: disable=broad-except
-                    if sock is not None:
-                        sock.close()
+                self.__listeners.append(fileno)
 
             else:
                 if ready not in self.__connections:
@@ -276,7 +277,7 @@ class WebsocketsServer(Thread):
                 try:
                     client.receive_data()
 
-                except HandleDataException:
+                except (HandleDataException, HandleRequestException, HandleResponseException):
                     self.__handle_close(client)
 
                     del self.__connections[ready]

@@ -42,7 +42,12 @@ from modules_metadata.validator import validate
 from modules_metadata.types import ModuleOrigin
 
 # Library libs
-from ws_server_plugin.exceptions import HandleDataException, HandleRpcDataException
+from ws_server_plugin.exceptions import (
+    HandleDataException,
+    HandleRpcException,
+    HandleRequestException,
+    HandleResponseException,
+)
 from ws_server_plugin.types import OPCode, WampCodes
 
 
@@ -236,13 +241,13 @@ class WampClient:
             data = self.sock.recv(self.__HEADER_SIZE)
 
             if not data:
-                raise HandleDataException("Remote socket closed")
+                raise HandleRequestException("Remote socket closed")
 
             # accumulate
             self.__request_header_buffer.extend(data)
 
             if len(self.__request_header_buffer) >= self.__MAX_HEADER:
-                raise HandleDataException("Header exceeded allowable size")
+                raise HandleRequestException("Header exceeded allowable size")
 
             # indicates end of HTTP header
             if b"\r\n\r\n" in self.__request_header_buffer:
@@ -281,13 +286,13 @@ class WampClient:
                     self.send_buffer(handshake.encode("ascii"), True)
                     self.sock.close()
 
-                    raise HandleDataException("Handshake failed: {}".format(ex)) from ex
+                    raise HandleRequestException("Handshake failed: {}".format(ex)) from ex
 
         else:
             data = self.sock.recv(16384)
 
             if not data:
-                raise HandleDataException("Remote socket closed")
+                raise HandleRequestException("Remote socket closed")
 
             for data_row in data:
                 self.__process_message(data_row)
@@ -321,7 +326,7 @@ class WampClient:
 
                     return buff[already_sent:]
 
-                raise ex
+                raise HandleResponseException("Output buffer could not be sent to client") from ex
 
         return None
 
@@ -772,7 +777,7 @@ class WampClient:
                     message_data,
                 )
 
-            except HandleRpcDataException as ex:
+            except HandleRpcException as ex:
                 self.__reply_rpc_error(
                     rpc_id,
                     topic_id,
@@ -808,8 +813,6 @@ class WampClient:
         Handle client subscribe message request
         """
         if str(parsed_data[1]) == self.__WS_SERVER_TOPIC:
-            # TODO: Do some access check validation
-
             self.__logger.debug("New client: %s has subscribed to exchanges topic", self.get_id())
 
             if self.__subscribe_callback is not None:
@@ -858,7 +861,7 @@ class WampClient:
                 routing_key.value,
             )
 
-            raise HandleRpcDataException("Provided data could not be validated") from ex
+            raise HandleRpcException("Provided data could not be validated") from ex
 
         except metadata_exceptions.InvalidArgumentException as ex:
             self.__logger.error(
@@ -867,13 +870,13 @@ class WampClient:
                 routing_key.value,
             )
 
-            raise HandleRpcDataException("Provided data could not be validated") from ex
+            raise HandleRpcException("Provided data could not be validated") from ex
 
         try:
             return validate(json.dumps(data), schema)
 
         except metadata_exceptions.MalformedInputException as ex:
-            raise HandleRpcDataException("Provided data are not in valid json format") from ex
+            raise HandleRpcException("Provided data are not in valid json format") from ex
 
         except metadata_exceptions.LogicException as ex:
             self.__logger.error(
@@ -882,10 +885,10 @@ class WampClient:
                 routing_key.value,
             )
 
-            raise HandleRpcDataException("Provided data could not be validated") from ex
+            raise HandleRpcException("Provided data could not be validated") from ex
 
         except metadata_exceptions.InvalidDataException as ex:
-            raise HandleRpcDataException("Provided data are not valid") from ex
+            raise HandleRpcException("Provided data are not valid") from ex
 
     # -----------------------------------------------------------------------------
 
