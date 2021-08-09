@@ -118,6 +118,7 @@ class WebsocketsServer(Thread):
         # Threading config...
         self.setDaemon(True)
         self.setName("WebSockets server exchange thread")
+        print("WS SERVER")
 
     # -----------------------------------------------------------------------------
 
@@ -198,7 +199,7 @@ class WebsocketsServer(Thread):
 
     def __handle_request(self) -> None:
         writers = []
-
+        print("HANDLE REQUEST")
         for fileno in self.__listeners:
             if fileno == self.__server_socket:
                 continue

@@ -87,9 +87,9 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 					$args['origin'],
 					$args['routing_key'],
 					[
-						'device'   => $data->offsetGet('device'),
-						'property' => $data->offsetGet('property'),
-						'expected' => $data->offsetGet('expected'),
+						'device'         => $data->offsetGet('device'),
+						'property'       => $data->offsetGet('property'),
+						'expected_value' => $data->offsetGet('expected_value'),
 					]
 				);
 				break;
@@ -103,9 +103,9 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 					$args['origin'],
 					$args['routing_key'],
 					[
-						'device'   => $data->offsetGet('device'),
-						'name'     => $data->offsetGet('name'),
-						'expected' => $data->offsetGet('expected'),
+						'device'         => $data->offsetGet('device'),
+						'name'           => $data->offsetGet('name'),
+						'expected_value' => $data->offsetGet('expected_value'),
 					]
 				);
 				break;
@@ -119,10 +119,10 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 					$args['origin'],
 					$args['routing_key'],
 					[
-						'device'   => $data->offsetGet('device'),
-						'channel'  => $data->offsetGet('channel'),
-						'property' => $data->offsetGet('property'),
-						'expected' => $data->offsetGet('expected'),
+						'device'         => $data->offsetGet('device'),
+						'channel'        => $data->offsetGet('channel'),
+						'property'       => $data->offsetGet('property'),
+						'expected_value' => $data->offsetGet('expected_value'),
 					]
 				);
 				break;
@@ -136,10 +136,10 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 					$args['origin'],
 					$args['routing_key'],
 					[
-						'device'   => $data->offsetGet('device'),
-						'channel'  => $data->offsetGet('channel'),
-						'name'     => $data->offsetGet('name'),
-						'expected' => $data->offsetGet('expected'),
+						'device'         => $data->offsetGet('device'),
+						'channel'        => $data->offsetGet('channel'),
+						'name'           => $data->offsetGet('name'),
+						'expected_value' => $data->offsetGet('expected_value'),
 					]
 				);
 				break;
