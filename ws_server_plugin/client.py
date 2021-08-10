@@ -851,6 +851,18 @@ class WampClient:
         """
         Validate received RPC message against defined schema
         """
+        if (
+            routing_key != RoutingKey.DEVICES_CONTROLS_ROUTING_KEY
+            and routing_key != RoutingKey.DEVICES_PROPERTIES_DATA_ROUTING_KEY
+            and routing_key != RoutingKey.DEVICES_CONFIGURATION_DATA_ROUTING_KEY
+            and routing_key != RoutingKey.CHANNELS_CONTROLS_ROUTING_KEY
+            and routing_key != RoutingKey.CHANNELS_PROPERTIES_DATA_ROUTING_KEY
+            and routing_key != RoutingKey.CHANNELS_CONFIGURATION_DATA_ROUTING_KEY
+            and routing_key != RoutingKey.CONNECTOR_CONTROLS_ROUTING_KEY
+            and routing_key != RoutingKey.TRIGGER_CONTROLS_ROUTING_KEY
+        ):
+            raise HandleRpcException("Unsupported routing key")
+
         try:
             schema: str = load_schema(origin, routing_key)
 

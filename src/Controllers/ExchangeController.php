@@ -78,69 +78,20 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 		}
 
 		switch ($args['routing_key']) {
+			case ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_CONTROLS_ROUTING_KEY:
 			case ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_PROPERTIES_DATA_ROUTING_KEY:
-				$schema = $this->schemaLoader->load($args['origin'], $args['routing_key']);
-
-				$data = $this->parse($args, $schema);
-
-				$this->publisher->publish(
-					$args['origin'],
-					$args['routing_key'],
-					[
-						'device'         => $data->offsetGet('device'),
-						'property'       => $data->offsetGet('property'),
-						'expected_value' => $data->offsetGet('expected_value'),
-					]
-				);
-				break;
-
 			case ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_CONFIGURATION_DATA_ROUTING_KEY:
-				$schema = $this->schemaLoader->load($args['origin'], $args['routing_key']);
-
-				$data = $this->parse($args, $schema);
-
-				$this->publisher->publish(
-					$args['origin'],
-					$args['routing_key'],
-					[
-						'device'         => $data->offsetGet('device'),
-						'name'           => $data->offsetGet('name'),
-						'expected_value' => $data->offsetGet('expected_value'),
-					]
-				);
-				break;
-
+			case ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_CONTROLS_ROUTING_KEY:
 			case ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_PROPERTIES_DATA_ROUTING_KEY:
-				$schema = $this->schemaLoader->load($args['origin'], $args['routing_key']);
-
-				$data = $this->parse($args, $schema);
-
-				$this->publisher->publish(
-					$args['origin'],
-					$args['routing_key'],
-					[
-						'device'         => $data->offsetGet('device'),
-						'channel'        => $data->offsetGet('channel'),
-						'property'       => $data->offsetGet('property'),
-						'expected_value' => $data->offsetGet('expected_value'),
-					]
-				);
-				break;
-
 			case ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_CONFIGURATION_DATA_ROUTING_KEY:
+			case ModulesMetadata\Constants::MESSAGE_BUS_CONNECTOR_CONTROLS_ROUTING_KEY:
+			case ModulesMetadata\Constants::MESSAGE_BUS_TRIGGER_CONTROLS_ROUTING_KEY:
 				$schema = $this->schemaLoader->load($args['origin'], $args['routing_key']);
-
-				$data = $this->parse($args, $schema);
 
 				$this->publisher->publish(
 					$args['origin'],
 					$args['routing_key'],
-					[
-						'device'         => $data->offsetGet('device'),
-						'channel'        => $data->offsetGet('channel'),
-						'name'           => $data->offsetGet('name'),
-						'expected_value' => $data->offsetGet('expected_value'),
-					]
+					$this->parse($args, $schema),
 				);
 				break;
 
@@ -157,16 +108,16 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 	 * @param mixed[] $data
 	 * @param string $schema
 	 *
-	 * @return Utils\ArrayHash
+	 * @return mixed[]
 	 *
 	 * @throws Exceptions\InvalidArgumentException
 	 */
 	private function parse(
 		array $data,
 		string $schema
-	): Utils\ArrayHash {
+	): array {
 		try {
-			return $this->jsonValidator->validate(Utils\Json::encode($data), $schema);
+			return $this->dataToArray($this->jsonValidator->validate(Utils\Json::encode($data), $schema));
 
 		} catch (Utils\JsonException $ex) {
 			$this->logger->error('[FB:PLUGIN:WSSERVER] Received message could not be validated', [
@@ -198,6 +149,24 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 
 			throw new Exceptions\InvalidArgumentException('Provided data could not be validated', 0, $ex);
 		}
+	}
+
+	/**
+	 * @param Utils\ArrayHash $data
+	 *
+	 * @return mixed[]
+	 */
+	private function dataToArray(Utils\ArrayHash $data): array
+	{
+		$transformed = (array) $data;
+
+		foreach ($transformed as $key => $value) {
+			if ($value instanceof Utils\ArrayHash) {
+				$transformed[$key] = $this->dataToArray($value);
+			}
+		}
+
+		return $transformed;
 	}
 
 }
