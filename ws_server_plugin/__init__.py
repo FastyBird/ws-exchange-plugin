@@ -16,4 +16,4 @@
 WS server for real time communication between clients and server
 """
 
-__version__ = "0.0.6"
+__version__ = "0.0.7"
