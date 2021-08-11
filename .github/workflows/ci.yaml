@@ -272,7 +272,7 @@ jobs:
           php php-coveralls.phar --verbose --config tests/.coveralls.yml
 
   build-python:
-    name: "Build python distribution"
+    name: "Build Python distribution"
     runs-on: "${{ matrix.operating-system }}"
 
     strategy:
@@ -296,7 +296,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
       - name: "Install build dependencies"
         run: "python -m pip install wheel --user"
 
@@ -309,11 +308,11 @@ jobs:
       - name: "Upload build result"
         uses: "actions/upload-artifact@v1"
         with:
-          name: dist
+          name: python-dist
           path: dist
 
   test-install-python:
-    name: "Test installation for Python code"
+    name: "Test installation of Python distribution"
     runs-on: "${{ matrix.operating-system }}"
     needs: "build-python"
 
@@ -327,7 +326,7 @@ jobs:
       - name: "Download build result"
         uses: "actions/download-artifact@v1"
         with:
-          name: dist
+          name: python-dist
           path: dist
 
       - name: "Set up Python ${{ matrix.python }}"
@@ -344,7 +343,7 @@ jobs:
         run: "pip install dist/fastybird-ws-server-plugin-*.tar.gz"
 
   publish-on-testpypi:
-    name: "Publish Python package on TestPyPI"
+    name: "Publish Python distribution on Test PyPI"
     runs-on: "${{ matrix.operating-system }}"
     needs: "test-install-python"
 
@@ -358,7 +357,7 @@ jobs:
       - name: "Download build result"
         uses: "actions/download-artifact@v1"
         with:
-          name: dist
+          name: python-dist
           path: dist
 
       - name: "Publish to index"
@@ -368,7 +367,7 @@ jobs:
           repository_url: "https://test.pypi.org/legacy/"
 
   publish-on-pypi:
-    name: "Publish Python package to PyPI"
+    name: "Publish Python distribution to PyPI"
     runs-on: "${{ matrix.operating-system }}"
     needs: "publish-on-testpypi"
 
@@ -382,7 +381,7 @@ jobs:
       - name: "Download build result"
         uses: "actions/download-artifact@v1"
         with:
-          name: dist
+          name: python-dist
           path: dist
 
       - name: "Publish to index"
