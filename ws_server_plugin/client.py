@@ -143,6 +143,17 @@ class WampClient:
 
     __WS_SERVER_TOPIC: str = "/io/exchange"
 
+    __ALLOWED_ROUTING_KEYS: List[RoutingKey] = [
+        RoutingKey.DEVICES_CONTROLS_ROUTING_KEY,
+        RoutingKey.DEVICES_PROPERTIES_DATA_ROUTING_KEY,
+        RoutingKey.DEVICES_CONFIGURATION_DATA_ROUTING_KEY,
+        RoutingKey.CHANNELS_CONTROLS_ROUTING_KEY,
+        RoutingKey.CHANNELS_PROPERTIES_DATA_ROUTING_KEY,
+        RoutingKey.CHANNELS_CONFIGURATION_DATA_ROUTING_KEY,
+        RoutingKey.CONNECTOR_CONTROLS_ROUTING_KEY,
+        RoutingKey.TRIGGER_CONTROLS_ROUTING_KEY,
+    ]
+
     # -----------------------------------------------------------------------------
 
     def __init__(
@@ -851,16 +862,7 @@ class WampClient:
         """
         Validate received RPC message against defined schema
         """
-        if (
-            routing_key != RoutingKey.DEVICES_CONTROLS_ROUTING_KEY
-            and routing_key != RoutingKey.DEVICES_PROPERTIES_DATA_ROUTING_KEY
-            and routing_key != RoutingKey.DEVICES_CONFIGURATION_DATA_ROUTING_KEY
-            and routing_key != RoutingKey.CHANNELS_CONTROLS_ROUTING_KEY
-            and routing_key != RoutingKey.CHANNELS_PROPERTIES_DATA_ROUTING_KEY
-            and routing_key != RoutingKey.CHANNELS_CONFIGURATION_DATA_ROUTING_KEY
-            and routing_key != RoutingKey.CONNECTOR_CONTROLS_ROUTING_KEY
-            and routing_key != RoutingKey.TRIGGER_CONTROLS_ROUTING_KEY
-        ):
+        if routing_key not in self.__ALLOWED_ROUTING_KEYS:
             raise HandleRpcException("Unsupported routing key")
 
         try:
