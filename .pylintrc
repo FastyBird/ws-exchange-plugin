@@ -32,3 +32,6 @@ max-branches=50
 
 # Maximum number of statements in function / method body
 max-statements=110
+
+# Maximum number of boolean expressions in a if statement
+max-bool-expr=10
