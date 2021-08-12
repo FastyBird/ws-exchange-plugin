@@ -172,14 +172,16 @@ class WebsocketsServer(Thread):
 
         self.__server_socket.close()
 
-        for desc, conn in self.__connections.items():  # pylint: disable=unused-variable
+        for conn in self.__connections.values():
             conn.close()
 
             self.__handle_close(conn)
 
+        self.__logger.info("WS server was closed")
+
     # -----------------------------------------------------------------------------
 
-    def publish(self, routing_key: RoutingKey, origin: ModuleOrigin, data: Dict):
+    def publish(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Dict):
         """
         Publish message to all clients
         """
@@ -193,6 +195,12 @@ class WebsocketsServer(Thread):
 
         for client in self.__connections.values():
             client.publish(message)
+
+        self.__logger.debug(
+            "Successfully published message to: %d clients via WS server with key: %s",
+            len(self.__connections),
+            routing_key
+        )
 
     # -----------------------------------------------------------------------------
 
