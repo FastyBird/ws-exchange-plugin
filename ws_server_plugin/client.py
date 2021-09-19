@@ -297,7 +297,7 @@ class WampClient:
                     self.send_buffer(handshake.encode("ascii"), True)
                     self.sock.close()
 
-                    raise HandleRequestException("Handshake failed: {}".format(ex)) from ex
+                    raise HandleRequestException(f"Handshake failed: {ex}") from ex
 
         else:
             data = self.sock.recv(16384)
@@ -521,7 +521,7 @@ class WampClient:
         """
         Unpack packet content
         """
-        if self.__opcode == OPCode(OPCode.PONG).value or self.__opcode == OPCode(OPCode.PING).value:
+        if self.__opcode in (OPCode(OPCode.PONG).value, OPCode(OPCode.PING).value):
             if len(self.__received_data) > 125:
                 raise HandleDataException("Control frame length can not be > 125")
 
@@ -558,7 +558,7 @@ class WampClient:
 
         elif self.__fin == 0:
             if self.__opcode != OPCode(OPCode.STREAM).value:
-                if self.__opcode == OPCode(OPCode.PING).value or self.__opcode == OPCode(OPCode.PONG).value:
+                if self.__opcode in (OPCode(OPCode.PING).value, OPCode(OPCode.PONG).value):
                     raise HandleDataException("Control messages can not be fragmented")
 
                 self.__frag_type = self.__opcode
