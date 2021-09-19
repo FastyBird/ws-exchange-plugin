@@ -181,6 +181,12 @@ class WebsocketsServer(Thread):
 
     # -----------------------------------------------------------------------------
 
+    def is_healthy(self) -> bool:
+        """Check if server is healthy"""
+        return self.is_alive()
+
+    # -----------------------------------------------------------------------------
+
     def publish(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Dict):
         """
         Publish message to all clients
