@@ -2,9 +2,9 @@
 
 [![Build Status](https://badgen.net/github/checks/FastyBird/ws-server-plugin/master?cache=300&style=flat-square)](https://github.com/FastyBird/ws-server-plugin/actions)
 [![Licence](https://badgen.net/github/license/FastyBird/ws-server-plugin?cache=300&style=flat-square)](https://github.com/FastyBird/ws-server-plugin/blob/master/LICENSE.md)
+[![Code coverage](https://badgen.net/coveralls/c/github/FastyBird/ws-server-plugin?cache=300&style=flat-square)](https://coveralls.io/r/FastyBird/ws-server-plugin)
 
 ![PHP](https://badgen.net/packagist/php/FastyBird/ws-server-plugin?cache=300&style=flat-square)
-[![PHP code coverage](https://badgen.net/coveralls/c/github/FastyBird/ws-server-plugin?cache=300&style=flat-square)](https://coveralls.io/r/FastyBird/ws-server-plugin)
 [![PHP latest stable](https://badgen.net/packagist/v/FastyBird/ws-server-plugin/latest?cache=300&style=flat-square)](https://packagist.org/packages/FastyBird/ws-server-plugin)
 [![PHP downloads total](https://badgen.net/packagist/dt/FastyBird/ws-server-plugin?cache=300&style=flat-square)](https://packagist.org/packages/FastyBird/ws-server-plugin)
 [![PHPStan](https://img.shields.io/badge/phpstan-enabled-brightgreen.svg?style=flat-square)](https://github.com/phpstan/phpstan)
