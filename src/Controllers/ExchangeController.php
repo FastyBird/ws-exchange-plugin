@@ -78,14 +78,14 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 		}
 
 		switch ($args['routing_key']) {
-			case ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_CONTROLS_ROUTING_KEY:
+			case ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_CONTROL_DATA_ROUTING_KEY:
 			case ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_PROPERTIES_DATA_ROUTING_KEY:
 			case ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_CONFIGURATION_DATA_ROUTING_KEY:
-			case ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_CONTROLS_ROUTING_KEY:
+			case ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_CONTROL_DATA_ROUTING_KEY:
 			case ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_PROPERTIES_DATA_ROUTING_KEY:
 			case ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_CONFIGURATION_DATA_ROUTING_KEY:
-			case ModulesMetadata\Constants::MESSAGE_BUS_CONNECTOR_CONTROLS_ROUTING_KEY:
-			case ModulesMetadata\Constants::MESSAGE_BUS_TRIGGER_CONTROLS_ROUTING_KEY:
+			case ModulesMetadata\Constants::MESSAGE_BUS_CONNECTORS_CONTROL_DATA_ROUTING_KEY:
+			case ModulesMetadata\Constants::MESSAGE_BUS_TRIGGERS_CONTROL_DATA_ROUTING_KEY:
 				$schema = $this->schemaLoader->load($args['origin'], $args['routing_key']);
 
 				$this->publisher->publish(
