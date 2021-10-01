@@ -76,31 +76,31 @@ class WsServerPluginExtension extends DI\CompilerExtension
 		$configuration = $this->getConfig();
 
 		// Subscribers
-		$builder->addDefinition($this->prefix('subscribers.initialize'))
+		$builder->addDefinition($this->prefix('subscribers.initialize'), new DI\Definitions\ServiceDefinition())
 			->setType(Subscribers\ApplicationSubscriber::class);
 
 		// Events
-		$builder->addDefinition($this->prefix('events.wsClientConnect'))
+		$builder->addDefinition($this->prefix('events.wsClientConnect'), new DI\Definitions\ServiceDefinition())
 			->setType(Events\WsClientConnectedHandler::class)
 			->setArgument('wsKeys', $configuration->keys)
 			->setArgument('allowedOrigins', $configuration->origins);
 
-		$builder->addDefinition($this->prefix('events.wsMessage'))
+		$builder->addDefinition($this->prefix('events.wsMessage'), new DI\Definitions\ServiceDefinition())
 			->setType(Events\WsMessageHandler::class)
 			->setArgument('wsKeys', $configuration->keys)
 			->setArgument('allowedOrigins', $configuration->origins);
 
 		// Message bus consumers
-		$builder->addDefinition($this->prefix('consumers.modules'))
+		$builder->addDefinition($this->prefix('consumers.modules'), new DI\Definitions\ServiceDefinition())
 			->setType(Consumers\ModuleMessageConsumer::class);
 
 		// Controllers
-		$builder->addDefinition($this->prefix('controllers.exchange'))
+		$builder->addDefinition($this->prefix('controllers.exchange'), new DI\Definitions\ServiceDefinition())
 			->setType(Controllers\ExchangeController::class)
 			->addTag('nette.inject');
 
 		// Sockets
-		$builder->addDefinition($this->prefix('sockets.sender'))
+		$builder->addDefinition($this->prefix('sockets.sender'), new DI\Definitions\ServiceDefinition())
 			->setType(Sockets\Sender::class);
 	}
 
