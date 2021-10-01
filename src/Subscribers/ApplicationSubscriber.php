@@ -15,7 +15,7 @@
 
 namespace FastyBird\WsServerPlugin\Subscribers;
 
-use FastyBird\WebServer\Events as WebServerEvents;
+use FastyBird\ApplicationExchange\Events as ApplicationExchangeEvents;
 use IPub\WebSockets;
 use Nette\Utils;
 use Psr\Log;
@@ -53,7 +53,7 @@ class ApplicationSubscriber implements EventDispatcher\EventSubscriberInterface
 	public static function getSubscribedEvents(): array
 	{
 		return [
-			WebServerEvents\InitializeEvent::class  => 'initialize',
+			ApplicationExchangeEvents\ApplicationInitializeEvent::class  => 'initialize',
 		];
 	}
 
@@ -73,7 +73,7 @@ class ApplicationSubscriber implements EventDispatcher\EventSubscriberInterface
 	/**
 	 * @return void
 	 */
-	public function initialize(WebServerEvents\InitializeEvent $event): void
+	public function initialize(ApplicationExchangeEvents\ApplicationInitializeEvent $event): void
 	{
 		$client = $this->configuration->getAddress() . ':' . $this->configuration->getPort();
 		$socket = new Socket\SocketServer($client, [], $this->loop);
