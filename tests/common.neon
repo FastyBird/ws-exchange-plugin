@@ -18,7 +18,7 @@ extensions:
 	contributteEvents		: Contributte\EventDispatcher\DI\EventDispatcherExtension
 	fbExchangePlugin		: FastyBird\ExchangePlugin\DI\ExchangePluginExtension
 	fbModulesMetadata		: FastyBird\ModulesMetadata\DI\ModulesMetadataExtension
-	fbWebServer				: FastyBird\WebServer\DI\WebServerExtension(%consoleMode%)
+	fbSocketServerFactory	: FastyBird\SocketServerFactory\DI\SocketServerFactoryExtension
 	ipubWebSocketsWAMP		: IPub\WebSocketsWAMP\DI\WebSocketsWAMPExtension
 	ipubWebSockets			: IPub\WebSockets\DI\WebSocketsExtension
 
