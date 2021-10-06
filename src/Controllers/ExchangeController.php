@@ -15,7 +15,7 @@
 
 namespace FastyBird\WsServerPlugin\Controllers;
 
-use FastyBird\ApplicationExchange\Publisher as ApplicationExchangePublisher;
+use FastyBird\ExchangePlugin\Publisher as ExchangePluginPublisher;
 use FastyBird\ModulesMetadata;
 use FastyBird\ModulesMetadata\Exceptions as ModulesMetadataExceptions;
 use FastyBird\ModulesMetadata\Loaders as ModulesMetadataLoaders;
@@ -37,8 +37,8 @@ use Throwable;
 final class ExchangeController extends WebSockets\Application\Controller\Controller
 {
 
-	/** @var ApplicationExchangePublisher\IPublisher */
-	private ApplicationExchangePublisher\IPublisher $publisher;
+	/** @var ExchangePluginPublisher\IPublisher */
+	private ExchangePluginPublisher\IPublisher $publisher;
 
 	/** @var ModulesMetadataLoaders\ISchemaLoader */
 	private ModulesMetadataLoaders\ISchemaLoader $schemaLoader;
@@ -52,7 +52,7 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 	public function __construct(
 		ModulesMetadataLoaders\ISchemaLoader $schemaLoader,
 		ModulesMetadataSchemas\IValidator $jsonValidator,
-		ApplicationExchangePublisher\IPublisher $publisher,
+		ExchangePluginPublisher\IPublisher $publisher,
 		?Log\LoggerInterface $logger
 	) {
 		parent::__construct();
@@ -89,8 +89,8 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 				$schema = $this->schemaLoader->load($args['origin'], $args['routing_key']);
 
 				$this->publisher->publish(
-					$args['origin'],
-					$args['routing_key'],
+					ModulesMetadata\Types\ModuleOriginType::get($args['origin']),
+					ModulesMetadata\Types\RoutingKeyType::get($args['routing_key']),
 					$this->parse($args, $schema),
 				);
 				break;
@@ -120,7 +120,7 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 			return $this->dataToArray($this->jsonValidator->validate(Utils\Json::encode($data), $schema));
 
 		} catch (Utils\JsonException $ex) {
-			$this->logger->error('[FB:PLUGIN:WSSERVER] Received message could not be validated', [
+			$this->logger->error('[FB:PLUGIN:WS_SERVER] Received message could not be validated', [
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code'    => $ex->getCode(),
@@ -130,7 +130,7 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 			throw new Exceptions\InvalidArgumentException('Provided data are not valid json format', 0, $ex);
 
 		} catch (ModulesMetadataExceptions\InvalidDataException $ex) {
-			$this->logger->debug('[FB:PLUGIN:WSSERVER] Received message is not valid', [
+			$this->logger->debug('[FB:PLUGIN:WS_SERVER] Received message is not valid', [
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code'    => $ex->getCode(),
@@ -140,7 +140,7 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 			throw new Exceptions\InvalidArgumentException('Provided data are not in valid structure', 0, $ex);
 
 		} catch (Throwable $ex) {
-			$this->logger->error('[FB:PLUGIN:WSSERVER] Received message is not valid', [
+			$this->logger->error('[FB:PLUGIN:WS_SERVER] Received message is not valid', [
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code'    => $ex->getCode(),

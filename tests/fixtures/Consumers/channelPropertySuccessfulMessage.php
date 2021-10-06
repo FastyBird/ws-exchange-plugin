@@ -17,8 +17,8 @@ return [
 			'format'    => null,
 		],
 		[
-			'routing_key' => ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_PROPERTY_CREATED_ENTITY_ROUTING_KEY,
-			'origin'      => ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
+			'routing_key' => ModulesMetadata\Types\RoutingKeyType::ROUTE_CHANNELS_PROPERTY_ENTITY_CREATED,
+			'origin'      => ModulesMetadata\Types\ModuleOriginType::ORIGIN_MODULE_DEVICES,
 			'data'        => [
 				'id'        => '73b106f6-bbd4-4bed-b6ac-bc4e8cab9e52',
 				'device'    => 'device-name',
@@ -32,8 +32,8 @@ return [
 				'format'    => null,
 			],
 		],
-		ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_PROPERTY_CREATED_ENTITY_ROUTING_KEY,
-		ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
+		ModulesMetadata\Types\RoutingKeyType::get(ModulesMetadata\Types\RoutingKeyType::ROUTE_CHANNELS_PROPERTY_ENTITY_CREATED),
+		ModulesMetadata\Types\ModuleOriginType::get(ModulesMetadata\Types\ModuleOriginType::ORIGIN_MODULE_DEVICES),
 	],
 	'update' => [
 		[
@@ -49,8 +49,8 @@ return [
 			'format'    => null,
 		],
 		[
-			'routing_key' => ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_PROPERTY_UPDATED_ENTITY_ROUTING_KEY,
-			'origin'      => ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
+			'routing_key' => ModulesMetadata\Types\RoutingKeyType::ROUTE_CHANNELS_PROPERTY_ENTITY_UPDATED,
+			'origin'      => ModulesMetadata\Types\ModuleOriginType::ORIGIN_MODULE_DEVICES,
 			'data'        => [
 				'id'        => '73b106f6-bbd4-4bed-b6ac-bc4e8cab9e52',
 				'device'    => 'device-name',
@@ -64,8 +64,8 @@ return [
 				'format'    => null,
 			],
 		],
-		ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_PROPERTY_UPDATED_ENTITY_ROUTING_KEY,
-		ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
+		ModulesMetadata\Types\RoutingKeyType::get(ModulesMetadata\Types\RoutingKeyType::ROUTE_CHANNELS_PROPERTY_ENTITY_UPDATED),
+		ModulesMetadata\Types\ModuleOriginType::get(ModulesMetadata\Types\ModuleOriginType::ORIGIN_MODULE_DEVICES),
 	],
 	'delete' => [
 		[
@@ -81,8 +81,8 @@ return [
 			'format'    => null,
 		],
 		[
-			'routing_key' => ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_PROPERTY_DELETED_ENTITY_ROUTING_KEY,
-			'origin'      => ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
+			'routing_key' => ModulesMetadata\Types\RoutingKeyType::ROUTE_CHANNELS_PROPERTY_ENTITY_DELETED,
+			'origin'      => ModulesMetadata\Types\ModuleOriginType::ORIGIN_MODULE_DEVICES,
 			'data'        => [
 				'id'        => '73b106f6-bbd4-4bed-b6ac-bc4e8cab9e52',
 				'device'    => 'device-name',
@@ -96,7 +96,7 @@ return [
 				'format'    => null,
 			],
 		],
-		ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_PROPERTY_DELETED_ENTITY_ROUTING_KEY,
-		ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
+		ModulesMetadata\Types\RoutingKeyType::get(ModulesMetadata\Types\RoutingKeyType::ROUTE_CHANNELS_PROPERTY_ENTITY_DELETED),
+		ModulesMetadata\Types\ModuleOriginType::get(ModulesMetadata\Types\ModuleOriginType::ORIGIN_MODULE_DEVICES),
 	],
 ];

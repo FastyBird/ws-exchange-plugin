@@ -15,7 +15,7 @@
 
 namespace FastyBird\WsServerPlugin\Consumers;
 
-use FastyBird\ApplicationExchange\Consumer as ApplicationExchangeConsumer;
+use FastyBird\ExchangePlugin\Consumer as ExchangePluginConsumer;
 use FastyBird\ModulesMetadata;
 use FastyBird\WsServerPlugin\Exceptions;
 use FastyBird\WsServerPlugin\Sockets;
@@ -31,7 +31,7 @@ use Psr\Log;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class ModuleMessageConsumer implements ApplicationExchangeConsumer\IConsumer
+final class ModuleMessageConsumer implements ExchangePluginConsumer\IConsumer
 {
 
 	use Nette\SmartObject;
@@ -117,27 +117,27 @@ final class ModuleMessageConsumer implements ApplicationExchangeConsumer\IConsum
 	 * {@inheritDoc}
 	 */
 	public function consume(
-		string $origin,
-		string $routingKey,
+		ModulesMetadata\Types\ModuleOriginType $origin,
+		ModulesMetadata\Types\RoutingKeyType $routingKey,
 		Utils\ArrayHash $message
 	): void {
-		if (!in_array($routingKey, self::ROUTING_KEYS, true)) {
+		if (!in_array($routingKey->getValue(), self::ROUTING_KEYS, true)) {
 			throw new Exceptions\InvalidStateException('Unknown routing key');
 		}
 
 		$result = $this->sender->sendEntity(
 			'Exchange:',
 			[
-				'routing_key' => $routingKey,
-				'origin'      => $origin,
+				'routing_key' => $routingKey->getValue(),
+				'origin'      => $origin->getValue(),
 				'data'        => $this->dataToArray($message),
 			]
 		);
 
 		if ($result) {
-			$this->logger->info('[FB:PLUGIN:WSSERVER] Successfully consumed entity message', [
-				'routing_key' => $routingKey,
-				'origin'      => $origin,
+			$this->logger->info('[FB:PLUGIN:WS_SERVER] Successfully consumed entity message', [
+				'routing_key' => $routingKey->getValue(),
+				'origin'      => $origin->getValue(),
 				'data'        => $this->dataToArray($message),
 			]);
 		}

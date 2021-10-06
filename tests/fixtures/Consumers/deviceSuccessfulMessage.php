@@ -16,8 +16,8 @@ return [
 			'control'    => ['reset', 'reboot'],
 		],
 		[
-			'routing_key' => ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_CREATED_ENTITY_ROUTING_KEY,
-			'origin'      => ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
+			'routing_key' => ModulesMetadata\Types\RoutingKeyType::ROUTE_DEVICES_ENTITY_CREATED,
+			'origin'      => ModulesMetadata\Types\ModuleOriginType::ORIGIN_MODULE_DEVICES,
 			'data'        => [
 				'id'         => '633c7f7c-f73b-456f-b65f-5359c3b23d9c',
 				'device'     => 'device-name',
@@ -30,8 +30,8 @@ return [
 				'control'    => ['reset', 'reboot'],
 			],
 		],
-		ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_CREATED_ENTITY_ROUTING_KEY,
-		ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
+		ModulesMetadata\Types\RoutingKeyType::get(ModulesMetadata\Types\RoutingKeyType::ROUTE_DEVICES_ENTITY_CREATED),
+		ModulesMetadata\Types\ModuleOriginType::get(ModulesMetadata\Types\ModuleOriginType::ORIGIN_MODULE_DEVICES),
 	],
 	'update' => [
 		[
@@ -46,8 +46,8 @@ return [
 			'control'    => ['reset', 'reboot'],
 		],
 		[
-			'routing_key' => ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_UPDATED_ENTITY_ROUTING_KEY,
-			'origin'      => ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
+			'routing_key' => ModulesMetadata\Types\RoutingKeyType::ROUTE_DEVICES_ENTITY_UPDATED,
+			'origin'      => ModulesMetadata\Types\ModuleOriginType::ORIGIN_MODULE_DEVICES,
 			'data'        => [
 				'id'         => '633c7f7c-f73b-456f-b65f-5359c3b23d9c',
 				'device'     => 'device-name',
@@ -60,8 +60,8 @@ return [
 				'control'    => ['reset', 'reboot'],
 			],
 		],
-		ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_UPDATED_ENTITY_ROUTING_KEY,
-		ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
+		ModulesMetadata\Types\RoutingKeyType::get(ModulesMetadata\Types\RoutingKeyType::ROUTE_DEVICES_ENTITY_UPDATED),
+		ModulesMetadata\Types\ModuleOriginType::get(ModulesMetadata\Types\ModuleOriginType::ORIGIN_MODULE_DEVICES),
 	],
 	'delete' => [
 		[
@@ -76,8 +76,8 @@ return [
 			'control'    => ['reset', 'reboot'],
 		],
 		[
-			'routing_key' => ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_DELETED_ENTITY_ROUTING_KEY,
-			'origin'      => ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
+			'routing_key' => ModulesMetadata\Types\RoutingKeyType::ROUTE_DEVICES_ENTITY_DELETED,
+			'origin'      => ModulesMetadata\Types\ModuleOriginType::ORIGIN_MODULE_DEVICES,
 			'data'        => [
 				'id'         => '633c7f7c-f73b-456f-b65f-5359c3b23d9c',
 				'device'     => 'device-name',
@@ -90,7 +90,7 @@ return [
 				'control'    => ['reset', 'reboot'],
 			],
 		],
-		ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_DELETED_ENTITY_ROUTING_KEY,
-		ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
+		ModulesMetadata\Types\RoutingKeyType::get(ModulesMetadata\Types\RoutingKeyType::ROUTE_DEVICES_ENTITY_DELETED),
+		ModulesMetadata\Types\ModuleOriginType::get(ModulesMetadata\Types\ModuleOriginType::ORIGIN_MODULE_DEVICES),
 	],
 ];

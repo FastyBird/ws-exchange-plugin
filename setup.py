@@ -52,7 +52,7 @@ setup(
     author="FastyBird",
     author_email="code@fastybird.com",
     license="Apache Software License (Apache Software License 2.0)",
-    description="FastyBird WS server",
+    description="FastyBird WS server plugin",
     url="https://github.com/FastyBird/ws-server-plugin",
     long_description=long_description,
     long_description_content_type="text/markdown",

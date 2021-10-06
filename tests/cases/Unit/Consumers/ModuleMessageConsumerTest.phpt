@@ -22,16 +22,16 @@ final class ModuleMessageConsumerTest extends BaseTestCase
 	/**
 	 * @param mixed[] $data
 	 * @param mixed[] $expected
-	 * @param string $routingKey
-	 * @param string $origin
+	 * @param ModulesMetadata\Types\RoutingKeyType $routingKey
+	 * @param ModulesMetadata\Types\ModuleOriginType $origin
 	 *
 	 * @dataProvider ./../../../fixtures/Consumers/deviceSuccessfulMessage.php
 	 */
 	public function testConsumeSuccessfulDeviceMessage(
 		array $data,
 		array $expected,
-		string $routingKey,
-		string $origin
+		ModulesMetadata\Types\RoutingKeyType $routingKey,
+		ModulesMetadata\Types\ModuleOriginType $origin
 	): void {
 		$sender = Mockery::mock(Sockets\ISender::class);
 		$sender
@@ -47,7 +47,7 @@ final class ModuleMessageConsumerTest extends BaseTestCase
 		$logger = Mockery::mock(Log\LoggerInterface::class);
 		$logger
 			->shouldReceive('info')
-			->with('[FB:PLUGIN:WSSERVER] Successfully consumed entity message', [
+			->with('[FB:PLUGIN:WS_SERVER] Successfully consumed entity message', [
 				'routing_key' => $routingKey,
 				'origin'      => ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
 				'data'        => $data,
@@ -65,16 +65,16 @@ final class ModuleMessageConsumerTest extends BaseTestCase
 	/**
 	 * @param mixed[] $data
 	 * @param mixed[] $expected
-	 * @param string $routingKey
-	 * @param string $origin
+	 * @param ModulesMetadata\Types\RoutingKeyType $routingKey
+	 * @param ModulesMetadata\Types\ModuleOriginType $origin
 	 *
 	 * @dataProvider ./../../../fixtures/Consumers/devicePropertySuccessfulMessage.php
 	 */
 	public function testConsumeSuccessfulDevicePropertyMessage(
 		array $data,
 		array $expected,
-		string $routingKey,
-		string $origin
+		ModulesMetadata\Types\RoutingKeyType $routingKey,
+		ModulesMetadata\Types\ModuleOriginType $origin
 	): void {
 		$sender = Mockery::mock(Sockets\ISender::class);
 		$sender
@@ -90,7 +90,7 @@ final class ModuleMessageConsumerTest extends BaseTestCase
 		$logger = Mockery::mock(Log\LoggerInterface::class);
 		$logger
 			->shouldReceive('info')
-			->with('[FB:PLUGIN:WSSERVER] Successfully consumed entity message', [
+			->with('[FB:PLUGIN:WS_SERVER] Successfully consumed entity message', [
 				'routing_key' => $routingKey,
 				'origin'      => ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
 				'data'        => $data,
@@ -108,16 +108,16 @@ final class ModuleMessageConsumerTest extends BaseTestCase
 	/**
 	 * @param mixed[] $data
 	 * @param mixed[] $expected
-	 * @param string $routingKey
-	 * @param string $origin
+	 * @param ModulesMetadata\Types\RoutingKeyType $routingKey
+	 * @param ModulesMetadata\Types\ModuleOriginType $origin
 	 *
 	 * @dataProvider ./../../../fixtures/Consumers/channelSuccessfulMessage.php
 	 */
 	public function testConsumeSuccessfulChannelMessage(
 		array $data,
 		array $expected,
-		string $routingKey,
-		string $origin
+		ModulesMetadata\Types\RoutingKeyType $routingKey,
+		ModulesMetadata\Types\ModuleOriginType $origin
 	): void {
 		$sender = Mockery::mock(Sockets\ISender::class);
 		$sender
@@ -133,7 +133,7 @@ final class ModuleMessageConsumerTest extends BaseTestCase
 		$logger = Mockery::mock(Log\LoggerInterface::class);
 		$logger
 			->shouldReceive('info')
-			->with('[FB:PLUGIN:WSSERVER] Successfully consumed entity message', [
+			->with('[FB:PLUGIN:WS_SERVER] Successfully consumed entity message', [
 				'routing_key' => $routingKey,
 				'origin'      => ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
 				'data'        => $data,
@@ -151,16 +151,16 @@ final class ModuleMessageConsumerTest extends BaseTestCase
 	/**
 	 * @param mixed[] $data
 	 * @param mixed[] $expected
-	 * @param string $routingKey
-	 * @param string $origin
+	 * @param ModulesMetadata\Types\RoutingKeyType $routingKey
+	 * @param ModulesMetadata\Types\ModuleOriginType $origin
 	 *
 	 * @dataProvider ./../../../fixtures/Consumers/channelPropertySuccessfulMessage.php
 	 */
 	public function testConsumeSuccessfulChannelPropertyMessage(
 		array $data,
 		array $expected,
-		string $routingKey,
-		string $origin
+		ModulesMetadata\Types\RoutingKeyType $routingKey,
+		ModulesMetadata\Types\ModuleOriginType $origin
 	): void {
 		$sender = Mockery::mock(Sockets\ISender::class);
 		$sender
@@ -176,7 +176,7 @@ final class ModuleMessageConsumerTest extends BaseTestCase
 		$logger = Mockery::mock(Log\LoggerInterface::class);
 		$logger
 			->shouldReceive('info')
-			->with('[FB:PLUGIN:WSSERVER] Successfully consumed entity message', [
+			->with('[FB:PLUGIN:WS_SERVER] Successfully consumed entity message', [
 				'routing_key' => $routingKey,
 				'origin'      => ModulesMetadata\Constants::MODULE_DEVICES_ORIGIN,
 				'data'        => $data,
