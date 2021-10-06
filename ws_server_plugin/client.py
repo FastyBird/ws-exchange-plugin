@@ -144,14 +144,14 @@ class WampClient:
     __WS_SERVER_TOPIC: str = "/io/exchange"
 
     __ALLOWED_ROUTING_KEYS: List[RoutingKey] = [
-        RoutingKey.DEVICES_CONTROL_ENTITY_DATA_ROUTING_KEY,
-        RoutingKey.DEVICES_PROPERTIES_DATA_ROUTING_KEY,
-        RoutingKey.DEVICES_CONFIGURATION_DATA_ROUTING_KEY,
-        RoutingKey.CHANNELS_CONTROL_ENTITY_DATA_ROUTING_KEY,
-        RoutingKey.CHANNELS_PROPERTIES_DATA_ROUTING_KEY,
-        RoutingKey.CHANNELS_CONFIGURATION_DATA_ROUTING_KEY,
-        RoutingKey.CONNECTORS_CONTROL_ENTITY_DATA_ROUTING_KEY,
-        RoutingKey.TRIGGERS_CONTROL_ENTITY_DATA_ROUTING_KEY,
+        RoutingKey.DEVICES_CONTROL_ENTITY_DATA,
+        RoutingKey.DEVICES_PROPERTIES_DATA,
+        RoutingKey.DEVICES_CONFIGURATION_DATA,
+        RoutingKey.CHANNELS_CONTROL_ENTITY_DATA,
+        RoutingKey.CHANNELS_PROPERTIES_DATA,
+        RoutingKey.CHANNELS_CONFIGURATION_DATA,
+        RoutingKey.CONNECTORS_CONTROL_ENTITY_DATA,
+        RoutingKey.TRIGGERS_CONTROL_ENTITY_DATA,
     ]
 
     # -----------------------------------------------------------------------------
