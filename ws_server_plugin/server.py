@@ -250,7 +250,7 @@ class WebsocketsServer(Thread):
                         self.__handle_rpc_message,
                         self.__logger,
                     )
-                ) 
+                )
 
                 self.__listeners.append(fileno)
 
@@ -272,7 +272,7 @@ class WebsocketsServer(Thread):
 
         for failed in x_list:
             if failed == self.__server_socket:
-                self.close()
+                self.stop()
 
                 raise Exception("Server socket failed")
 

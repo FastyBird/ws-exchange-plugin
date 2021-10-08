@@ -59,4 +59,3 @@ class Publisher(IPublisher):
     ) -> None:
         """Publish data to connected clients"""
         self.__clients_manager.publish(origin=origin, routing_key=routing_key, data=data)
-
