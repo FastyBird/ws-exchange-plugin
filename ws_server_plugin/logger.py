@@ -24,7 +24,7 @@ from kink import inject
 @inject
 class Logger:
     """
-    MQTT connector logger
+    WS server plugin logger
 
     @package        FastyBird:WsServerPlugin!
     @module         logger

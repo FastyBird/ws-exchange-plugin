@@ -19,7 +19,7 @@ WS server plugin websockets server
 """
 
 # Library dependencies
-import json
+import logging
 import socket
 import ssl
 import select
@@ -34,6 +34,7 @@ from modules_metadata.types import ModuleOrigin
 
 # Library libs
 from ws_server_plugin.client import WampClient
+from ws_server_plugin.clients import ClientsManager
 from ws_server_plugin.events import ClientSubscribedEvent, ClientUnsubscribedEvent
 from ws_server_plugin.exceptions import (
     ClientException,
@@ -65,11 +66,10 @@ class WebsocketsServer(Thread):
     __server_socket: socket.socket
 
     __listeners: List[int or socket.socket] = []
-    __connections: Dict[int, WampClient] = {}
 
     __secured_context: ssl.SSLContext or None
 
-    __iterator_index = 0
+    __clients_manager: ClientsManager
 
     __event_dispatcher: EventDispatcher
     __exchange_consumer: IConsumer or None = None
@@ -80,6 +80,7 @@ class WebsocketsServer(Thread):
 
     def __init__(
         self,
+        clients_manager: ClientsManager,
         event_dispatcher: EventDispatcher,
         logger: Logger,
         host: str = "",
@@ -91,6 +92,8 @@ class WebsocketsServer(Thread):
         exchange_consumer: IConsumer or None = None,
     ) -> None:
         Thread.__init__(self)
+
+        self.__clients_manager = clients_manager
 
         if host == "":
             host = None
@@ -132,6 +135,35 @@ class WebsocketsServer(Thread):
 
     # -----------------------------------------------------------------------------
 
+    def set_logger(self, logger: logging.Logger) -> None:
+        """Configure custom logger handler"""
+        self.__logger.set_logger(logger=logger)
+
+    # -----------------------------------------------------------------------------
+
+    def start(self) -> None:
+        """Start server services"""
+        self.__stopped = False
+
+        super().start()
+
+    # -----------------------------------------------------------------------------
+
+    def stop(self) -> None:
+        """Close all opened connections & stop server thread"""
+        self.__stopped = True
+
+        self.__server_socket.close()
+
+        for client in self.__clients_manager:
+            client.close()
+
+            self.__handle_close(client=client)
+
+        self.__logger.info("WS server was closed")
+
+    # -----------------------------------------------------------------------------
+
     def run(self) -> None:
         """Process server communication"""
         self.__stopped = False
@@ -141,45 +173,9 @@ class WebsocketsServer(Thread):
 
     # -----------------------------------------------------------------------------
 
-    def close(self) -> None:
-        """Close all opened connections & stop server thread"""
-        self.__stopped = True
-
-        self.__server_socket.close()
-
-        for conn in self.__connections.values():
-            conn.close()
-
-            self.__handle_close(conn)
-
-        self.__logger.info("WS server was closed")
-
-    # -----------------------------------------------------------------------------
-
     def is_healthy(self) -> bool:
         """Check if server is healthy"""
         return self.is_alive()
-
-    # -----------------------------------------------------------------------------
-
-    def publish(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Dict or None):
-        """Publish message to all clients"""
-        raw_message: dict = {
-            "routing_key": routing_key.value,
-            "origin": origin.value,
-            "data": data,
-        }
-
-        message = json.dumps(raw_message)
-
-        for client in self.__connections.values():
-            client.publish(message)
-
-        self.__logger.debug(
-            "Successfully published message to: %d clients via WS server with key: %s",
-            len(self.__connections),
-            routing_key
-        )
 
     # -----------------------------------------------------------------------------
 
@@ -190,10 +186,10 @@ class WebsocketsServer(Thread):
             if fileno == self.__server_socket:
                 continue
 
-            if fileno not in self.__connections:
+            if not self.__clients_manager.exists(client_id=fileno):
                 continue
 
-            client = self.__connections[fileno]
+            client = self.__clients_manager.get_by_id(fileno)
 
             if client.get_send_queue():
                 writers.append(fileno)
@@ -214,7 +210,7 @@ class WebsocketsServer(Thread):
             )
 
         for ready in w_list:
-            client = self.__connections[ready]
+            client = self.__clients_manager.get_by_id(ready)
 
             try:
                 while client.get_send_queue():
@@ -231,7 +227,7 @@ class WebsocketsServer(Thread):
             except (ClientException, HandleResponseException):
                 self.__handle_close(client)
 
-                del self.__connections[ready]
+                self.__clients_manager.delete(ready)
 
                 self.__listeners.remove(ready)
 
@@ -244,22 +240,25 @@ class WebsocketsServer(Thread):
 
                 fileno = client_socket.fileno()
 
-                self.__connections[fileno] = WampClient(
-                    client_socket,
-                    address,
-                    self.__handle_client_subscribed,
-                    self.__handle_client_unsubscribed,
-                    self.__handle_rpc_message,
-                    self.__logger,
-                )
+                self.__clients_manager.append(
+                    client_id=fileno,
+                    client=WampClient(
+                        client_socket,
+                        address,
+                        self.__handle_client_subscribed,
+                        self.__handle_client_unsubscribed,
+                        self.__handle_rpc_message,
+                        self.__logger,
+                    )
+                ) 
 
                 self.__listeners.append(fileno)
 
             else:
-                if ready not in self.__connections:
+                if not self.__clients_manager.exists(client_id=ready):
                     continue
 
-                client = self.__connections[ready]
+                client = self.__clients_manager.get_by_id(ready)
 
                 try:
                     client.receive_data()
@@ -267,7 +266,7 @@ class WebsocketsServer(Thread):
                 except (HandleDataException, HandleRequestException, HandleResponseException):
                     self.__handle_close(client)
 
-                    del self.__connections[ready]
+                    self.__clients_manager.delete(ready)
 
                     self.__listeners.remove(ready)
 
@@ -277,14 +276,14 @@ class WebsocketsServer(Thread):
 
                 raise Exception("Server socket failed")
 
-            if failed not in self.__connections:
+            if not self.__clients_manager.exists(client_id=failed):
                 continue
 
-            client = self.__connections[failed]
+            client = self.__clients_manager.get_by_id(failed)
 
             self.__handle_close(client)
 
-            del self.__connections[failed]
+            self.__clients_manager.delete(failed)
 
             self.__listeners.remove(failed)
 
@@ -344,34 +343,3 @@ class WebsocketsServer(Thread):
                 data=data,
             )
         )
-
-    # -----------------------------------------------------------------------------
-
-    def __iter__(self) -> "WebsocketsServer":
-        # Reset index for nex iteration
-        self.__iterator_index = 0
-
-        return self
-
-    # -----------------------------------------------------------------------------
-
-    def __len__(self):
-        return len(self.__connections)
-
-    # -----------------------------------------------------------------------------
-
-    def __next__(self) -> WampClient:
-        if self.__iterator_index < len(self.__connections):
-            clients = list(self.__connections.values())
-
-            result: WampClient = clients[self.__iterator_index]
-
-            self.__iterator_index += 1
-
-            return result
-
-        # Reset index for nex iteration
-        self.__iterator_index = 0
-
-        # End of iteration
-        raise StopIteration

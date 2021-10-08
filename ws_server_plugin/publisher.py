@@ -26,7 +26,7 @@ from modules_metadata.routing import RoutingKey
 from modules_metadata.types import ModuleOrigin
 
 # Library libs
-from ws_server_plugin.server import WebsocketsServer
+from ws_server_plugin.clients import ClientsManager
 
 
 @inject
@@ -39,12 +39,15 @@ class Publisher(IPublisher):
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
-    __server: WebsocketsServer
+    __clients_manager: ClientsManager
 
     # -----------------------------------------------------------------------------
 
-    def __init__(self, server: WebsocketsServer) -> None:
-        self.__server = server
+    def __init__(
+        self,
+        clients_manager: ClientsManager,
+    ) -> None:
+        self.__clients_manager = clients_manager
 
     # -----------------------------------------------------------------------------
 
@@ -55,4 +58,5 @@ class Publisher(IPublisher):
         data: Dict or None,
     ) -> None:
         """Publish data to connected clients"""
-        self.__server.publish(origin=origin, routing_key=routing_key, data=data)
+        self.__clients_manager.publish(origin=origin, routing_key=routing_key, data=data)
+
