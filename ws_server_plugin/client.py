@@ -210,7 +210,7 @@ class WampClient:
 
     # -----------------------------------------------------------------------------
 
-    def close(self, status: int = 1000, reason: str = u"") -> None:
+    def close(self, status: int = 1000, reason: str = "") -> None:
         """
         Send Close frame to the client. The underlying socket is only closed
         when the client acknowledges the Close frame.
@@ -531,7 +531,7 @@ class WampClient:
 
         if self.__opcode == OPCode(OPCode.CLOSE).value:
             status = 1000
-            reason = u""
+            reason = ""
             length = len(self.__received_data)
 
             if length == 0:
@@ -601,7 +601,7 @@ class WampClient:
                     self.__frag_buffer.append(int(utf_str))
 
                     self.__received_data = bytearray()
-                    self.__received_data.extend(u"".join(self.__frag_buffer))
+                    self.__received_data.extend("".join(self.__frag_buffer))
 
                 else:
                     self.__frag_buffer.extend(self.__received_data)
