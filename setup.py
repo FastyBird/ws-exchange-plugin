@@ -60,6 +60,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "fastybird-modules-metadata",
+        "kink",
         "setuptools",
     ],
     download_url="https://github.com/FastyBird/ws-server-plugin/archive/%s.tar.gz" % VERSION,

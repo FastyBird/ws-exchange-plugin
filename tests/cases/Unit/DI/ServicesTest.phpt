@@ -2,10 +2,8 @@
 
 namespace Tests\Cases;
 
-use FastyBird\WsServerPlugin\Consumers;
 use FastyBird\WsServerPlugin\Controllers;
 use FastyBird\WsServerPlugin\Events;
-use FastyBird\WsServerPlugin\Sockets;
 use FastyBird\WsServerPlugin\Subscribers;
 use Tester\Assert;
 
@@ -28,10 +26,6 @@ final class ServicesTest extends BaseTestCase
 		Assert::notNull($container->getByType(Events\WsMessageHandler::class));
 
 		Assert::notNull($container->getByType(Controllers\ExchangeController::class));
-
-		Assert::notNull($container->getByType(Consumers\ModuleMessageConsumer::class));
-
-		Assert::notNull($container->getByType(Sockets\Sender::class));
 	}
 
 }

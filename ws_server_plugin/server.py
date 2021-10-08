@@ -15,34 +15,40 @@
 #     limitations under the License.
 
 """
-Web sockets server thread
+WS server plugin websockets server
 """
 
 # Library dependencies
 import json
-import logging
 import socket
 import ssl
 import select
 from threading import Thread
-from typing import Callable, Dict, List
+from typing import Dict, List
+from exchange_plugin.consumer import IConsumer
+from exchange_plugin.dispatcher import EventDispatcher
+from exchange_plugin.events.messages import MessageReceivedEvent
+from kink import inject
 from modules_metadata.routing import RoutingKey
 from modules_metadata.types import ModuleOrigin
 
 # Library libs
 from ws_server_plugin.client import WampClient
+from ws_server_plugin.events import ClientSubscribedEvent, ClientUnsubscribedEvent
 from ws_server_plugin.exceptions import (
     ClientException,
     HandleDataException,
     HandleRequestException,
     HandleResponseException,
 )
+from ws_server_plugin.logger import Logger
 from ws_server_plugin.types import OPCode
 
 
+@inject
 class WebsocketsServer(Thread):
     """
-    Main web sockets server instance
+    Main websockets server instance
 
     @package        FastyBird:WsServerPlugin!
     @module         server
@@ -63,24 +69,26 @@ class WebsocketsServer(Thread):
 
     __secured_context: ssl.SSLContext or None
 
-    __subscribe_callback: Callable[[WampClient], None] or None = None
-    __unsubscribe_callback: Callable[[WampClient], None] or None = None
-    __rpc_callback: Callable[[ModuleOrigin, RoutingKey, Dict or None], None] or None = None
-
     __iterator_index = 0
 
-    __logger: logging.Logger
+    __event_dispatcher: EventDispatcher
+    __exchange_consumer: IConsumer or None = None
+
+    __logger: Logger
 
     # -----------------------------------------------------------------------------
 
     def __init__(
         self,
+        event_dispatcher: EventDispatcher,
+        logger: Logger,
         host: str = "",
         port: int = 9000,
         cert_file: str or None = None,
         key_file: str or None = None,
         ssl_version: int = ssl.PROTOCOL_TLSv1,
         select_interval: float = 0.1,
+        exchange_consumer: IConsumer or None = None,
     ) -> None:
         Thread.__init__(self)
 
@@ -113,7 +121,10 @@ class WebsocketsServer(Thread):
             self.__secured_context = ssl.SSLContext(ssl_version)
             self.__secured_context.load_cert_chain(cert_file, key_file)
 
-        self.__logger = logging.getLogger("dummy")
+        self.__exchange_consumer = exchange_consumer
+        self.__event_dispatcher = event_dispatcher
+
+        self.__logger = logger
 
         # Threading config...
         self.setDaemon(True)
@@ -121,42 +132,8 @@ class WebsocketsServer(Thread):
 
     # -----------------------------------------------------------------------------
 
-    def set_logger(self, logger: logging.Logger) -> None:
-        """
-        Configure custom logger handler
-        """
-        self.__logger = logger
-
-    # -----------------------------------------------------------------------------
-
-    def set_subscribe_callback(self, callback: Callable[[WampClient], None]) -> None:
-        """
-        Set client subscribed callback
-        """
-        self.__subscribe_callback = callback
-
-    # -----------------------------------------------------------------------------
-
-    def set_unsubscribe_callback(self, callback: Callable[[WampClient], None]) -> None:
-        """
-        Set client unsubscribed callback
-        """
-        self.__unsubscribe_callback = callback
-
-    # -----------------------------------------------------------------------------
-
-    def set_rpc_callback(self, callback: Callable[[ModuleOrigin, RoutingKey, Dict or None], None]) -> None:
-        """
-        Set WAMP RPC callback
-        """
-        self.__rpc_callback = callback
-
-    # -----------------------------------------------------------------------------
-
     def run(self) -> None:
-        """
-        Process server communication
-        """
+        """Process server communication"""
         self.__stopped = False
 
         while not self.__stopped:
@@ -165,9 +142,7 @@ class WebsocketsServer(Thread):
     # -----------------------------------------------------------------------------
 
     def close(self) -> None:
-        """
-        Close all opened connections & stop server thread
-        """
+        """Close all opened connections & stop server thread"""
         self.__stopped = True
 
         self.__server_socket.close()
@@ -187,10 +162,8 @@ class WebsocketsServer(Thread):
 
     # -----------------------------------------------------------------------------
 
-    def publish(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Dict):
-        """
-        Publish message to all clients
-        """
+    def publish(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Dict or None):
+        """Publish message to all clients"""
         raw_message: dict = {
             "routing_key": routing_key.value,
             "origin": origin.value,
@@ -274,9 +247,9 @@ class WebsocketsServer(Thread):
                 self.__connections[fileno] = WampClient(
                     client_socket,
                     address,
-                    self.__subscribe_callback,
-                    self.__unsubscribe_callback,
-                    self.__rpc_callback,
+                    self.__handle_client_subscribed,
+                    self.__handle_client_unsubscribed,
+                    self.__handle_rpc_message,
                     self.__logger,
                 )
 
@@ -336,6 +309,41 @@ class WebsocketsServer(Thread):
 
             except HandleDataException:
                 pass
+
+    # -----------------------------------------------------------------------------
+
+    def __handle_client_subscribed(self, client: WampClient) -> None:
+        self.__event_dispatcher.dispatch(
+            ClientSubscribedEvent.EVENT_NAME,
+            ClientSubscribedEvent(
+                client_id=client.get_id(),
+            ),
+        )
+
+    # -----------------------------------------------------------------------------
+
+    def __handle_client_unsubscribed(self, client: WampClient) -> None:
+        self.__event_dispatcher.dispatch(
+            ClientUnsubscribedEvent.EVENT_NAME,
+            ClientUnsubscribedEvent(
+                client_id=client.get_id(),
+            ),
+        )
+
+    # -----------------------------------------------------------------------------
+
+    def __handle_rpc_message(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Dict or None) -> None:
+        if self.__exchange_consumer is not None:
+            self.__exchange_consumer.consume(origin=origin, routing_key=routing_key, data=data)
+
+        self.__event_dispatcher.dispatch(
+            MessageReceivedEvent.EVENT_NAME,
+            MessageReceivedEvent(
+                origin=origin,
+                routing_key=routing_key,
+                data=data,
+            )
+        )
 
     # -----------------------------------------------------------------------------
 

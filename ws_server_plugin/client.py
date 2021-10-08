@@ -15,7 +15,7 @@
 #     limitations under the License.
 
 """
-Connected WAMP client
+WS server plugin WAMP client
 """
 
 # Library dependencies
@@ -86,9 +86,9 @@ class WampClient:
 
     __prefixes: Dict[str, str] = {}
 
-    __subscribe_callback: Callable[["WampClient"], None] or None = None
-    __unsubscribe_callback: Callable[["WampClient"], None] or None = None
-    __rpc_callback: Callable[[ModuleOrigin, RoutingKey, Dict or None], None] or None = None
+    __subscribe_callback: Callable[["WampClient"], None]
+    __unsubscribe_callback: Callable[["WampClient"], None]
+    __rpc_callback: Callable[[ModuleOrigin, RoutingKey, Dict or None], None]
 
     __logger: logging.Logger
 
@@ -160,9 +160,9 @@ class WampClient:
         self,
         sock: socket.socket,
         address: Tuple[str, int, int, int],
-        subscribe_callback: Callable[["WampClient"], None] or None = None,
-        unsubscribe_callback: Callable[["WampClient"], None] or None = None,
-        rpc_callback: Callable[[ModuleOrigin, RoutingKey, Dict or None], None] or None = None,
+        subscribe_callback: Callable[["WampClient"], None],
+        unsubscribe_callback: Callable[["WampClient"], None],
+        rpc_callback: Callable[[ModuleOrigin, RoutingKey, Dict or None], None],
         logger: logging.Logger or None = None,
     ) -> None:
         self.sock: socket.socket = sock
@@ -742,18 +742,6 @@ class WampClient:
 
             return
 
-        # RPC callback have to be configured
-        if self.__rpc_callback is None:
-            self.__reply_rpc_error(
-                rpc_id,
-                topic_id,
-                "Server has not configured RPC callback",
-            )
-
-            self.__logger.error("RPC callback is not configured. RPC could not be handled")
-
-            return
-
         if len(parsed_data) == 1:
             parsed_data = parsed_data[0]
 
@@ -826,8 +814,7 @@ class WampClient:
         if str(parsed_data[1]) == self.__WS_SERVER_TOPIC:
             self.__logger.debug("New client: %s has subscribed to exchanges topic", self.get_id())
 
-            if self.__subscribe_callback is not None:
-                self.__subscribe_callback(self)
+            self.__subscribe_callback(self)
 
         else:
             # TODO: reply error
@@ -842,8 +829,7 @@ class WampClient:
         if str(parsed_data[1]) == self.__WS_SERVER_TOPIC:
             self.__logger.debug("Client: %s has unsubscribed from exchanges topic", self.get_id())
 
-            if self.__unsubscribe_callback is not None:
-                self.__unsubscribe_callback(self)
+            self.__unsubscribe_callback(self)
 
         else:
             # TODO: reply error

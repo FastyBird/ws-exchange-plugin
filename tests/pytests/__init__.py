@@ -13,7 +13,5 @@
 #     limitations under the License.
 
 """
-WS server for real time communication between clients and server
+WS server plugin tests
 """
-
-__version__ = "0.2.0"

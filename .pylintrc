@@ -32,3 +32,6 @@ max-branches=50
 
 # Maximum number of statements in function / method body
 max-statements=110
+
+# Minimum number of public methods for a class (see R0903).
+min-public-methods=1

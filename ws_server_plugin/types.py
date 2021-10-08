@@ -15,7 +15,7 @@
 #     limitations under the License.
 
 """
-Package enums and types
+WS server plugin enums and types
 """
 
 # Library dependencies

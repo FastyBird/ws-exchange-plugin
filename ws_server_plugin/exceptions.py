@@ -15,7 +15,7 @@
 #     limitations under the License.
 
 """
-Package exceptions classes
+WS server plugin exceptions classes
 """
 
 

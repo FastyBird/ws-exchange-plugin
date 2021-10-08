@@ -1,37 +1,39 @@
 <?php declare(strict_types = 1);
 
 /**
- * ModuleMessageConsumer.php
+ * Sender.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:WsServerPlugin!
- * @subpackage     Consumers
- * @since          0.1.0
+ * @subpackage     Publishers
+ * @since          0.2.0
  *
- * @date           15.08.20
+ * @date           08.10.21
  */
 
-namespace FastyBird\WsServerPlugin\Consumers;
+namespace FastyBird\WsServerPlugin\Publishers;
 
-use FastyBird\ExchangePlugin\Consumer as ExchangePluginConsumer;
+use FastyBird\ExchangePlugin\Publisher as ExchangePluginPublisher;
 use FastyBird\ModulesMetadata;
-use FastyBird\WsServerPlugin\Exceptions;
-use FastyBird\WsServerPlugin\Sockets;
+use FastyBird\ModulesMetadata\Types as ModulesMetadataTypes;
+use IPub\WebSockets;
+use IPub\WebSocketsWAMP;
 use Nette;
 use Nette\Utils;
 use Psr\Log;
+use Throwable;
 
 /**
- * Auth node message consumer
+ * Websockets exchange publisher
  *
  * @package        FastyBird:WsServerPlugin!
- * @subpackage     Consumers
+ * @subpackage     Publishers
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class ModuleMessageConsumer implements ExchangePluginConsumer\IConsumer
+final class Publisher implements ExchangePluginPublisher\IPublisher
 {
 
 	use Nette\SmartObject;
@@ -98,17 +100,27 @@ final class ModuleMessageConsumer implements ExchangePluginConsumer\IConsumer
 		ModulesMetadata\Constants::MESSAGE_BUS_TRIGGERS_CONDITIONS_DELETED_ENTITY_ROUTING_KEY,
 	];
 
-	/** @var Sockets\ISender */
-	private Sockets\ISender $sender;
+	/** @var WebSockets\Router\LinkGenerator */
+	private WebSockets\Router\LinkGenerator $linkGenerator;
+
+	/** @var WebSocketsWAMP\Topics\IStorage<WebSocketsWAMP\Entities\Topics\Topic> */
+	private WebSocketsWAMP\Topics\IStorage $topicsStorage;
 
 	/** @var Log\LoggerInterface */
-	protected Log\LoggerInterface $logger;
+	private Log\LoggerInterface $logger;
 
+	/**
+	 * @param WebSockets\Router\LinkGenerator $linkGenerator
+	 * @param WebSocketsWAMP\Topics\IStorage<WebSocketsWAMP\Entities\Topics\Topic> $topicsStorage
+	 * @param Log\LoggerInterface|null $logger
+	 */
 	public function __construct(
-		Sockets\ISender $sender,
-		?Log\LoggerInterface $logger = null
+		WebSockets\Router\LinkGenerator $linkGenerator,
+		WebSocketsWAMP\Topics\IStorage $topicsStorage,
+		?Log\LoggerInterface $logger
 	) {
-		$this->sender = $sender;
+		$this->linkGenerator = $linkGenerator;
+		$this->topicsStorage = $topicsStorage;
 
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
@@ -116,31 +128,88 @@ final class ModuleMessageConsumer implements ExchangePluginConsumer\IConsumer
 	/**
 	 * {@inheritDoc}
 	 */
-	public function consume(
-		ModulesMetadata\Types\ModuleOriginType $origin,
-		ModulesMetadata\Types\RoutingKeyType $routingKey,
-		Utils\ArrayHash $message
+	public function publish(
+		ModulesMetadataTypes\ModuleOriginType $origin,
+		ModulesMetadataTypes\RoutingKeyType $routingKey,
+		?Utils\ArrayHash $data
 	): void {
 		if (!in_array($routingKey->getValue(), self::ROUTING_KEYS, true)) {
-			throw new Exceptions\InvalidStateException('Unknown routing key');
+			$this->logger->warning('[FB:PLUGIN:WS_SERVER] Provided routing key is not support by this publisher', [
+				'routing_key' => $routingKey->getValue(),
+				'origin'      => $origin->getValue(),
+				'data'        => $data,
+			]);
+
+			return;
 		}
 
-		$result = $this->sender->sendEntity(
+		$result = $this->sendMessage(
 			'Exchange:',
 			[
 				'routing_key' => $routingKey->getValue(),
 				'origin'      => $origin->getValue(),
-				'data'        => $this->dataToArray($message),
+				'data'        => $data !== null ? $this->dataToArray($data) : null,
 			]
 		);
 
 		if ($result) {
-			$this->logger->info('[FB:PLUGIN:WS_SERVER] Successfully consumed entity message', [
+			$this->logger->info('[FB:PLUGIN:WS_SERVER] Successfully published message', [
 				'routing_key' => $routingKey->getValue(),
 				'origin'      => $origin->getValue(),
-				'data'        => $this->dataToArray($message),
+				'data'        => $data,
+			]);
+
+		} else {
+			$this->logger->error('[FB:PLUGIN:WS_SERVER] Message could not be published to exchange', [
+				'routing_key' => $routingKey->getValue(),
+				'origin'      => $origin->getValue(),
+				'data'        => $data,
 			]);
 		}
+	}
+
+	/**
+	 * @param string $destination
+	 * @param mixed[] $data
+	 *
+	 * @return bool
+	 */
+	private function sendMessage(
+		string $destination,
+		array $data
+	): bool {
+		try {
+			$link = $this->linkGenerator->link($destination);
+
+			if ($this->topicsStorage->hasTopic($link)) {
+				$topic = $this->topicsStorage->getTopic($link);
+
+				$this->logger->debug('[FB:PLUGIN:WS_SERVER] Broadcasting message to topic', [
+					'link' => $link,
+				]);
+
+				$topic->broadcast(Nette\Utils\Json::encode($data));
+
+				return true;
+			}
+		} catch (Nette\Utils\JsonException $ex) {
+			$this->logger->error('[FB:PLUGIN:WS_SERVER] Data could not be converted to message', [
+				'exception' => [
+					'message' => $ex->getMessage(),
+					'code'    => $ex->getCode(),
+				],
+			]);
+
+		} catch (Throwable $ex) {
+			$this->logger->error('[FB:PLUGIN:WS_SERVER] Data could not be broadcasts to clients', [
+				'exception' => [
+					'message' => $ex->getMessage(),
+					'code'    => $ex->getCode(),
+				],
+			]);
+		}
+
+		return false;
 	}
 
 	/**

@@ -15,7 +15,8 @@
 
 namespace FastyBird\WsServerPlugin\Controllers;
 
-use FastyBird\ExchangePlugin\Publisher as ExchangePluginPublisher;
+use FastyBird\ExchangePlugin\Consumer as ExchangePluginConsumer;
+use FastyBird\ExchangePlugin\Events as ExchangePluginEvents;
 use FastyBird\ModulesMetadata;
 use FastyBird\ModulesMetadata\Exceptions as ModulesMetadataExceptions;
 use FastyBird\ModulesMetadata\Loaders as ModulesMetadataLoaders;
@@ -23,6 +24,7 @@ use FastyBird\ModulesMetadata\Schemas as ModulesMetadataSchemas;
 use FastyBird\WsServerPlugin\Exceptions;
 use IPub\WebSockets;
 use Nette\Utils;
+use Psr\EventDispatcher;
 use Psr\Log;
 use Throwable;
 
@@ -37,8 +39,8 @@ use Throwable;
 final class ExchangeController extends WebSockets\Application\Controller\Controller
 {
 
-	/** @var ExchangePluginPublisher\IPublisher */
-	private ExchangePluginPublisher\IPublisher $publisher;
+	/** @var ExchangePluginConsumer\IConsumer|null */
+	private ?ExchangePluginConsumer\IConsumer $consumer;
 
 	/** @var ModulesMetadataLoaders\ISchemaLoader */
 	private ModulesMetadataLoaders\ISchemaLoader $schemaLoader;
@@ -46,20 +48,25 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 	/** @var ModulesMetadataSchemas\IValidator */
 	private ModulesMetadataSchemas\IValidator $jsonValidator;
 
+	/** @var EventDispatcher\EventDispatcherInterface */
+	private EventDispatcher\EventDispatcherInterface $dispatcher;
+
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
 		ModulesMetadataLoaders\ISchemaLoader $schemaLoader,
 		ModulesMetadataSchemas\IValidator $jsonValidator,
-		ExchangePluginPublisher\IPublisher $publisher,
+		EventDispatcher\EventDispatcherInterface $dispatcher,
+		?ExchangePluginConsumer\IConsumer $consumer,
 		?Log\LoggerInterface $logger
 	) {
 		parent::__construct();
 
 		$this->schemaLoader = $schemaLoader;
-		$this->publisher = $publisher;
+		$this->consumer = $consumer;
 		$this->jsonValidator = $jsonValidator;
+		$this->dispatcher = $dispatcher;
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
@@ -87,12 +94,21 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 			case ModulesMetadata\Constants::MESSAGE_BUS_CONNECTORS_CONTROL_DATA_ROUTING_KEY:
 			case ModulesMetadata\Constants::MESSAGE_BUS_TRIGGERS_CONTROL_DATA_ROUTING_KEY:
 				$schema = $this->schemaLoader->load($args['origin'], $args['routing_key']);
+				$data = $this->parseData($args, $schema);
 
-				$this->publisher->publish(
+				if ($this->consumer !== null) {
+					$this->consumer->consume(
+						ModulesMetadata\Types\ModuleOriginType::get($args['origin']),
+						ModulesMetadata\Types\RoutingKeyType::get($args['routing_key']),
+						$data,
+					);
+				}
+
+				$this->dispatcher->dispatch(new ExchangePluginEvents\MessageReceivedEvent(
 					ModulesMetadata\Types\ModuleOriginType::get($args['origin']),
 					ModulesMetadata\Types\RoutingKeyType::get($args['routing_key']),
-					$this->parse($args, $schema),
-				);
+					$data,
+				));
 				break;
 
 			default:
@@ -108,16 +124,16 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 	 * @param mixed[] $data
 	 * @param string $schema
 	 *
-	 * @return mixed[]
+	 * @return Utils\ArrayHash
 	 *
 	 * @throws Exceptions\InvalidArgumentException
 	 */
-	private function parse(
+	private function parseData(
 		array $data,
 		string $schema
-	): array {
+	): Utils\ArrayHash {
 		try {
-			return $this->dataToArray($this->jsonValidator->validate(Utils\Json::encode($data), $schema));
+			return $this->jsonValidator->validate(Utils\Json::encode($data), $schema);
 
 		} catch (Utils\JsonException $ex) {
 			$this->logger->error('[FB:PLUGIN:WS_SERVER] Received message could not be validated', [
@@ -149,24 +165,6 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 
 			throw new Exceptions\InvalidArgumentException('Provided data could not be validated', 0, $ex);
 		}
-	}
-
-	/**
-	 * @param Utils\ArrayHash $data
-	 *
-	 * @return mixed[]
-	 */
-	private function dataToArray(Utils\ArrayHash $data): array
-	{
-		$transformed = (array) $data;
-
-		foreach ($transformed as $key => $value) {
-			if ($value instanceof Utils\ArrayHash) {
-				$transformed[$key] = $this->dataToArray($value);
-			}
-		}
-
-		return $transformed;
 	}
 
 }

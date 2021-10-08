@@ -1,4 +1,4 @@
-.PHONY: php_qa php_lint php_cs php_csf phpstan php_tests php_coverage python_qa
+.PHONY: php_qa php_lint php_cs php_csf phpstan php_tests php_coverage python_qa python_tests python_coverage
 
 all:
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs
@@ -31,3 +31,9 @@ pylint:
 
 python_qa: pylint
 	pylint **/*.py
+
+python_tests:
+	python -m unittest
+
+python_coverage:
+	coverage run --source=ws_server_plugin -m unittest

@@ -15,10 +15,9 @@
 
 namespace FastyBird\WsServerPlugin\DI;
 
-use FastyBird\WsServerPlugin\Consumers;
 use FastyBird\WsServerPlugin\Controllers;
 use FastyBird\WsServerPlugin\Events;
-use FastyBird\WsServerPlugin\Sockets;
+use FastyBird\WsServerPlugin\Publishers;
 use FastyBird\WsServerPlugin\Subscribers;
 use IPub\WebSockets;
 use Nette;
@@ -80,7 +79,7 @@ class WsServerPluginExtension extends DI\CompilerExtension
 			->setType(Subscribers\ApplicationSubscriber::class);
 
 		// Events
-		$builder->addDefinition($this->prefix('events.wsClientConnect'), new DI\Definitions\ServiceDefinition())
+		$builder->addDefinition($this->prefix('events.wsClientConnected'), new DI\Definitions\ServiceDefinition())
 			->setType(Events\WsClientConnectedHandler::class)
 			->setArgument('wsKeys', $configuration->keys)
 			->setArgument('allowedOrigins', $configuration->origins);
@@ -90,18 +89,14 @@ class WsServerPluginExtension extends DI\CompilerExtension
 			->setArgument('wsKeys', $configuration->keys)
 			->setArgument('allowedOrigins', $configuration->origins);
 
-		// Message bus consumers
-		$builder->addDefinition($this->prefix('consumers.modules'), new DI\Definitions\ServiceDefinition())
-			->setType(Consumers\ModuleMessageConsumer::class);
-
 		// Controllers
 		$builder->addDefinition($this->prefix('controllers.exchange'), new DI\Definitions\ServiceDefinition())
 			->setType(Controllers\ExchangeController::class)
 			->addTag('nette.inject');
 
-		// Sockets
-		$builder->addDefinition($this->prefix('sockets.sender'), new DI\Definitions\ServiceDefinition())
-			->setType(Sockets\Sender::class);
+		// Publisher
+		$builder->addDefinition($this->prefix('exchange.publisher'), new DI\Definitions\ServiceDefinition())
+			->setType(Publishers\Publisher::class);
 	}
 
 	/**
@@ -124,7 +119,7 @@ class WsServerPluginExtension extends DI\CompilerExtension
 			$socketWrapperService = $builder->getDefinition($socketWrapperServiceName);
 
 			$socketWrapperService
-				->addSetup('$onClientConnected[]', ['@' . $this->prefix('events.wsClientConnect')])
+				->addSetup('$onClientConnected[]', ['@' . $this->prefix('events.wsClientConnected')])
 				->addSetup('$onIncomingMessage[]', ['@' . $this->prefix('events.wsMessage')]);
 		}
 	}
