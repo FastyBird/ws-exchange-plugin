@@ -87,6 +87,10 @@ final class Publisher implements ExchangePluginPublisher\IPublisher
 		ModulesMetadata\Constants::MESSAGE_BUS_TRIGGERS_UPDATED_ENTITY_ROUTING_KEY,
 		ModulesMetadata\Constants::MESSAGE_BUS_TRIGGERS_DELETED_ENTITY_ROUTING_KEY,
 
+		ModulesMetadata\Constants::MESSAGE_BUS_TRIGGERS_CONTROL_CREATED_ENTITY_ROUTING_KEY,
+		ModulesMetadata\Constants::MESSAGE_BUS_TRIGGERS_CONTROL_UPDATED_ENTITY_ROUTING_KEY,
+		ModulesMetadata\Constants::MESSAGE_BUS_TRIGGERS_CONTROL_DELETED_ENTITY_ROUTING_KEY,
+
 		ModulesMetadata\Constants::MESSAGE_BUS_TRIGGERS_ACTIONS_CREATED_ENTITY_ROUTING_KEY,
 		ModulesMetadata\Constants::MESSAGE_BUS_TRIGGERS_ACTIONS_UPDATED_ENTITY_ROUTING_KEY,
 		ModulesMetadata\Constants::MESSAGE_BUS_TRIGGERS_ACTIONS_DELETED_ENTITY_ROUTING_KEY,
@@ -137,7 +141,7 @@ final class Publisher implements ExchangePluginPublisher\IPublisher
 			$this->logger->warning('[FB:PLUGIN:WS_SERVER] Provided routing key is not support by this publisher', [
 				'routing_key' => $routingKey->getValue(),
 				'origin'      => $origin->getValue(),
-				'data'        => $data,
+				'data'        => $data !== null ? $this->dataToArray($data) : null,
 			]);
 
 			return;
@@ -156,14 +160,14 @@ final class Publisher implements ExchangePluginPublisher\IPublisher
 			$this->logger->info('[FB:PLUGIN:WS_SERVER] Successfully published message', [
 				'routing_key' => $routingKey->getValue(),
 				'origin'      => $origin->getValue(),
-				'data'        => $data,
+				'data'        => $data !== null ? $this->dataToArray($data) : null,
 			]);
 
 		} else {
 			$this->logger->error('[FB:PLUGIN:WS_SERVER] Message could not be published to exchange', [
 				'routing_key' => $routingKey->getValue(),
 				'origin'      => $origin->getValue(),
-				'data'        => $data,
+				'data'        => $data !== null ? $this->dataToArray($data) : null,
 			]);
 		}
 	}
