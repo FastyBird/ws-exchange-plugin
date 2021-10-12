@@ -153,14 +153,12 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
         """Close all opened connections & stop server thread"""
         self.__stopped = True
 
-        self.__server_socket.close()
-
         for client in self.__clients_manager:
             client.close()
 
             self.__handle_close(client=client)
 
-        self.__logger.info("WS server was closed")
+        self.__logger.info("Closing WS server")
 
     # -----------------------------------------------------------------------------
 
@@ -170,6 +168,10 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
 
         while not self.__stopped:
             self.__handle_request()
+
+        self.__server_socket.close()
+
+        self.__logger.info("WS server was closed")
 
     # -----------------------------------------------------------------------------
 
@@ -225,7 +227,7 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
                         raise ClientException("Received client close")
 
             except (ClientException, HandleResponseException):
-                self.__handle_close(client)
+                self.__handle_close(client=client)
 
                 self.__clients_manager.delete(ready)
 
@@ -264,7 +266,7 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
                     client.receive_data()
 
                 except (HandleDataException, HandleRequestException, HandleResponseException):
-                    self.__handle_close(client)
+                    self.__handle_close(client=client)
 
                     self.__clients_manager.delete(ready)
 
@@ -281,7 +283,7 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
 
             client = self.__clients_manager.get_by_id(failed)
 
-            self.__handle_close(client)
+            self.__handle_close(client=client)
 
             self.__clients_manager.delete(failed)
 
