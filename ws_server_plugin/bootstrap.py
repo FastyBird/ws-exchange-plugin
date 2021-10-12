@@ -21,6 +21,7 @@ WS server plugin DI container
 # pylint: disable=no-value-for-parameter
 
 # Library dependencies
+from exchange_plugin.publisher import Publisher as ExchangePublisher
 from kink import di
 
 # Library libs
@@ -43,3 +44,5 @@ def create_container() -> None:
 
     di[Publisher] = Publisher(clients_manager=di[ClientsManager])
     di["fb-ws-server-plugin_publisher"] = di[Publisher]
+
+    di[ExchangePublisher].register_publisher(di[Publisher])
