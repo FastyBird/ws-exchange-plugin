@@ -29,7 +29,7 @@ from modules_metadata.types import ModuleOrigin
 from ws_server_plugin.clients import ClientsManager
 
 
-@inject
+@inject(alias=IPublisher)
 class Publisher(IPublisher):  # pylint: disable=too-few-public-methods
     """
     Exchange data publisher
