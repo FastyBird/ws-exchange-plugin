@@ -30,7 +30,7 @@ from ws_server_plugin.clients import ClientsManager
 
 
 @inject
-class Publisher(IPublisher):
+class Publisher(IPublisher):  # pylint: disable=too-few-public-methods
     """
     Exchange data publisher
 

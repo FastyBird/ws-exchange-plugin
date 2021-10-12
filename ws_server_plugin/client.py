@@ -51,7 +51,7 @@ from ws_server_plugin.exceptions import (
 from ws_server_plugin.types import OPCode, WampCodes
 
 
-class WampClient:
+class WampClient:  # pylint: disable=too-many-instance-attributes
     """
     Web socket WAMP client
 
@@ -156,7 +156,7 @@ class WampClient:
 
     # -----------------------------------------------------------------------------
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         sock: socket.socket,
         address: Tuple[str, int, int, int],
@@ -351,7 +351,7 @@ class WampClient:
 
     # -----------------------------------------------------------------------------
 
-    def __process_message(self, byte) -> None:
+    def __process_message(self, byte) -> None:  # pylint: disable=too-many-statements,too-many-branches
         # read in the header
         if self.__state == self.__HEADER_B1:
             self.__fin = byte & 0x80
@@ -517,7 +517,7 @@ class WampClient:
 
     # -----------------------------------------------------------------------------
 
-    def __handle_packet(self) -> None:
+    def __handle_packet(self) -> None:  # pylint: disable=too-many-statements,too-many-branches
         """
         Unpack packet content
         """

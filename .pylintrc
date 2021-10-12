@@ -18,20 +18,3 @@ max-line-length=120
 # Kubeflow disables string-interpolation because we are starting to use f
 # style strings
 disable=fixme
-
-[DESIGN]
-
-# Maximum number of attributes for a class (see R0902).
-max-attributes=30
-
-# Maximum number of branch for function / method body
-max-branches=50
-
-# Maximum number of statements in function / method body
-max-statements=110
-
-# Minimum number of public methods for a class (see R0903).
-min-public-methods=1
-
-# Maximum number of arguments for function / method
-max-args=15

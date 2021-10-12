@@ -22,7 +22,7 @@ WS server plugin clients events
 from exchange_plugin.events.event import IEvent
 
 
-class ClientSubscribedEvent(IEvent):
+class ClientSubscribedEvent(IEvent):  # pylint: disable=too-few-public-methods
     """
     Event fired by exchange when client is subscribed
 
@@ -51,7 +51,7 @@ class ClientSubscribedEvent(IEvent):
         return self.__client_id
 
 
-class ClientUnsubscribedEvent(IEvent):
+class ClientUnsubscribedEvent(IEvent):  # pylint: disable=too-few-public-methods
     """
     Event fired by exchange when client is unsubscribed
 

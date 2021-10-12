@@ -24,6 +24,7 @@ WS server plugin DI container
 from kink import di
 
 # Library libs
+from ws_server_plugin.clients import ClientsManager
 from ws_server_plugin.logger import Logger
 from ws_server_plugin.publisher import Publisher
 from ws_server_plugin.server import WebsocketsServer
@@ -34,8 +35,11 @@ def create_container() -> None:
     di[Logger] = Logger()
     di["fb-ws-server-plugin_logger"] = di[Logger]
 
-    di[WebsocketsServer] = WebsocketsServer()
+    di[ClientsManager] = ClientsManager(logger=di[Logger])
+    di["fb-ws-server-plugin_clients-manager"] = di[ClientsManager]
+
+    di[WebsocketsServer] = WebsocketsServer(clients_manager=di[ClientsManager], logger=di[Logger])
     di["fb-ws-server-plugin_server"] = di[WebsocketsServer]
 
-    di[Publisher] = Publisher()
+    di[Publisher] = Publisher(clients_manager=di[ClientsManager])
     di["fb-ws-server-plugin_publisher"] = di[Publisher]

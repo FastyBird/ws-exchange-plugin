@@ -47,7 +47,7 @@ from ws_server_plugin.types import OPCode
 
 
 @inject
-class WebsocketsServer(Thread):
+class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
     """
     Main websockets server instance
 
@@ -78,7 +78,7 @@ class WebsocketsServer(Thread):
 
     # -----------------------------------------------------------------------------
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         clients_manager: ClientsManager,
         event_dispatcher: EventDispatcher,
@@ -179,7 +179,7 @@ class WebsocketsServer(Thread):
 
     # -----------------------------------------------------------------------------
 
-    def __handle_request(self) -> None:
+    def __handle_request(self) -> None:  # pylint: disable=too-many-instance-attributes, too-many-statements, too-many-branches
         writers = []
 
         for fileno in self.__listeners:
