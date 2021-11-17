@@ -634,7 +634,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
         Called when websocket frame is received
         """
         try:
-            parsed_data: dict = json.loads(received_data)
+            parsed_data: Dict[str, Union[str, int, float, bool, None]] = json.loads(received_data)
 
             if int(parsed_data[0]) == WampCodes(WampCodes.MSG_PREFIX).value:
                 self.__handle_wamp_prefix(parsed_data)

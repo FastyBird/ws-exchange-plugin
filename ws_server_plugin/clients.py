@@ -85,7 +85,7 @@ class ClientsManager:
 
     def publish(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Optional[Dict]):
         """Publish message to all clients"""
-        raw_message: dict = {
+        raw_message = {
             "routing_key": routing_key.value,
             "origin": origin.value,
             "data": data,
