@@ -24,7 +24,7 @@ import socket
 import ssl
 import select
 from threading import Thread
-from typing import Dict, List
+from typing import Dict, List, Union, Optional
 from exchange_plugin.consumer import IConsumer
 from exchange_plugin.dispatcher import EventDispatcher
 from exchange_plugin.events.messages import MessageReceivedEvent
@@ -65,14 +65,14 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
 
     __server_socket: socket.socket
 
-    __listeners: List[int or socket.socket] = []
+    __listeners: List[Union[int, socket.socket]] = []
 
-    __secured_context: ssl.SSLContext or None
+    __secured_context: Optional[ssl.SSLContext]
 
     __clients_manager: ClientsManager
 
     __event_dispatcher: EventDispatcher
-    __exchange_consumer: IConsumer or None = None
+    __exchange_consumer: Optional[IConsumer] = None
 
     __logger: Logger
 
@@ -85,11 +85,11 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
         logger: Logger,
         host: str = "",
         port: int = 9000,
-        cert_file: str or None = None,
-        key_file: str or None = None,
+        cert_file: Optional[str] = None,
+        key_file: Optional[str] = None,
         ssl_version: int = ssl.PROTOCOL_TLSv1,
         select_interval: float = 0.1,
-        exchange_consumer: IConsumer or None = None,
+        exchange_consumer: Optional[IConsumer] = None,
     ) -> None:
         Thread.__init__(self)
 
@@ -333,7 +333,7 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def __handle_rpc_message(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Dict or None) -> None:
+    def __handle_rpc_message(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Optional[Dict]) -> None:
         if self.__exchange_consumer is not None:
             self.__exchange_consumer.consume(origin=origin, routing_key=routing_key, data=data)
 

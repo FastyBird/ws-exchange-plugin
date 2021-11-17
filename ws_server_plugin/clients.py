@@ -20,7 +20,7 @@ WS server plugin clients manager
 
 # Library dependencies
 import json
-from typing import Dict
+from typing import Dict, Optional
 from modules_metadata.routing import RoutingKey
 from modules_metadata.types import ModuleOrigin
 
@@ -56,7 +56,7 @@ class ClientsManager:
 
     # -----------------------------------------------------------------------------
 
-    def get_by_id(self, client_id: int) -> WampClient or None:
+    def get_by_id(self, client_id: int) -> Optional[WampClient]:
         """Get client by identifier"""
         if self.exists(client_id=client_id):
             return self.__clients[client_id]
@@ -83,7 +83,7 @@ class ClientsManager:
 
     # -----------------------------------------------------------------------------
 
-    def publish(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Dict or None):
+    def publish(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Optional[Dict]):
         """Publish message to all clients"""
         raw_message: dict = {
             "routing_key": routing_key.value,

@@ -34,7 +34,7 @@ from codecs import IncrementalDecoder
 from collections import deque
 from io import BytesIO
 from http.client import parse_headers, HTTPMessage
-from typing import Callable, Dict, List, Union, Tuple
+from typing import Callable, Dict, List, Union, Tuple, Optional
 import modules_metadata.exceptions as metadata_exceptions
 from modules_metadata.loader import load_schema
 from modules_metadata.routing import RoutingKey
@@ -62,20 +62,20 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
     """
     __handshake_finished: bool = False
     __request_header_buffer: bytearray = bytearray()
-    __request_header_parsed: HTTPMessage or None = None
+    __request_header_parsed: Optional[HTTPMessage] = None
 
     __fin: int = 0
     __received_data: bytearray = bytearray()
     __opcode: int = 0
     __has_mask: int = 0
-    __mask_array: bytearray or None = None
+    __mask_array: Optional[bytearray] = None
     __length: int = 0
-    __length_array: bytearray or None = None
+    __length_array: Optional[bytearray] = None
     __index: int = 0
 
     __frag_start: bool = False
     __frag_type: int = OPCode(OPCode.BINARY).value
-    __frag_buffer: bytearray or None = None
+    __frag_buffer: Optional[bytearray] = None
     __frag_decoder: IncrementalDecoder = codecs.getincrementaldecoder("utf-8")(errors="strict")
 
     __is_closed: bool = False
@@ -88,7 +88,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
     __subscribe_callback: Callable[["WampClient"], None]
     __unsubscribe_callback: Callable[["WampClient"], None]
-    __rpc_callback: Callable[[ModuleOrigin, RoutingKey, Dict or None], None]
+    __rpc_callback: Callable[[ModuleOrigin, RoutingKey, Optional[Dict]], None]
 
     __logger: logging.Logger
 
@@ -162,8 +162,8 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
         address: Tuple[str, int, int, int],
         subscribe_callback: Callable[["WampClient"], None],
         unsubscribe_callback: Callable[["WampClient"], None],
-        rpc_callback: Callable[[ModuleOrigin, RoutingKey, Dict or None], None],
-        logger: logging.Logger or None = None,
+        rpc_callback: Callable[[ModuleOrigin, RoutingKey, Optional[Dict]], None],
+        logger: Optional[logging.Logger] = None,
     ) -> None:
         self.sock: socket.socket = sock
         self.address: Tuple[str, int, int, int] = address
@@ -310,7 +310,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def send_buffer(self, buff: bytes, send_all: bool = False) -> Union[int, bytes] or None:
+    def send_buffer(self, buff: bytes, send_all: bool = False) -> Optional[Union[int, bytes]]:
         """
         Send buffer content to client
         """
@@ -662,7 +662,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def __send_message(self, fin: bool, opcode: OPCode, data: bytearray or str) -> None:
+    def __send_message(self, fin: bool, opcode: OPCode, data: Union[bytearray, str]) -> None:
         """
         Append payload to client buffer
         """
@@ -766,7 +766,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
         # Transform message origin
         message_origin: ModuleOrigin = ModuleOrigin(parsed_data.get("origin"))
         # Just prepare variable
-        message_data: Dict or None = parsed_data.get("data", None)
+        message_data: Optional[Dict] = parsed_data.get("data", None)
 
         if "data" in parsed_data:
             try:
@@ -892,7 +892,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def __reply_rpc_error(self, rpc_id: str, topic_id: str, message: str, params: str or None = None) -> None:
+    def __reply_rpc_error(self, rpc_id: str, topic_id: str, message: str, params: Optional[str] = None) -> None:
         """
         Send RPC error result to client
         """
