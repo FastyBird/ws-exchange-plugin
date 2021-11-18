@@ -74,7 +74,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
     __index: int = 0
 
     __frag_start: bool = False
-    __frag_type: int = OPCode(OPCode.BINARY).value
+    __frag_type: int = OPCode.BINARY.value
     __frag_buffer: Optional[bytearray] = None
     __frag_decoder: IncrementalDecoder = codecs.getincrementaldecoder("utf-8")(errors="strict")
 
@@ -200,13 +200,13 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
         """
         data: str = json.dumps(
             [
-                WampCodes(WampCodes.MSG_EVENT).value,
+                WampCodes.MSG_EVENT.value,
                 self.__WS_SERVER_TOPIC,
                 message,
             ]
         )
 
-        self.__send_message(False, OPCode(OPCode.TEXT), data)
+        self.__send_message(False, OPCode.TEXT, data)
 
     # -----------------------------------------------------------------------------
 
@@ -228,7 +228,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
                 else:
                     close_msg.extend(reason)
 
-                self.__send_message(False, OPCode(OPCode.CLOSE), close_msg)
+                self.__send_message(False, OPCode.CLOSE, close_msg)
 
         finally:
             self.__is_closed = True
@@ -274,16 +274,16 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
                     k_s = base64.b64encode(hashlib.sha1(k).digest()).decode("ascii")
                     handshake = self.__HANDSHAKE_STR % {"accept__str": k_s}
 
-                    self.__send_queue.append((OPCode(OPCode.BINARY).value, handshake.encode("ascii")))
+                    self.__send_queue.append((OPCode.BINARY.value, handshake.encode("ascii")))
 
                     self.__handshake_finished = True
 
                     self.__send_message(
                         False,
-                        OPCode(OPCode.TEXT),
+                        OPCode.TEXT,
                         json.dumps(
                             [
-                                WampCodes(WampCodes.MSG_WELCOME).value,
+                                WampCodes.MSG_WELCOME.value,
                                 self.__wamp_session,
                                 1,
                                 "FB/WebSockets/1.0.0",
@@ -372,7 +372,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
             mask = byte & 0x80
             length = byte & 0x7F
 
-            if self.__opcode == OPCode(OPCode.PING).value and length > 125:
+            if self.__opcode == OPCode.PING.value and length > 125:
                 raise HandleDataException("Ping packet is too large")
 
             self.__has_mask = mask == 128
@@ -521,7 +521,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
         """
         Unpack packet content
         """
-        if self.__opcode in (OPCode(OPCode.PONG).value, OPCode(OPCode.PING).value):
+        if self.__opcode in (OPCode.PONG.value, OPCode.PING.value):
             if len(self.__received_data) > 125:
                 raise HandleDataException("Control frame length can not be > 125")
 
@@ -529,7 +529,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
             # unknown or reserved opcode so just close
             raise HandleDataException("Unknown opcode")
 
-        if self.__opcode == OPCode(OPCode.CLOSE).value:
+        if self.__opcode == OPCode.CLOSE.value:
             status = 1000
             reason = ""
             length = len(self.__received_data)
@@ -557,15 +557,15 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
             self.close(status, reason)
 
         elif self.__fin == 0:
-            if self.__opcode != OPCode(OPCode.STREAM).value:
-                if self.__opcode in (OPCode(OPCode.PING).value, OPCode(OPCode.PONG).value):
+            if self.__opcode != OPCode.STREAM.value:
+                if self.__opcode in (OPCode.PING.value, OPCode.PONG.value):
                     raise HandleDataException("Control messages can not be fragmented")
 
                 self.__frag_type = self.__opcode
                 self.__frag_start = True
                 self.__frag_decoder.reset()
 
-                if self.__frag_type == OPCode(OPCode.TEXT).value:
+                if self.__frag_type == OPCode.TEXT.value:
                     self.__frag_buffer = bytearray()
 
                     utf_str = self.__frag_decoder.decode(self.__received_data, final=False)
@@ -581,7 +581,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
                 if self.__frag_start is False:
                     raise HandleDataException("Fragmentation protocol error")
 
-                if self.__frag_type == OPCode(OPCode.TEXT).value:
+                if self.__frag_type == OPCode.TEXT.value:
                     utf_str = self.__frag_decoder.decode(self.__received_data, final=False)
 
                     if utf_str:
@@ -591,11 +591,11 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
                     self.__frag_buffer.extend(self.__received_data)
 
         else:
-            if self.__opcode == OPCode(OPCode.STREAM).value:
+            if self.__opcode == OPCode.STREAM.value:
                 if self.__frag_start is False:
                     raise HandleDataException("Fragmentation protocol error")
 
-                if self.__frag_type == OPCode(OPCode.TEXT).value:
+                if self.__frag_type == OPCode.TEXT.value:
                     utf_str = self.__frag_decoder.decode(self.__received_data, final=True)
 
                     self.__frag_buffer.append(int(utf_str))
@@ -611,14 +611,14 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
                 self.__handle_message(self.__received_data)
 
                 self.__frag_decoder.reset()
-                self.__frag_type = OPCode(OPCode.BINARY).value
+                self.__frag_type = OPCode.BINARY.value
                 self.__frag_start = False
                 self.__frag_buffer = None
 
-            elif self.__opcode == OPCode(OPCode.PING).value:
-                self.__send_message(False, OPCode(OPCode.PONG), self.__received_data)
+            elif self.__opcode == OPCode.PING.value:
+                self.__send_message(False, OPCode.PONG, self.__received_data)
 
-            elif self.__opcode == OPCode(OPCode.PONG).value:
+            elif self.__opcode == OPCode.PONG.value:
                 pass
 
             else:
@@ -636,22 +636,22 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
         try:
             parsed_data: Dict[str, Union[str, int, float, bool, None]] = json.loads(received_data)
 
-            if int(parsed_data[0]) == WampCodes(WampCodes.MSG_PREFIX).value:
+            if int(parsed_data[0]) == WampCodes.MSG_PREFIX.value:
                 self.__handle_wamp_prefix(parsed_data)
 
             # RPC from client
-            elif int(parsed_data[0]) == WampCodes(WampCodes.MSG_CALL).value:
+            elif int(parsed_data[0]) == WampCodes.MSG_CALL.value:
                 self.__handle_wamp_call(parsed_data)
 
             # Subscribe client to defined topic
-            elif int(parsed_data[0]) == WampCodes(WampCodes.MSG_SUBSCRIBE).value:
+            elif int(parsed_data[0]) == WampCodes.MSG_SUBSCRIBE.value:
                 self.__handle_wamp_subscribe(parsed_data)
 
             # Unsubscribe client from defined topic
-            elif int(parsed_data[0]) == WampCodes(WampCodes.MSG_UNSUBSCRIBE).value:
+            elif int(parsed_data[0]) == WampCodes.MSG_UNSUBSCRIBE.value:
                 self.__handle_wamp_unsubscribe(parsed_data)
 
-            elif int(parsed_data[0]) == WampCodes(WampCodes.MSG_PUBLISH).value:
+            elif int(parsed_data[0]) == WampCodes.MSG_PUBLISH.value:
                 self.__handle_wamp_publish(parsed_data)
 
             else:
@@ -711,10 +711,10 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
         self.__send_message(
             False,
-            OPCode(OPCode.TEXT),
+            OPCode.TEXT,
             json.dumps(
                 [
-                    WampCodes(WampCodes.MSG_PREFIX).value,
+                    WampCodes.MSG_PREFIX.value,
                     parsed_data[1],
                     str(parsed_data[2]),
                 ]
@@ -793,10 +793,10 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
         self.__send_message(
             False,
-            OPCode(OPCode.TEXT),
+            OPCode.TEXT,
             json.dumps(
                 [
-                    WampCodes(WampCodes.MSG_CALL_RESULT).value,
+                    WampCodes.MSG_CALL_RESULT.value,
                     rpc_id,
                     {
                         "response": "accepted",
@@ -898,10 +898,10 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
         """
         self.__send_message(
             False,
-            OPCode(OPCode.TEXT),
+            OPCode.TEXT,
             json.dumps(
                 [
-                    WampCodes(WampCodes.MSG_CALL_ERROR).value,
+                    WampCodes.MSG_CALL_ERROR.value,
                     rpc_id,
                     topic_id,
                     message,
