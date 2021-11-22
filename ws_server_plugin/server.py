@@ -18,13 +18,14 @@
 WS server plugin websockets server
 """
 
-# Library dependencies
-import logging
+# Python base dependencies
+import select
 import socket
 import ssl
-import select
 from threading import Thread
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Optional, Union
+
+# Library dependencies
 from exchange_plugin.consumer import IConsumer
 from exchange_plugin.dispatcher import EventDispatcher
 from exchange_plugin.events.messages import MessageReceivedEvent
@@ -56,6 +57,7 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
+
     __stopped: bool = False
 
     __request_queue_size: int = 5
@@ -83,7 +85,7 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
         clients_manager: ClientsManager,
         event_dispatcher: EventDispatcher,
         logger: Logger,
-        host: str = "",
+        host: Optional[str] = None,
         port: int = 9000,
         cert_file: Optional[str] = None,
         key_file: Optional[str] = None,
@@ -94,9 +96,6 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
         Thread.__init__(self)
 
         self.__clients_manager = clients_manager
-
-        if host == "":
-            host = None
 
         fam = socket.AF_INET6 if host is None else 0  # pylint: disable=no-member
 
@@ -120,7 +119,7 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
 
         self.__using_ssl = bool(cert_file and key_file)
 
-        if self.__using_ssl:
+        if self.__using_ssl and cert_file and key_file:
             self.__secured_context = ssl.SSLContext(ssl_version)
             self.__secured_context.load_cert_chain(cert_file, key_file)
 
@@ -132,12 +131,6 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
         # Threading config...
         self.setDaemon(True)
         self.setName("WebSockets server exchange thread")
-
-    # -----------------------------------------------------------------------------
-
-    def set_logger(self, logger: logging.Logger) -> None:
-        """Configure custom logger handler"""
-        self.__logger.set_logger(logger=logger)
 
     # -----------------------------------------------------------------------------
 
@@ -181,7 +174,9 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def __handle_request(self) -> None:  # pylint: disable=too-many-instance-attributes, too-many-statements, too-many-branches
+    def __handle_request(  # pylint: disable=too-many-instance-attributes, too-many-statements, too-many-branches
+        self,
+    ) -> None:
         writers = []
 
         for fileno in self.__listeners:
@@ -191,9 +186,9 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
             if not self.__clients_manager.exists(client_id=fileno):
                 continue
 
-            client = self.__clients_manager.get_by_id(fileno)
+            client = self.__clients_manager.get_by_id(client_id=fileno)
 
-            if client.get_send_queue():
+            if client and client.get_send_queue():
                 writers.append(fileno)
 
         if self.__select_interval:
@@ -215,19 +210,22 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
             client = self.__clients_manager.get_by_id(ready)
 
             try:
-                while client.get_send_queue():
-                    opcode, payload = client.get_send_queue().popleft()
-                    remaining = client.send_buffer(payload)
+                if client:
+                    while client.get_send_queue():
+                        opcode, payload = client.get_send_queue().popleft()
 
-                    if remaining is not None:
-                        client.get_send_queue().appendleft((opcode, remaining))
-                        break
+                        remaining = client.send_buffer(payload)
 
-                    if opcode == OPCode(OPCode.CLOSE).value:
-                        raise ClientException("Received client close")
+                        if remaining is not None:
+                            client.get_send_queue().appendleft((opcode, remaining))
+                            break
+
+                        if opcode == OPCode(OPCode.CLOSE).value:
+                            raise ClientException("Received client close")
 
             except (ClientException, HandleResponseException):
-                self.__handle_close(client=client)
+                if client:
+                    self.__handle_close(client=client)
 
                 self.__clients_manager.delete(ready)
 
@@ -251,7 +249,7 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
                         self.__handle_client_unsubscribed,
                         self.__handle_rpc_message,
                         self.__logger,
-                    )
+                    ),
                 )
 
                 self.__listeners.append(fileno)
@@ -263,10 +261,12 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
                 client = self.__clients_manager.get_by_id(ready)
 
                 try:
-                    client.receive_data()
+                    if client:
+                        client.receive_data()
 
                 except (HandleDataException, HandleRequestException, HandleResponseException):
-                    self.__handle_close(client=client)
+                    if client:
+                        self.__handle_close(client=client)
 
                     self.__clients_manager.delete(ready)
 
@@ -283,7 +283,8 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
 
             client = self.__clients_manager.get_by_id(failed)
 
-            self.__handle_close(client=client)
+            if client:
+                self.__handle_close(client=client)
 
             self.__clients_manager.delete(failed)
 
@@ -292,7 +293,7 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
     # -----------------------------------------------------------------------------
 
     def __decorate_socket(self, sock: socket.socket) -> socket.socket:
-        if self.__using_ssl:
+        if self.__using_ssl and self.__secured_context:
             return self.__secured_context.wrap_socket(sock, server_side=True)
 
         return sock
@@ -300,7 +301,7 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
     # -----------------------------------------------------------------------------
 
     @staticmethod
-    def __handle_close(client: WampClient):
+    def __handle_close(client: WampClient) -> None:
         client.sock.close()
 
         # only call handle_close when we have a successful websocket connection
@@ -343,5 +344,5 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
                 origin=origin,
                 routing_key=routing_key,
                 data=data,
-            )
+            ),
         )

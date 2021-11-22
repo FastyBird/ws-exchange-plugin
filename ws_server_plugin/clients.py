@@ -18,9 +18,12 @@
 WS server plugin clients manager
 """
 
-# Library dependencies
+# Python base dependencies
 import json
-from typing import Dict, Optional
+from socket import socket
+from typing import Dict, Optional, Union
+
+# Library dependencies
 from modules_metadata.routing import RoutingKey
 from modules_metadata.types import ModuleOrigin
 
@@ -38,7 +41,8 @@ class ClientsManager:
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
-    __clients: Dict[int, WampClient] = {}
+
+    __clients: Dict[Union[int, socket], WampClient] = {}
 
     __logger: Logger
 
@@ -56,7 +60,7 @@ class ClientsManager:
 
     # -----------------------------------------------------------------------------
 
-    def get_by_id(self, client_id: int) -> Optional[WampClient]:
+    def get_by_id(self, client_id: Union[int, socket]) -> Optional[WampClient]:
         """Get client by identifier"""
         if self.exists(client_id=client_id):
             return self.__clients[client_id]
@@ -65,25 +69,25 @@ class ClientsManager:
 
     # -----------------------------------------------------------------------------
 
-    def append(self, client_id: int,  client: WampClient) -> None:
+    def append(self, client_id: int, client: WampClient) -> None:
         """Add new client"""
         self.__clients[client_id] = client
 
     # -----------------------------------------------------------------------------
 
-    def delete(self, client_id: int) -> None:
+    def delete(self, client_id: Union[int, socket]) -> None:
         """Delete client"""
         del self.__clients[client_id]
 
     # -----------------------------------------------------------------------------
 
-    def exists(self, client_id: int) -> bool:
+    def exists(self, client_id: Union[int, socket]) -> bool:
         """Check if client exists"""
         return client_id in self.__clients
 
     # -----------------------------------------------------------------------------
 
-    def publish(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Optional[Dict]):
+    def publish(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Optional[Dict]) -> None:
         """Publish message to all clients"""
         raw_message = {
             "routing_key": routing_key.value,
@@ -99,7 +103,7 @@ class ClientsManager:
         self.__logger.debug(
             "Successfully published message to: %d clients via WS server plugin with key: %s",
             len(self.__clients),
-            routing_key
+            routing_key,
         )
 
     # -----------------------------------------------------------------------------
@@ -112,7 +116,7 @@ class ClientsManager:
 
     # -----------------------------------------------------------------------------
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.__clients)
 
     # -----------------------------------------------------------------------------

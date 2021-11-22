@@ -18,37 +18,81 @@
 WS server plugin WAMP client
 """
 
-# Library dependencies
+# Python base dependencies
 import base64
 import codecs
 import errno
 import hashlib
 import json
-import logging
+import random
 import socket
 import struct
 import sys
-import random
 import time
 from codecs import IncrementalDecoder
 from collections import deque
+from http.client import HTTPMessage, parse_headers
 from io import BytesIO
-from http.client import parse_headers, HTTPMessage
-from typing import Callable, Dict, List, Union, Tuple, Optional
+from typing import Dict, List, Optional, Protocol, Tuple, Union
+
+# Library dependencies
 import modules_metadata.exceptions as metadata_exceptions
 from modules_metadata.loader import load_schema
 from modules_metadata.routing import RoutingKey
-from modules_metadata.validator import validate
 from modules_metadata.types import ModuleOrigin
+from modules_metadata.validator import validate
 
 # Library libs
 from ws_server_plugin.exceptions import (
     HandleDataException,
-    HandleRpcException,
     HandleRequestException,
     HandleResponseException,
+    HandleRpcException,
 )
+from ws_server_plugin.logger import Logger
 from ws_server_plugin.types import OPCode, WampCodes
+
+
+class SubscribeCallback(Protocol):  # pylint: disable=too-few-public-methods
+    """
+    Subscribe callback mapping
+
+    @package        FastyBird:WsServerPlugin!
+    @module         client
+
+    @author         Adam Kadlec <adam.kadlec@fastybird.com>
+    """
+
+    def __call__(self, client: "WampClient") -> None:
+        ...
+
+
+class UnsubscribeCallback(Protocol):  # pylint: disable=too-few-public-methods
+    """
+    Unsubscribe callback mapping
+
+    @package        FastyBird:WsServerPlugin!
+    @module         client
+
+    @author         Adam Kadlec <adam.kadlec@fastybird.com>
+    """
+
+    def __call__(self, client: "WampClient") -> None:
+        ...
+
+
+class RpcCallback(Protocol):  # pylint: disable=too-few-public-methods
+    """
+    RPC callback mapping
+
+    @package        FastyBird:WsServerPlugin!
+    @module         client
+
+    @author         Adam Kadlec <adam.kadlec@fastybird.com>
+    """
+
+    def __call__(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Optional[Dict]) -> None:
+        ...
 
 
 class WampClient:  # pylint: disable=too-many-instance-attributes
@@ -60,6 +104,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
+
     __handshake_finished: bool = False
     __request_header_buffer: bytearray = bytearray()
     __request_header_parsed: Optional[HTTPMessage] = None
@@ -68,14 +113,14 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
     __received_data: bytearray = bytearray()
     __opcode: int = 0
     __has_mask: int = 0
-    __mask_array: Optional[bytearray] = None
+    __mask_array: bytearray = bytearray()
     __length: int = 0
-    __length_array: Optional[bytearray] = None
+    __length_array: bytearray = bytearray()
     __index: int = 0
 
     __frag_start: bool = False
     __frag_type: int = OPCode.BINARY.value
-    __frag_buffer: Optional[bytearray] = None
+    __frag_buffer: bytearray = bytearray()
     __frag_decoder: IncrementalDecoder = codecs.getincrementaldecoder("utf-8")(errors="strict")
 
     __is_closed: bool = False
@@ -86,11 +131,11 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
     __prefixes: Dict[str, str] = {}
 
-    __subscribe_callback: Callable[["WampClient"], None]
-    __unsubscribe_callback: Callable[["WampClient"], None]
-    __rpc_callback: Callable[[ModuleOrigin, RoutingKey, Optional[Dict]], None]
+    __subscribe_callback: SubscribeCallback
+    __unsubscribe_callback: UnsubscribeCallback
+    __rpc_callback: RpcCallback
 
-    __logger: logging.Logger
+    __logger: Logger
 
     __HEADER_B1: int = 1
     __HEADER_B2: int = 3
@@ -160,10 +205,10 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
         self,
         sock: socket.socket,
         address: Tuple[str, int, int, int],
-        subscribe_callback: Callable[["WampClient"], None],
-        unsubscribe_callback: Callable[["WampClient"], None],
-        rpc_callback: Callable[[ModuleOrigin, RoutingKey, Optional[Dict]], None],
-        logger: Optional[logging.Logger] = None,
+        subscribe_callback: SubscribeCallback,
+        unsubscribe_callback: UnsubscribeCallback,
+        rpc_callback: RpcCallback,
+        logger: Logger,
     ) -> None:
         self.sock: socket.socket = sock
         self.address: Tuple[str, int, int, int] = address
@@ -182,7 +227,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
         self.__unsubscribe_callback = unsubscribe_callback
         self.__rpc_callback = rpc_callback
 
-        self.__logger = logger or logging.getLogger("dummy")
+        self.__logger = logger
 
     # -----------------------------------------------------------------------------
 
@@ -351,7 +396,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def __process_message(self, byte) -> None:  # pylint: disable=too-many-statements,too-many-branches
+    def __process_message(self, byte: int) -> None:  # pylint: disable=too-many-statements,too-many-branches
         # read in the header
         if self.__state == self.__HEADER_B1:
             self.__fin = byte & 0x80
@@ -492,15 +537,16 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
         # PAYLOAD STATE
         elif self.__state == self.__PAYLOAD:
-            if self.__has_mask is True:
-                self.__received_data.append(byte ^ self.__mask_array[self.__index % 4])
+            if self.__received_data:
+                if self.__has_mask is True:
+                    self.__received_data.append(byte ^ self.__mask_array[self.__index % 4])
 
-            else:
-                self.__received_data.append(byte)
+                else:
+                    self.__received_data.append(byte)
 
-            # if length exceeds allowable size then we except and remove the connection
-            if len(self.__received_data) >= self.__MAX_PAYLOAD:
-                raise HandleDataException("Payload exceeded allowable size")
+                # if length exceeds allowable size then we except and remove the connection
+                if len(self.__received_data) >= self.__MAX_PAYLOAD:
+                    raise HandleDataException("Payload exceeded allowable size")
 
             # check if we have processed length bytes; if so we are done
             if (self.__index + 1) == self.__length:
@@ -539,14 +585,14 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
             elif length >= 2:
                 status = struct.unpack_from("!H", self.__received_data[:2])[0]  # pylint: disable=no-member
-                reason = self.__received_data[2:]
+                reason_data = self.__received_data[2:]
 
                 if status not in self.__VALID_STATUS_CODES:
                     status = 1002
 
-                if reason:
+                if reason_data:
                     try:
-                        reason = reason.decode("utf8", errors="strict")
+                        reason = reason_data.decode("utf8", errors="strict")
 
                     except UnicodeDecodeError:
                         status = 1002
@@ -601,7 +647,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
                     self.__frag_buffer.append(int(utf_str))
 
                     self.__received_data = bytearray()
-                    self.__received_data.extend("".join(self.__frag_buffer))
+                    self.__received_data.extend(self.__frag_buffer)
 
                 else:
                     self.__frag_buffer.extend(self.__received_data)
@@ -613,7 +659,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
                 self.__frag_decoder.reset()
                 self.__frag_type = OPCode.BINARY.value
                 self.__frag_start = False
-                self.__frag_buffer = None
+                self.__frag_buffer = bytearray()
 
             elif self.__opcode == OPCode.PING.value:
                 self.__send_message(False, OPCode.PONG, self.__received_data)
@@ -634,24 +680,24 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
         Called when websocket frame is received
         """
         try:
-            parsed_data: Dict[str, Union[str, int, float, bool, None]] = json.loads(received_data)
+            parsed_data: Dict[Union[str, int], Union[str, int, float, bool, None]] = json.loads(received_data)
 
-            if int(parsed_data[0]) == WampCodes.MSG_PREFIX.value:
+            if 0 in parsed_data and int(str(parsed_data[0])) == WampCodes.MSG_PREFIX.value:
                 self.__handle_wamp_prefix(parsed_data)
 
             # RPC from client
-            elif int(parsed_data[0]) == WampCodes.MSG_CALL.value:
+            elif 0 in parsed_data and int(str(parsed_data[0])) == WampCodes.MSG_CALL.value:
                 self.__handle_wamp_call(parsed_data)
 
             # Subscribe client to defined topic
-            elif int(parsed_data[0]) == WampCodes.MSG_SUBSCRIBE.value:
+            elif 0 in parsed_data and int(str(parsed_data[0])) == WampCodes.MSG_SUBSCRIBE.value:
                 self.__handle_wamp_subscribe(parsed_data)
 
             # Unsubscribe client from defined topic
-            elif int(parsed_data[0]) == WampCodes.MSG_UNSUBSCRIBE.value:
+            elif 0 in parsed_data and int(str(parsed_data[0])) == WampCodes.MSG_UNSUBSCRIBE.value:
                 self.__handle_wamp_unsubscribe(parsed_data)
 
-            elif int(parsed_data[0]) == WampCodes.MSG_PUBLISH.value:
+            elif 0 in parsed_data and int(str(parsed_data[0])) == WampCodes.MSG_PUBLISH.value:
                 self.__handle_wamp_publish(parsed_data)
 
             else:
@@ -677,7 +723,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
         first_byte |= opcode.value
 
         if isinstance(data, str):
-            data = data.encode("utf-8")
+            data = bytearray(data, "utf-8")
 
         length = len(data)
         payload.append(first_byte)
@@ -748,9 +794,9 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
         if (
             isinstance(parsed_data, Dict) is False
             or "routing_key" not in parsed_data
-            or RoutingKey.has_value(parsed_data.get("routing_key")) is False
+            or RoutingKey.has_value(str(parsed_data.get("routing_key"))) is False
             or "origin" not in parsed_data
-            or ModuleOrigin.has_value(parsed_data.get("origin")) is False
+            or ModuleOrigin.has_value(str(parsed_data.get("origin"))) is False
         ):
             self.__reply_rpc_error(
                 rpc_id,
@@ -768,12 +814,12 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
         # Just prepare variable
         message_data: Optional[Dict] = parsed_data.get("data", None)
 
-        if "data" in parsed_data:
+        if message_data:
             try:
                 message_data = self.__validate_rpc_data(
-                    message_origin,
-                    message_routing_key,
-                    message_data,
+                    origin=message_origin,
+                    routing_key=message_routing_key,
+                    data=message_data,
                 )
 
             except HandleRpcException as ex:
@@ -786,9 +832,9 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
                 return
 
         self.__rpc_callback(
-            message_origin,
-            message_routing_key,
-            message_data,
+            origin=message_origin,
+            routing_key=message_routing_key,
+            data=message_data,
         )
 
         self.__send_message(
@@ -802,7 +848,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
                         "response": "accepted",
                     },
                 ]
-            )
+            ),
         )
 
     # -----------------------------------------------------------------------------
@@ -814,7 +860,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
         if str(parsed_data[1]) == self.__WS_SERVER_TOPIC:
             self.__logger.debug("New client: %s has subscribed to exchanges topic", self.get_id())
 
-            self.__subscribe_callback(self)
+            self.__subscribe_callback(client=self)
 
         else:
             # TODO: reply error
@@ -829,7 +875,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
         if str(parsed_data[1]) == self.__WS_SERVER_TOPIC:
             self.__logger.debug("Client: %s has unsubscribed from exchanges topic", self.get_id())
 
-            self.__unsubscribe_callback(self)
+            self.__unsubscribe_callback(client=self)
 
         else:
             # TODO: reply error

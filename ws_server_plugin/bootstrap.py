@@ -20,8 +20,10 @@ WS server plugin DI container
 
 # pylint: disable=no-value-for-parameter
 
-# Library dependencies
+# Python base dependencies
 import logging
+
+# Library dependencies
 from exchange_plugin.publisher import Publisher as ExchangePublisher
 from kink import di
 
@@ -40,7 +42,10 @@ def create_container(logger: logging.Logger = logging.getLogger("dummy")) -> Non
     di[ClientsManager] = ClientsManager(logger=di[Logger])
     di["fb-ws-server-plugin_clients-manager"] = di[ClientsManager]
 
-    di[WebsocketsServer] = WebsocketsServer(clients_manager=di[ClientsManager], logger=di[Logger])
+    di[WebsocketsServer] = WebsocketsServer(  # type: ignore[call-arg]
+        clients_manager=di[ClientsManager],
+        logger=di[Logger],
+    )
     di["fb-ws-server-plugin_server"] = di[WebsocketsServer]
 
     di[Publisher] = Publisher(clients_manager=di[ClientsManager])

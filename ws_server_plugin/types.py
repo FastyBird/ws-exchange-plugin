@@ -18,7 +18,7 @@
 WS server plugin enums and types
 """
 
-# Library dependencies
+# Python base dependencies
 from enum import Enum, unique
 
 
@@ -32,6 +32,7 @@ class OPCode(Enum):
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
+
     STREAM: int = 0x00
     TEXT: int = 0x01
     BINARY: int = 0x02
@@ -42,7 +43,7 @@ class OPCode(Enum):
     @classmethod
     def has_value(cls, value: int) -> bool:
         """Check if provided value is valid enum value"""
-        return value in cls._value2member_map_  # pylint: disable=no-member
+        return value in cls._value2member_map_  # type: ignore[operator] # pylint: disable=no-member
 
 
 @unique
@@ -55,6 +56,7 @@ class WampCodes(Enum):
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
+
     MSG_WELCOME: int = 0
     MSG_PREFIX: int = 1
     MSG_CALL: int = 2

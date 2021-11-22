@@ -13,6 +13,7 @@
 [![Python latest stable](https://badgen.net/pypi/v/fastybird-ws-server-plugin?cache=300&style=flat-square)](https://pypi.org/project/fastybird-ws-server-plugin/)
 [![Python downloads month](https://img.shields.io/pypi/dm/fastybird-ws-server-plugin?cache=300&style=flat-square)](https://pypi.org/project/fastybird-ws-server-plugin/)
 [![Black](https://img.shields.io/badge/black-enabled-brightgreen.svg?style=flat-square)](https://github.com/psf/black)
+[![MyPy](https://img.shields.io/badge/mypy-enabled-brightgreen.svg?style=flat-square)](http://mypy-lang.org)
 
 ## What is FastyBird WS server plugin?
 

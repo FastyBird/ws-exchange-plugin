@@ -18,11 +18,11 @@
 WS server plugin clients events
 """
 
-# Library libs
-from exchange_plugin.events.event import IEvent
+# Library dependencies
+from whistle import Event
 
 
-class ClientSubscribedEvent(IEvent):  # pylint: disable=too-few-public-methods
+class ClientSubscribedEvent(Event):  # pylint: disable=too-few-public-methods
     """
     Event fired by exchange when client is subscribed
 
@@ -31,6 +31,7 @@ class ClientSubscribedEvent(IEvent):  # pylint: disable=too-few-public-methods
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
+
     __client_id: str
 
     EVENT_NAME: str = "ws-server-plugin.clientSubscribed"
@@ -51,7 +52,7 @@ class ClientSubscribedEvent(IEvent):  # pylint: disable=too-few-public-methods
         return self.__client_id
 
 
-class ClientUnsubscribedEvent(IEvent):  # pylint: disable=too-few-public-methods
+class ClientUnsubscribedEvent(Event):  # pylint: disable=too-few-public-methods
     """
     Event fired by exchange when client is unsubscribed
 
@@ -60,6 +61,7 @@ class ClientUnsubscribedEvent(IEvent):  # pylint: disable=too-few-public-methods
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
+
     __client_id: str
 
     EVENT_NAME: str = "ws-server-plugin.clientUnsubscribed"

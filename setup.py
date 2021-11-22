@@ -58,6 +58,7 @@ setup(
     long_description_content_type="text/markdown",
     python_requires=">=3.7",
     packages=find_packages(),
+    package_data={"ws_server_plugin": ["py.typed"]},
     install_requires=[
         "fastybird-modules-metadata",
         "kink",
