@@ -1,4 +1,4 @@
 fastybird-exchange-plugin>=0.4
-fastybird-modules-metadata>=0.8
+fastybird-modules-metadata>=0.9
 kink>=0.6
 setuptools>=57.4
