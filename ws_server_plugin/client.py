@@ -33,7 +33,8 @@ from codecs import IncrementalDecoder
 from collections import deque
 from http.client import HTTPMessage, parse_headers
 from io import BytesIO
-from typing import Dict, List, Optional, Protocol, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
+from typing_extensions import Protocol
 
 # Library dependencies
 import modules_metadata.exceptions as metadata_exceptions
