@@ -34,7 +34,6 @@ from collections import deque
 from http.client import HTTPMessage, parse_headers
 from io import BytesIO
 from typing import Dict, List, Optional, Tuple, Union
-from typing_extensions import Protocol
 
 # Library dependencies
 import modules_metadata.exceptions as metadata_exceptions
@@ -42,6 +41,7 @@ from modules_metadata.loader import load_schema
 from modules_metadata.routing import RoutingKey
 from modules_metadata.types import ModuleOrigin
 from modules_metadata.validator import validate
+from typing_extensions import Protocol
 
 # Library libs
 from ws_server_plugin.exceptions import (
