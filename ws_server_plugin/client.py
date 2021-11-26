@@ -51,7 +51,7 @@ from ws_server_plugin.exceptions import (
     HandleRpcException,
 )
 from ws_server_plugin.logger import Logger
-from ws_server_plugin.types import OPCode, WampCodes
+from ws_server_plugin.types import OPCode, WampCode
 
 
 class SubscribeCallback(Protocol):  # pylint: disable=too-few-public-methods
@@ -233,20 +233,16 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
     # -----------------------------------------------------------------------------
 
     def get_id(self) -> str:
-        """
-        Get client unique identifier
-        """
+        """Get client unique identifier"""
         return self.__wamp_session
 
     # -----------------------------------------------------------------------------
 
     def publish(self, message: str) -> None:
-        """
-        Send data frame to the client
-        """
+        """Send data frame to the client"""
         data: str = json.dumps(
             [
-                WampCodes.MSG_EVENT.value,
+                WampCode.MSG_EVENT.value,
                 self.__WS_SERVER_TOPIC,
                 message,
             ]
@@ -282,17 +278,13 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
     # -----------------------------------------------------------------------------
 
     def is_handshake_finished(self) -> bool:
-        """
-        Flag informing that client has finished handshake process
-        """
+        """Flag informing that client has finished handshake process"""
         return self.__handshake_finished
 
     # -----------------------------------------------------------------------------
 
     def receive_data(self) -> None:
-        """
-        Process received frame
-        """
+        """Process received frame"""
         # Do the HTTP header and handshake
         if self.__handshake_finished is False:
             data = self.sock.recv(self.__HEADER_SIZE)
@@ -329,7 +321,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
                         OPCode.TEXT,
                         json.dumps(
                             [
-                                WampCodes.MSG_WELCOME.value,
+                                WampCode.MSG_WELCOME.value,
                                 self.__wamp_session,
                                 1,
                                 "FB/WebSockets/1.0.0",
@@ -357,9 +349,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
     # -----------------------------------------------------------------------------
 
     def send_buffer(self, buff: bytes, send_all: bool = False) -> Optional[Union[int, bytes]]:
-        """
-        Send buffer content to client
-        """
+        """Send buffer content to client"""
         size = len(buff)
         to_send = size
         already_sent = 0
@@ -390,9 +380,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
     # -----------------------------------------------------------------------------
 
     def get_send_queue(self) -> deque:
-        """
-        Get client payload queue
-        """
+        """Get client payload queue"""
         return self.__send_queue
 
     # -----------------------------------------------------------------------------
@@ -538,16 +526,15 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
         # PAYLOAD STATE
         elif self.__state == self.__PAYLOAD:
-            if self.__received_data:
-                if self.__has_mask is True:
-                    self.__received_data.append(byte ^ self.__mask_array[self.__index % 4])
+            if self.__has_mask is True:
+                self.__received_data.append(byte ^ self.__mask_array[self.__index % 4])
 
-                else:
-                    self.__received_data.append(byte)
+            else:
+                self.__received_data.append(byte)
 
-                # if length exceeds allowable size then we except and remove the connection
-                if len(self.__received_data) >= self.__MAX_PAYLOAD:
-                    raise HandleDataException("Payload exceeded allowable size")
+            # if length exceeds allowable size then we except and remove the connection
+            if len(self.__received_data) >= self.__MAX_PAYLOAD:
+                raise HandleDataException("Payload exceeded allowable size")
 
             # check if we have processed length bytes; if so we are done
             if (self.__index + 1) == self.__length:
@@ -565,9 +552,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
     # -----------------------------------------------------------------------------
 
     def __handle_packet(self) -> None:  # pylint: disable=too-many-statements,too-many-branches
-        """
-        Unpack packet content
-        """
+        """Unpack packet content"""
         if self.__opcode in (OPCode.PONG.value, OPCode.PING.value):
             if len(self.__received_data) > 125:
                 raise HandleDataException("Control frame length can not be > 125")
@@ -677,42 +662,51 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
     # -----------------------------------------------------------------------------
 
     def __handle_message(self, received_data: bytearray) -> None:
-        """
-        Called when websocket frame is received
-        """
+        """Called when websocket frame is received"""
         try:
-            parsed_data: Dict[Union[str, int], Union[str, int, float, bool, None]] = json.loads(received_data)
+            parsed_data = json.loads(received_data.decode("utf-8"))
 
-            if 0 in parsed_data and int(str(parsed_data[0])) == WampCodes.MSG_PREFIX.value:
-                self.__handle_wamp_prefix(parsed_data)
+            if isinstance(parsed_data, List):
+                try:
+                    wamp_code = int(str(parsed_data[0]))
 
-            # RPC from client
-            elif 0 in parsed_data and int(str(parsed_data[0])) == WampCodes.MSG_CALL.value:
-                self.__handle_wamp_call(parsed_data)
+                    if not WampCode.has_value(wamp_code):
+                        self.close(1007, "Invalid WAMP code")
 
-            # Subscribe client to defined topic
-            elif 0 in parsed_data and int(str(parsed_data[0])) == WampCodes.MSG_SUBSCRIBE.value:
-                self.__handle_wamp_subscribe(parsed_data)
+                        return
 
-            # Unsubscribe client from defined topic
-            elif 0 in parsed_data and int(str(parsed_data[0])) == WampCodes.MSG_UNSUBSCRIBE.value:
-                self.__handle_wamp_unsubscribe(parsed_data)
+                    if wamp_code == WampCode.MSG_PREFIX.value:
+                        self.__handle_wamp_prefix(parsed_data)
 
-            elif 0 in parsed_data and int(str(parsed_data[0])) == WampCodes.MSG_PUBLISH.value:
-                self.__handle_wamp_publish(parsed_data)
+                    # RPC from client
+                    elif wamp_code == WampCode.MSG_CALL.value:
+                        self.__handle_wamp_call(parsed_data)
 
-            else:
-                self.close(1007, "Invalid WAMP message type")
+                    # Subscribe client to defined topic
+                    elif wamp_code == WampCode.MSG_SUBSCRIBE.value:
+                        self.__handle_wamp_subscribe(parsed_data)
+
+                    # Unsubscribe client from defined topic
+                    elif wamp_code == WampCode.MSG_UNSUBSCRIBE.value:
+                        self.__handle_wamp_unsubscribe(parsed_data)
+
+                    elif wamp_code == WampCode.MSG_PUBLISH.value:
+                        self.__handle_wamp_publish(parsed_data)
+
+                    return
+
+                except IndexError:
+                    self.close(1007, "Invalid WAMP message format")
+
+            self.close(1007, "Invalid WAMP message type")
 
         except json.JSONDecodeError:
-            self.close(1007)
+            self.close(1007, "Invalid WAMP message format")
 
     # -----------------------------------------------------------------------------
 
     def __send_message(self, fin: bool, opcode: OPCode, data: Union[bytearray, str]) -> None:
-        """
-        Append payload to client buffer
-        """
+        """Append payload to client buffer"""
         payload = bytearray()
 
         first_byte = 0
@@ -750,10 +744,8 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def __handle_wamp_prefix(self, parsed_data: Dict) -> None:
-        """
-        Handle client set prefix message request
-        """
+    def __handle_wamp_prefix(self, parsed_data: List) -> None:
+        """Handle client set prefix message request"""
         self.__prefixes[str(parsed_data[1])] = str(parsed_data[2])
 
         self.__send_message(
@@ -761,7 +753,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
             OPCode.TEXT,
             json.dumps(
                 [
-                    WampCodes.MSG_PREFIX.value,
+                    WampCode.MSG_PREFIX.value,
                     parsed_data[1],
                     str(parsed_data[2]),
                 ]
@@ -770,10 +762,8 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def __handle_wamp_call(self, parsed_data: Dict) -> None:
-        """
-        Handle client RPC message request
-        """
+    def __handle_wamp_call(self, parsed_data: List) -> None:
+        """Handle client RPC message request"""
         parsed_data.pop(0)
 
         rpc_id = str(parsed_data.pop(0))
@@ -795,9 +785,9 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
         if (
             isinstance(parsed_data, Dict) is False
             or "routing_key" not in parsed_data
-            or RoutingKey.has_value(str(parsed_data.get("routing_key"))) is False
+            or RoutingKey.has_value(str(dict(parsed_data).get("routing_key"))) is False
             or "origin" not in parsed_data
-            or ModuleOrigin.has_value(str(parsed_data.get("origin"))) is False
+            or ModuleOrigin.has_value(str(dict(parsed_data).get("origin"))) is False
         ):
             self.__reply_rpc_error(
                 rpc_id,
@@ -809,11 +799,11 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
             return
 
         # Transform message routing key
-        message_routing_key: RoutingKey = RoutingKey(parsed_data.get("routing_key"))
+        message_routing_key: RoutingKey = RoutingKey(dict(parsed_data).get("routing_key"))
         # Transform message origin
-        message_origin: ModuleOrigin = ModuleOrigin(parsed_data.get("origin"))
+        message_origin: ModuleOrigin = ModuleOrigin(dict(parsed_data).get("origin"))
         # Just prepare variable
-        message_data: Optional[Dict] = parsed_data.get("data", None)
+        message_data: Optional[Dict] = dict(parsed_data).get("data", None)
 
         if message_data:
             try:
@@ -843,7 +833,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
             OPCode.TEXT,
             json.dumps(
                 [
-                    WampCodes.MSG_CALL_RESULT.value,
+                    WampCode.MSG_CALL_RESULT.value,
                     rpc_id,
                     {
                         "response": "accepted",
@@ -854,10 +844,8 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def __handle_wamp_subscribe(self, parsed_data: Dict) -> None:
-        """
-        Handle client subscribe message request
-        """
+    def __handle_wamp_subscribe(self, parsed_data: List) -> None:
+        """Handle client subscribe message request"""
         if str(parsed_data[1]) == self.__WS_SERVER_TOPIC:
             self.__logger.debug("New client: %s has subscribed to exchanges topic", self.get_id())
 
@@ -869,10 +857,8 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def __handle_wamp_unsubscribe(self, parsed_data: Dict) -> None:
-        """
-        Handle client unsubscribe message request
-        """
+    def __handle_wamp_unsubscribe(self, parsed_data: List) -> None:
+        """Handle client unsubscribe message request"""
         if str(parsed_data[1]) == self.__WS_SERVER_TOPIC:
             self.__logger.debug("Client: %s has unsubscribed from exchanges topic", self.get_id())
 
@@ -884,17 +870,13 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def __handle_wamp_publish(self, parsed_data: Dict) -> None:
-        """
-        Handle client publish message request
-        """
+    def __handle_wamp_publish(self, parsed_data: List) -> None:
+        """Handle client publish message request"""
 
     # -----------------------------------------------------------------------------
 
     def __validate_rpc_data(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Dict) -> Dict:
-        """
-        Validate received RPC message against defined schema
-        """
+        """Validate received RPC message against defined schema"""
         if routing_key not in self.__ALLOWED_ROUTING_KEYS:
             raise HandleRpcException("Unsupported routing key")
 
@@ -940,15 +922,13 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
     # -----------------------------------------------------------------------------
 
     def __reply_rpc_error(self, rpc_id: str, topic_id: str, message: str, params: Optional[str] = None) -> None:
-        """
-        Send RPC error result to client
-        """
+        """Send RPC error result to client"""
         self.__send_message(
             False,
             OPCode.TEXT,
             json.dumps(
                 [
-                    WampCodes.MSG_CALL_ERROR.value,
+                    WampCode.MSG_CALL_ERROR.value,
                     rpc_id,
                     topic_id,
                     message,

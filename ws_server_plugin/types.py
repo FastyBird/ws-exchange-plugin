@@ -40,6 +40,8 @@ class OPCode(Enum):
     PING: int = 0x09
     PONG: int = 0x0A
 
+    # -----------------------------------------------------------------------------
+
     @classmethod
     def has_value(cls, value: int) -> bool:
         """Check if provided value is valid enum value"""
@@ -47,7 +49,7 @@ class OPCode(Enum):
 
 
 @unique
-class WampCodes(Enum):
+class WampCode(Enum):
     """
     WAMP message code
 
@@ -66,3 +68,10 @@ class WampCodes(Enum):
     MSG_UNSUBSCRIBE: int = 6
     MSG_PUBLISH: int = 7
     MSG_EVENT: int = 8
+
+    # -----------------------------------------------------------------------------
+
+    @classmethod
+    def has_value(cls, value: int) -> bool:
+        """Check if provided value is valid enum value"""
+        return value in cls._value2member_map_  # type: ignore # pylint: disable=no-member

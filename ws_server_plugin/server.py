@@ -93,7 +93,7 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
         select_interval: float = 0.1,
         exchange_consumer: Optional[IConsumer] = None,
     ) -> None:
-        Thread.__init__(self)
+        super().__init__(name="WebSockets server exchange thread", daemon=True)
 
         self.__clients_manager = clients_manager
 
@@ -128,15 +128,13 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
 
         self.__logger = logger
 
-        # Threading config...
-        self.setDaemon(True)
-        self.setName("WebSockets server exchange thread")
-
     # -----------------------------------------------------------------------------
 
     def start(self) -> None:
         """Start server services"""
         self.__stopped = False
+
+        self.__logger.info("Starting WS server")
 
         super().start()
 
@@ -171,6 +169,12 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
     def is_healthy(self) -> bool:
         """Check if server is healthy"""
         return self.is_alive()
+
+    # -----------------------------------------------------------------------------
+
+    def register_consumer(self, consumer: IConsumer) -> None:
+        """Register exchange consumer"""
+        self.__exchange_consumer = consumer
 
     # -----------------------------------------------------------------------------
 
@@ -220,7 +224,7 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
                             client.get_send_queue().appendleft((opcode, remaining))
                             break
 
-                        if opcode == OPCode(OPCode.CLOSE).value:
+                        if opcode == OPCode.CLOSE.value:
                             raise ClientException("Received client close")
 
             except (ClientException, HandleResponseException):
