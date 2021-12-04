@@ -48,7 +48,7 @@ class ApplicationSubscriber implements EventDispatcher\EventSubscriberInterface
 	private Log\LoggerInterface $logger;
 
 	/**
-	 * @return array<string, mixed>
+	 * {@inheritDoc}
 	 */
 	public static function getSubscribedEvents(): array
 	{
