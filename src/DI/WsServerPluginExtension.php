@@ -26,7 +26,7 @@ use Nette\Schema;
 use stdClass;
 
 /**
- * MQTT client plugin
+ * WS server plugin
  *
  * @package        FastyBird:WsServerPlugin!
  * @subpackage     DI
