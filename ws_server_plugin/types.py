@@ -45,7 +45,7 @@ class OPCode(Enum):
     @classmethod
     def has_value(cls, value: int) -> bool:
         """Check if provided value is valid enum value"""
-        return value in cls._value2member_map_  # type: ignore[operator] # pylint: disable=no-member
+        return value in cls._value2member_map_  # pylint: disable=no-member
 
 
 @unique
@@ -74,4 +74,4 @@ class WampCode(Enum):
     @classmethod
     def has_value(cls, value: int) -> bool:
         """Check if provided value is valid enum value"""
-        return value in cls._value2member_map_  # type: ignore # pylint: disable=no-member
+        return value in cls._value2member_map_  # pylint: disable=no-member
