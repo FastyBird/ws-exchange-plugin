@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 #     Copyright 2021. FastyBird s.r.o.
 #
 #     Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,4 +18,4 @@
 WS server for real time communication between clients and server
 """
 
-__version__ = "0.2.15"
+__version__ = "0.2.16"

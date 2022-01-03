@@ -37,7 +37,7 @@
     "contributte/event-dispatcher": "^0.8",
     "cweagans/composer-patches": "^1.7",
     "fastybird/exchange-plugin": "^0.4",
-    "fastybird/modules-metadata": "^0.13",
+    "fastybird/modules-metadata": "^0.14",
     "fastybird/socket-server-factory": "^0.1",
     "ipub/websockets-wamp": "^1.3",
     "nette/bootstrap": "^3.1",
@@ -79,9 +79,6 @@
     "patches": {
       "nette/utils": {
         "Bug: Offset check with null support": "patches/nette.array.offsetCheck.diff"
-      },
-      "ninjify/qa": {
-        "Bug: PHPCS path error": "patches/ninjify-qa-bin-codesniffer.diff"
       }
     }
   }
