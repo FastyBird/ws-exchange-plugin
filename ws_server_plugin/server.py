@@ -28,7 +28,6 @@ from typing import Dict, List, Optional, Union
 # Library dependencies
 from exchange_plugin.consumer import IConsumer
 from exchange_plugin.dispatcher import EventDispatcher
-from exchange_plugin.events.messages import MessageReceivedEvent
 from kink import inject
 from modules_metadata.routing import RoutingKey
 from modules_metadata.types import ModuleOrigin
@@ -341,12 +340,3 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
     def __handle_rpc_message(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Optional[Dict]) -> None:
         if self.__exchange_consumer is not None:
             self.__exchange_consumer.consume(origin=origin, routing_key=routing_key, data=data)
-
-        self.__event_dispatcher.dispatch(
-            MessageReceivedEvent.EVENT_NAME,
-            MessageReceivedEvent(
-                origin=origin,
-                routing_key=routing_key,
-                data=data,
-            ),
-        )

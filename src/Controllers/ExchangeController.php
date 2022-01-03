@@ -16,7 +16,6 @@
 namespace FastyBird\WsServerPlugin\Controllers;
 
 use FastyBird\ExchangePlugin\Consumer as ExchangePluginConsumer;
-use FastyBird\ExchangePlugin\Events as ExchangePluginEvents;
 use FastyBird\ModulesMetadata;
 use FastyBird\ModulesMetadata\Exceptions as ModulesMetadataExceptions;
 use FastyBird\ModulesMetadata\Loaders as ModulesMetadataLoaders;
@@ -24,7 +23,6 @@ use FastyBird\ModulesMetadata\Schemas as ModulesMetadataSchemas;
 use FastyBird\WsServerPlugin\Exceptions;
 use IPub\WebSockets;
 use Nette\Utils;
-use Psr\EventDispatcher;
 use Psr\Log;
 use Throwable;
 
@@ -48,16 +46,12 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 	/** @var ModulesMetadataSchemas\IValidator */
 	private ModulesMetadataSchemas\IValidator $jsonValidator;
 
-	/** @var EventDispatcher\EventDispatcherInterface */
-	private EventDispatcher\EventDispatcherInterface $dispatcher;
-
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
 		ModulesMetadataLoaders\ISchemaLoader $schemaLoader,
 		ModulesMetadataSchemas\IValidator $jsonValidator,
-		EventDispatcher\EventDispatcherInterface $dispatcher,
 		?ExchangePluginConsumer\IConsumer $consumer,
 		?Log\LoggerInterface $logger
 	) {
@@ -66,7 +60,6 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 		$this->schemaLoader = $schemaLoader;
 		$this->consumer = $consumer;
 		$this->jsonValidator = $jsonValidator;
-		$this->dispatcher = $dispatcher;
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
@@ -103,12 +96,6 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 						$data,
 					);
 				}
-
-				$this->dispatcher->dispatch(new ExchangePluginEvents\MessageReceivedEvent(
-					ModulesMetadata\Types\ModuleOriginType::get($args['origin']),
-					ModulesMetadata\Types\RoutingKeyType::get($args['routing_key']),
-					$data,
-				));
 				break;
 
 			default:
