@@ -96,6 +96,7 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 						$data,
 					);
 				}
+
 				break;
 
 			default:
