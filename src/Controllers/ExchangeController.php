@@ -86,7 +86,7 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 			case ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_CONFIGURATION_DATA_ROUTING_KEY:
 			case ModulesMetadata\Constants::MESSAGE_BUS_CONNECTORS_CONTROL_DATA_ROUTING_KEY:
 			case ModulesMetadata\Constants::MESSAGE_BUS_TRIGGERS_CONTROL_DATA_ROUTING_KEY:
-				$schema = $this->schemaLoader->load($args['origin'], $args['routing_key']);
+				$schema = $this->schemaLoader->loadByRoutingKey($args['routing_key']);
 				$data = $this->parseData($args, $schema);
 
 				if ($this->consumer !== null) {

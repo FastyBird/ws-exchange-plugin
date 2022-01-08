@@ -37,7 +37,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 # Library dependencies
 import modules_metadata.exceptions as metadata_exceptions
-from modules_metadata.loader import load_schema
+from modules_metadata.loader import load_schema_by_routing_key
 from modules_metadata.routing import RoutingKey
 from modules_metadata.types import ModuleOrigin
 from modules_metadata.validator import validate
@@ -881,7 +881,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
             raise HandleRpcException("Unsupported routing key")
 
         try:
-            schema: str = load_schema(origin, routing_key)
+            schema: str = load_schema_by_routing_key(routing_key)
 
         except metadata_exceptions.FileNotFoundException as ex:
             self.__logger.error(
