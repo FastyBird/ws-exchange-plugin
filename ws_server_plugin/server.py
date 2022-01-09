@@ -26,7 +26,7 @@ from threading import Thread
 from typing import Dict, List, Optional, Union
 
 # Library dependencies
-from exchange_plugin.consumer import IConsumer
+from exchange_plugin.consumer import Consumer
 from exchange_plugin.dispatcher import EventDispatcher
 from kink import inject
 from modules_metadata.routing import RoutingKey
@@ -73,7 +73,7 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
     __clients_manager: ClientsManager
 
     __event_dispatcher: EventDispatcher
-    __exchange_consumer: Optional[IConsumer] = None
+    __exchange_consumer: Consumer
 
     __logger: Logger
 
@@ -83,6 +83,7 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
         self,
         clients_manager: ClientsManager,
         event_dispatcher: EventDispatcher,
+        exchange_consumer: Consumer,
         logger: Logger,
         host: Optional[str] = None,
         port: int = 9000,
@@ -90,7 +91,6 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
         key_file: Optional[str] = None,
         ssl_version: int = ssl.PROTOCOL_TLSv1,
         select_interval: float = 0.1,
-        exchange_consumer: Optional[IConsumer] = None,
     ) -> None:
         super().__init__(name="WebSockets server exchange thread", daemon=True)
 
@@ -168,12 +168,6 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
     def is_healthy(self) -> bool:
         """Check if server is healthy"""
         return self.is_alive()
-
-    # -----------------------------------------------------------------------------
-
-    def register_consumer(self, consumer: IConsumer) -> None:
-        """Register exchange consumer"""
-        self.__exchange_consumer = consumer
 
     # -----------------------------------------------------------------------------
 

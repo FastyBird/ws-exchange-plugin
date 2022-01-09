@@ -36,7 +36,7 @@
     "contributte/console": "^0.9",
     "contributte/event-dispatcher": "^0.8",
     "cweagans/composer-patches": "^1.7",
-    "fastybird/exchange-plugin": "^0.4",
+    "fastybird/exchange-plugin": "^0.5",
     "fastybird/modules-metadata": "^0.22",
     "fastybird/socket-server-factory": "^0.1",
     "ipub/websockets-wamp": "^1.3",

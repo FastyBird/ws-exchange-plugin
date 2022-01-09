@@ -37,8 +37,8 @@ use Throwable;
 final class ExchangeController extends WebSockets\Application\Controller\Controller
 {
 
-	/** @var ExchangePluginConsumer\IConsumer|null */
-	private ?ExchangePluginConsumer\IConsumer $consumer;
+	/** @var ExchangePluginConsumer\IConsumer */
+	private ExchangePluginConsumer\IConsumer $consumer;
 
 	/** @var ModulesMetadataLoaders\ISchemaLoader */
 	private ModulesMetadataLoaders\ISchemaLoader $schemaLoader;
@@ -52,7 +52,7 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 	public function __construct(
 		ModulesMetadataLoaders\ISchemaLoader $schemaLoader,
 		ModulesMetadataSchemas\IValidator $jsonValidator,
-		?ExchangePluginConsumer\IConsumer $consumer,
+		ExchangePluginConsumer\IConsumer $consumer,
 		?Log\LoggerInterface $logger
 	) {
 		parent::__construct();
@@ -89,13 +89,11 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 				$schema = $this->schemaLoader->loadByRoutingKey($args['routing_key']);
 				$data = $this->parseData($args, $schema);
 
-				if ($this->consumer !== null) {
-					$this->consumer->consume(
-						ModulesMetadata\Types\ModuleOriginType::get($args['origin']),
-						ModulesMetadata\Types\RoutingKeyType::get($args['routing_key']),
-						$data,
-					);
-				}
+				$this->consumer->consume(
+					ModulesMetadata\Types\ModuleOriginType::get($args['origin']),
+					ModulesMetadata\Types\RoutingKeyType::get($args['routing_key']),
+					$data,
+				);
 
 				break;
 
