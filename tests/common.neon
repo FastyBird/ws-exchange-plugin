@@ -14,11 +14,13 @@ php:
     date.timezone: Europe/Prague
 
 extensions:
-    contributteEvents       : Contributte\EventDispatcher\DI\EventDispatcherExtension
     fbMetadata              : FastyBird\Metadata\DI\MetadataExtension
     fbSocketServerFactory   : FastyBird\SocketServerFactory\DI\SocketServerFactoryExtension
     ipubWebSocketsWAMP      : IPub\WebSocketsWAMP\DI\WebSocketsWAMPExtension
     ipubWebSockets          : IPub\WebSockets\DI\WebSocketsExtension
+
+services:
+    - {factory: Symfony\Component\EventDispatcher\EventDispatcher}
 
 ipubWebSockets:
     routes:
