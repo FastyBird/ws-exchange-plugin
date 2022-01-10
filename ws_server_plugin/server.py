@@ -22,15 +22,15 @@ WS server plugin websockets server
 import select
 import socket
 import ssl
+from abc import ABC
 from threading import Thread
 from typing import Dict, List, Optional, Union
 
 # Library dependencies
-from exchange_plugin.consumer import Consumer
-from exchange_plugin.dispatcher import EventDispatcher
 from kink import inject
-from modules_metadata.routing import RoutingKey
-from modules_metadata.types import ModuleOrigin
+from metadata.routing import RoutingKey
+from metadata.types import ModuleOrigin
+from whistle import EventDispatcher
 
 # Library libs
 from ws_server_plugin.client import WampClient
@@ -44,6 +44,25 @@ from ws_server_plugin.exceptions import (
 )
 from ws_server_plugin.logger import Logger
 from ws_server_plugin.types import OPCode
+
+
+class IConsumer(ABC):  # pylint: disable=too-few-public-methods
+    """
+    WS server consumer interface
+
+    @package        FastyBird:WsServerPlugin!
+    @module         consumer
+
+    @author         Adam Kadlec <adam.kadlec@fastybird.com>
+    """
+
+    def consume(
+        self,
+        origin: ModuleOrigin,
+        routing_key: RoutingKey,
+        data: Optional[Dict[str, Union[str, int, float, bool, None]]],
+    ) -> None:
+        """Consume data received from exchange bus"""
 
 
 @inject
@@ -72,8 +91,8 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
 
     __clients_manager: ClientsManager
 
-    __event_dispatcher: EventDispatcher
-    __exchange_consumer: Consumer
+    __dispatcher: Optional[EventDispatcher] = None
+    __consumer: Optional[IConsumer] = None
 
     __logger: Logger
 
@@ -82,8 +101,6 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
     def __init__(  # pylint: disable=too-many-arguments
         self,
         clients_manager: ClientsManager,
-        event_dispatcher: EventDispatcher,
-        exchange_consumer: Consumer,
         logger: Logger,
         host: Optional[str] = None,
         port: int = 9000,
@@ -91,6 +108,8 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
         key_file: Optional[str] = None,
         ssl_version: int = ssl.PROTOCOL_TLSv1,
         select_interval: float = 0.1,
+        dispatcher: Optional[EventDispatcher] = None,
+        consumer: Optional[IConsumer] = None,
     ) -> None:
         super().__init__(name="WebSockets server exchange thread", daemon=True)
 
@@ -122,8 +141,8 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
             self.__secured_context = ssl.SSLContext(ssl_version)
             self.__secured_context.load_cert_chain(cert_file, key_file)
 
-        self.__exchange_consumer = exchange_consumer
-        self.__event_dispatcher = event_dispatcher
+        self.__consumer = consumer
+        self.__dispatcher = dispatcher
 
         self.__logger = logger
 
@@ -312,25 +331,27 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
     # -----------------------------------------------------------------------------
 
     def __handle_client_subscribed(self, client: WampClient) -> None:
-        self.__event_dispatcher.dispatch(
-            ClientSubscribedEvent.EVENT_NAME,
-            ClientSubscribedEvent(
-                client_id=client.get_id(),
-            ),
-        )
+        if self.__dispatcher is not None:
+            self.__dispatcher.dispatch(
+                ClientSubscribedEvent.EVENT_NAME,
+                ClientSubscribedEvent(
+                    client_id=client.get_id(),
+                ),
+            )
 
     # -----------------------------------------------------------------------------
 
     def __handle_client_unsubscribed(self, client: WampClient) -> None:
-        self.__event_dispatcher.dispatch(
-            ClientUnsubscribedEvent.EVENT_NAME,
-            ClientUnsubscribedEvent(
-                client_id=client.get_id(),
-            ),
-        )
+        if self.__dispatcher is not None:
+            self.__dispatcher.dispatch(
+                ClientUnsubscribedEvent.EVENT_NAME,
+                ClientUnsubscribedEvent(
+                    client_id=client.get_id(),
+                ),
+            )
 
     # -----------------------------------------------------------------------------
 
     def __handle_rpc_message(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Optional[Dict]) -> None:
-        if self.__exchange_consumer is not None:
-            self.__exchange_consumer.consume(origin=origin, routing_key=routing_key, data=data)
+        if self.__consumer is not None:
+            self.__consumer.consume(origin=origin, routing_key=routing_key, data=data)

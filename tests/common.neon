@@ -11,27 +11,15 @@
 # @date			19.07.20
 
 php:
-	date.timezone: Europe/Prague
+    date.timezone: Europe/Prague
 
 extensions:
-	contributteConsole		: Contributte\Console\DI\ConsoleExtension(%consoleMode%)
-	contributteEvents		: Contributte\EventDispatcher\DI\EventDispatcherExtension
-	fbExchangePlugin		: FastyBird\ExchangePlugin\DI\ExchangePluginExtension
-	fbModulesMetadata		: FastyBird\ModulesMetadata\DI\ModulesMetadataExtension
-	fbSocketServerFactory	: FastyBird\SocketServerFactory\DI\SocketServerFactoryExtension
-	ipubWebSocketsWAMP		: IPub\WebSocketsWAMP\DI\WebSocketsWAMPExtension
-	ipubWebSockets			: IPub\WebSockets\DI\WebSocketsExtension
-
-contributteConsole:
-	name: FastyBird:WsServerPlugin!
-	version: '1.0'
-	catchExceptions: true
-	autoExit: true
-	url: http://example.com
-	lazy: false
-	helperSet: \Symfony\Component\Console\Helper\HelperSet
-	helpers: []
+    contributteEvents       : Contributte\EventDispatcher\DI\EventDispatcherExtension
+    fbMetadata              : FastyBird\Metadata\DI\MetadataExtension
+    fbSocketServerFactory   : FastyBird\SocketServerFactory\DI\SocketServerFactoryExtension
+    ipubWebSocketsWAMP      : IPub\WebSocketsWAMP\DI\WebSocketsWAMPExtension
+    ipubWebSockets          : IPub\WebSockets\DI\WebSocketsExtension
 
 ipubWebSockets:
-	routes:
-		'/io/exchange' : 'ExchangeController:'
+    routes:
+        '/io/exchange' : 'ExchangeController:'

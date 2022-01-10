@@ -60,7 +60,7 @@ setup(
     packages=find_packages(),
     package_data={"ws_server_plugin": ["py.typed"]},
     install_requires=[
-        "fastybird-modules-metadata",
+        "fastybird-metadata",
         "kink",
         "setuptools",
     ],

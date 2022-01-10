@@ -24,8 +24,8 @@ from socket import socket
 from typing import Dict, Optional, Union
 
 # Library dependencies
-from modules_metadata.routing import RoutingKey
-from modules_metadata.types import ModuleOrigin
+from metadata.routing import RoutingKey
+from metadata.types import ModuleOrigin
 
 # Library libs
 from ws_server_plugin.client import WampClient

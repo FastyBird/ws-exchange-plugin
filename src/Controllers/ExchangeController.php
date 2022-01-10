@@ -15,11 +15,11 @@
 
 namespace FastyBird\WsServerPlugin\Controllers;
 
-use FastyBird\ExchangePlugin\Consumer as ExchangePluginConsumer;
-use FastyBird\ModulesMetadata;
-use FastyBird\ModulesMetadata\Exceptions as ModulesMetadataExceptions;
-use FastyBird\ModulesMetadata\Loaders as ModulesMetadataLoaders;
-use FastyBird\ModulesMetadata\Schemas as ModulesMetadataSchemas;
+use FastyBird\Metadata;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Metadata\Loaders as MetadataLoaders;
+use FastyBird\Metadata\Schemas as MetadataSchemas;
+use FastyBird\WsServerPlugin\Consumer;
 use FastyBird\WsServerPlugin\Exceptions;
 use IPub\WebSockets;
 use Nette\Utils;
@@ -37,23 +37,23 @@ use Throwable;
 final class ExchangeController extends WebSockets\Application\Controller\Controller
 {
 
-	/** @var ExchangePluginConsumer\IConsumer */
-	private ExchangePluginConsumer\IConsumer $consumer;
+	/** @var Consumer\IConsumer|null */
+	private ?Consumer\IConsumer $consumer;
 
-	/** @var ModulesMetadataLoaders\ISchemaLoader */
-	private ModulesMetadataLoaders\ISchemaLoader $schemaLoader;
+	/** @var MetadataLoaders\ISchemaLoader */
+	private MetadataLoaders\ISchemaLoader $schemaLoader;
 
-	/** @var ModulesMetadataSchemas\IValidator */
-	private ModulesMetadataSchemas\IValidator $jsonValidator;
+	/** @var MetadataSchemas\IValidator */
+	private MetadataSchemas\IValidator $jsonValidator;
 
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
-		ModulesMetadataLoaders\ISchemaLoader $schemaLoader,
-		ModulesMetadataSchemas\IValidator $jsonValidator,
-		ExchangePluginConsumer\IConsumer $consumer,
-		?Log\LoggerInterface $logger
+		MetadataLoaders\ISchemaLoader $schemaLoader,
+		MetadataSchemas\IValidator $jsonValidator,
+		?Consumer\IConsumer $consumer = null,
+		?Log\LoggerInterface $logger = null
 	) {
 		parent::__construct();
 
@@ -78,22 +78,24 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 		}
 
 		switch ($args['routing_key']) {
-			case ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_CONTROL_DATA_ROUTING_KEY:
-			case ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_PROPERTIES_DATA_ROUTING_KEY:
-			case ModulesMetadata\Constants::MESSAGE_BUS_DEVICES_CONFIGURATION_DATA_ROUTING_KEY:
-			case ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_CONTROL_DATA_ROUTING_KEY:
-			case ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_PROPERTIES_DATA_ROUTING_KEY:
-			case ModulesMetadata\Constants::MESSAGE_BUS_CHANNELS_CONFIGURATION_DATA_ROUTING_KEY:
-			case ModulesMetadata\Constants::MESSAGE_BUS_CONNECTORS_CONTROL_DATA_ROUTING_KEY:
-			case ModulesMetadata\Constants::MESSAGE_BUS_TRIGGERS_CONTROL_DATA_ROUTING_KEY:
+			case Metadata\Constants::MESSAGE_BUS_CONNECTOR_ACTION_ROUTING_KEY:
+			case Metadata\Constants::MESSAGE_BUS_DEVICE_ACTION_ROUTING_KEY:
+			case Metadata\Constants::MESSAGE_BUS_DEVICE_PROPERTY_ACTION_ROUTING_KEY:
+			case Metadata\Constants::MESSAGE_BUS_DEVICE_CONFIGURATION_ACTION_ROUTING_KEY:
+			case Metadata\Constants::MESSAGE_BUS_CHANNEL_ACTION_ROUTING_KEY:
+			case Metadata\Constants::MESSAGE_BUS_CHANNEL_PROPERTY_ACTION_ROUTING_KEY:
+			case Metadata\Constants::MESSAGE_BUS_CHANNEL_CONFIGURATION_ACTION_ROUTING_KEY:
+			case Metadata\Constants::MESSAGE_BUS_TRIGGER_ACTION_ROUTING_KEY:
 				$schema = $this->schemaLoader->loadByRoutingKey($args['routing_key']);
 				$data = $this->parseData($args, $schema);
 
-				$this->consumer->consume(
-					ModulesMetadata\Types\ModuleOriginType::get($args['origin']),
-					ModulesMetadata\Types\RoutingKeyType::get($args['routing_key']),
-					$data,
-				);
+				if ($this->consumer !== null) {
+					$this->consumer->consume(
+						Metadata\Types\ModuleOriginType::get($args['origin']),
+						Metadata\Types\RoutingKeyType::get($args['routing_key']),
+						$data,
+					);
+				}
 
 				break;
 
@@ -131,7 +133,7 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 
 			throw new Exceptions\InvalidArgumentException('Provided data are not valid json format', 0, $ex);
 
-		} catch (ModulesMetadataExceptions\InvalidDataException $ex) {
+		} catch (MetadataExceptions\InvalidDataException $ex) {
 			$this->logger->debug('[FB:PLUGIN:WS_SERVER] Received message is not valid', [
 				'exception' => [
 					'message' => $ex->getMessage(),

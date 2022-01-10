@@ -36,11 +36,11 @@ from io import BytesIO
 from typing import Dict, List, Optional, Tuple, Union
 
 # Library dependencies
-import modules_metadata.exceptions as metadata_exceptions
-from modules_metadata.loader import load_schema_by_routing_key
-from modules_metadata.routing import RoutingKey
-from modules_metadata.types import ModuleOrigin
-from modules_metadata.validator import validate
+import metadata.exceptions as metadata_exceptions
+from metadata.loader import load_schema_by_routing_key
+from metadata.routing import RoutingKey
+from metadata.types import ModuleOrigin
+from metadata.validator import validate
 from typing_extensions import Protocol
 
 # Library libs

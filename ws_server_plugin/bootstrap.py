@@ -24,7 +24,6 @@ WS server plugin DI container
 import logging
 
 # Library dependencies
-from exchange_plugin.publisher import Publisher as ExchangePublisher
 from kink import di
 
 # Library libs
@@ -42,7 +41,7 @@ def create_container(logger: logging.Logger = logging.getLogger("dummy")) -> Non
     di[ClientsManager] = ClientsManager(logger=di[Logger])
     di["fb-ws-server-plugin_clients-manager"] = di[ClientsManager]
 
-    di[WebsocketsServer] = WebsocketsServer(  # type: ignore[call-arg]
+    di[WebsocketsServer] = WebsocketsServer(
         clients_manager=di[ClientsManager],
         logger=di[Logger],
     )
@@ -50,5 +49,3 @@ def create_container(logger: logging.Logger = logging.getLogger("dummy")) -> Non
 
     di[Publisher] = Publisher(clients_manager=di[ClientsManager])
     di["fb-ws-server-plugin_publisher"] = di[Publisher]
-
-    di[ExchangePublisher].register_publisher(di[Publisher])
