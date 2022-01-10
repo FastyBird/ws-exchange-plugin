@@ -17,7 +17,10 @@
 
 ## What is FastyBird WS server plugin?
 
-This is a combined plugin for [Nette framework](https://nette.org) and [Python](https://www.python.org) which is implementing [WAMPv1](https://wamp-proto.org) server based on [iPbulikuj WAMP server](https://github.com/ipublikuj/websockets-wamp) extension for [FastyBird](https://www.fastybird.com) IoT services
+This is a combined plugin for [Nette framework](https://nette.org) and [Python](https://www.python.org) which is
+implementing [WAMPv1](https://wamp-proto.org) server based
+on [iPbulikuj WAMP server](https://github.com/ipublikuj/websockets-wamp) extension
+for [FastyBird](https://www.fastybird.com) IoT services
 
 ## Installation
 
@@ -39,7 +42,9 @@ $ pip install fastybird-ws-server-plugin
 
 ## Documentation
 
-Learn how to connect & call RPC messages in [documentation](https://github.com/FastyBird/ws-server-plugin/blob/master/.docs/en/index.md).
+Learn how to connect & call RPC messages
+in [documentation](https://github.com/FastyBird/ws-server-plugin/blob/master/.docs/en/index.md).
 
 ***
-Homepage [https://www.fastybird.com](https://www.fastybird.com) and repository [https://github.com/FastyBird/ws-server-plugin](https://github.com/FastyBird/ws-server-plugin).
+Homepage [https://www.fastybird.com](https://www.fastybird.com) and
+repository [https://github.com/FastyBird/ws-server-plugin](https://github.com/FastyBird/ws-server-plugin).

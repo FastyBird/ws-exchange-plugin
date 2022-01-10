@@ -60,7 +60,7 @@ class WsServerPluginExtension extends DI\CompilerExtension
 	public function getConfigSchema(): Schema\Schema
 	{
 		return Schema\Expect::structure([
-			'keys' => Schema\Expect::string()->default(null),
+			'keys'    => Schema\Expect::string()->default(null),
 			'origins' => Schema\Expect::string()->default(null),
 		]);
 	}

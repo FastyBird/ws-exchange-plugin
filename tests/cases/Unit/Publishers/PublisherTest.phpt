@@ -80,6 +80,24 @@ final class PublisherTest extends BaseTestCase
 
 	/**
 	 * @param Utils\ArrayHash $data
+	 *
+	 * @return mixed[]
+	 */
+	private function dataToArray(Utils\ArrayHash $data): array
+	{
+		$transformed = (array) $data;
+
+		foreach ($transformed as $key => $value) {
+			if ($value instanceof Utils\ArrayHash) {
+				$transformed[$key] = $this->dataToArray($value);
+			}
+		}
+
+		return $transformed;
+	}
+
+	/**
+	 * @param Utils\ArrayHash $data
 	 * @param Metadata\Types\RoutingKeyType $routingKey
 	 * @param Metadata\Types\ModuleOriginType $origin
 	 *
@@ -253,24 +271,6 @@ final class PublisherTest extends BaseTestCase
 
 		$publisher = $this->container->getByType(Publishers\Publisher::class);
 		$publisher->publish($origin, $routingKey, $data);
-	}
-
-	/**
-	 * @param Utils\ArrayHash $data
-	 *
-	 * @return mixed[]
-	 */
-	private function dataToArray(Utils\ArrayHash $data): array
-	{
-		$transformed = (array) $data;
-
-		foreach ($transformed as $key => $value) {
-			if ($value instanceof Utils\ArrayHash) {
-				$transformed[$key] = $this->dataToArray($value);
-			}
-		}
-
-		return $transformed;
 	}
 
 }

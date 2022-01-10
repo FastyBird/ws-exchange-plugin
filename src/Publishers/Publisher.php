@@ -168,6 +168,24 @@ final class Publisher implements IPublisher
 	}
 
 	/**
+	 * @param Utils\ArrayHash $data
+	 *
+	 * @return mixed[]
+	 */
+	private function dataToArray(Utils\ArrayHash $data): array
+	{
+		$transformed = (array) $data;
+
+		foreach ($transformed as $key => $value) {
+			if ($value instanceof Utils\ArrayHash) {
+				$transformed[$key] = $this->dataToArray($value);
+			}
+		}
+
+		return $transformed;
+	}
+
+	/**
 	 * @param string $destination
 	 * @param mixed[] $data
 	 *
@@ -210,24 +228,6 @@ final class Publisher implements IPublisher
 		}
 
 		return false;
-	}
-
-	/**
-	 * @param Utils\ArrayHash $data
-	 *
-	 * @return mixed[]
-	 */
-	private function dataToArray(Utils\ArrayHash $data): array
-	{
-		$transformed = (array) $data;
-
-		foreach ($transformed as $key => $value) {
-			if ($value instanceof Utils\ArrayHash) {
-				$transformed[$key] = $this->dataToArray($value);
-			}
-		}
-
-		return $transformed;
 	}
 
 }

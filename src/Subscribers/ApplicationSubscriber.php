@@ -47,16 +47,6 @@ class ApplicationSubscriber implements EventDispatcher\EventSubscriberInterface
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public static function getSubscribedEvents(): array
-	{
-		return [
-			SocketServerFactoryEvents\InitializeEvent::class  => 'initialize',
-		];
-	}
-
 	public function __construct(
 		EventLoop\LoopInterface $loop,
 		WebSockets\Server\Handlers $handlers,
@@ -68,6 +58,16 @@ class ApplicationSubscriber implements EventDispatcher\EventSubscriberInterface
 		$this->configuration = $configuration;
 
 		$this->logger = $logger ?? new Log\NullLogger();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public static function getSubscribedEvents(): array
+	{
+		return [
+			SocketServerFactoryEvents\InitializeEvent::class => 'initialize',
+		];
 	}
 
 	/**

@@ -23,7 +23,6 @@ import select
 import socket
 import ssl
 from abc import ABC
-from threading import Thread
 from typing import Dict, List, Optional, Union
 
 # Library dependencies
@@ -66,7 +65,7 @@ class IConsumer(ABC):  # pylint: disable=too-few-public-methods
 
 
 @inject
-class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
+class Server:  # pylint: disable=too-many-instance-attributes
     """
     Main websockets server instance
 
@@ -75,8 +74,6 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
-
-    __stopped: bool = False
 
     __request_queue_size: int = 5
     __select_interval: float = 0.1
@@ -111,8 +108,6 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
         dispatcher: EventDispatcher = None,  # type: ignore[assignment]
         consumer: IConsumer = None,  # type: ignore[assignment]
     ) -> None:
-        super().__init__(name="WebSockets server exchange thread", daemon=True)
-
         self.__clients_manager = clients_manager
 
         fam = socket.AF_INET6 if host is None else 0  # pylint: disable=no-member
@@ -150,49 +145,25 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
 
     def start(self) -> None:
         """Start server services"""
-        self.__stopped = False
-
         self.__logger.info("Starting WS server")
-
-        super().start()
 
     # -----------------------------------------------------------------------------
 
     def stop(self) -> None:
         """Close all opened connections & stop server thread"""
-        self.__stopped = True
-
         for client in self.__clients_manager:
             client.close()
 
             self.__handle_close(client=client)
 
+        self.__server_socket.close()
+
         self.__logger.info("Closing WS server")
 
     # -----------------------------------------------------------------------------
 
-    def run(self) -> None:
+    def handle(self) -> None:  # pylint: disable=too-many-instance-attributes, too-many-statements, too-many-branches
         """Process server communication"""
-        self.__stopped = False
-
-        while not self.__stopped:
-            self.__handle_request()
-
-        self.__server_socket.close()
-
-        self.__logger.info("WS server was closed")
-
-    # -----------------------------------------------------------------------------
-
-    def is_healthy(self) -> bool:
-        """Check if server is healthy"""
-        return self.is_alive()
-
-    # -----------------------------------------------------------------------------
-
-    def __handle_request(  # pylint: disable=too-many-instance-attributes, too-many-statements, too-many-branches
-        self,
-    ) -> None:
         writers = []
 
         for fileno in self.__listeners:

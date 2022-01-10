@@ -30,7 +30,7 @@ from kink import di
 from ws_server_plugin.clients import ClientsManager
 from ws_server_plugin.logger import Logger
 from ws_server_plugin.publisher import Publisher
-from ws_server_plugin.server import WebsocketsServer
+from ws_server_plugin.server import Server
 
 
 def create_container(logger: logging.Logger = logging.getLogger("dummy")) -> None:
@@ -41,11 +41,11 @@ def create_container(logger: logging.Logger = logging.getLogger("dummy")) -> Non
     di[ClientsManager] = ClientsManager(logger=di[Logger])
     di["fb-ws-server-plugin_clients-manager"] = di[ClientsManager]
 
-    di[WebsocketsServer] = WebsocketsServer(
+    di[Server] = Server(
         clients_manager=di[ClientsManager],
         logger=di[Logger],
     )
-    di["fb-ws-server-plugin_server"] = di[WebsocketsServer]
+    di["fb-ws-server-plugin_server"] = di[Server]
 
     di[Publisher] = Publisher(clients_manager=di[ClientsManager])
     di["fb-ws-server-plugin_publisher"] = di[Publisher]
