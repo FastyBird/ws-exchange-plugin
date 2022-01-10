@@ -63,6 +63,7 @@ setup(
         "fastybird-metadata",
         "kink",
         "setuptools",
+        "whistle"
     ],
     download_url="https://github.com/FastyBird/ws-server-plugin/archive/%s.tar.gz" % VERSION,
     classifiers=[
