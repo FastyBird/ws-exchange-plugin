@@ -21,11 +21,7 @@ WS server plugin logger
 # Python base dependencies
 import logging
 
-# Library dependencies
-from kink import inject
 
-
-@inject
 class Logger:
     """
     WS server plugin logger

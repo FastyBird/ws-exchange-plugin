@@ -108,8 +108,8 @@ class WebsocketsServer(Thread):  # pylint: disable=too-many-instance-attributes
         key_file: Optional[str] = None,
         ssl_version: int = ssl.PROTOCOL_TLSv1,
         select_interval: float = 0.1,
-        dispatcher: Optional[EventDispatcher] = None,
-        consumer: Optional[IConsumer] = None,
+        dispatcher: EventDispatcher = None,  # type: ignore[assignment]
+        consumer: IConsumer = None,  # type: ignore[assignment]
     ) -> None:
         super().__init__(name="WebSockets server exchange thread", daemon=True)
 

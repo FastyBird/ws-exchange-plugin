@@ -22,7 +22,6 @@ WS server plugin publisher
 from typing import Dict, Optional
 
 # Library dependencies
-from kink import inject
 from metadata.routing import RoutingKey
 from metadata.types import ModuleOrigin
 
@@ -30,7 +29,6 @@ from metadata.types import ModuleOrigin
 from ws_server_plugin.clients import ClientsManager
 
 
-@inject
 class Publisher:  # pylint: disable=too-few-public-methods
     """
     Exchange data publisher
