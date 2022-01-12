@@ -133,10 +133,14 @@ final class Publisher implements IPublisher
 		?Utils\ArrayHash $data
 	): void {
 		if (!in_array($routingKey->getValue(), self::ROUTING_KEYS, true)) {
-			$this->logger->warning('[FB:PLUGIN:WS_SERVER] Provided routing key is not support by this publisher', [
-				'routing_key' => $routingKey->getValue(),
-				'origin'      => $origin->getValue(),
-				'data'        => $data !== null ? $this->dataToArray($data) : null,
+			$this->logger->warning('Provided routing key is not support by this publisher', [
+				'source'  => 'ws-server-plugin-publisher',
+				'type'    => 'publish',
+				'message' => [
+					'routing_key' => $routingKey->getValue(),
+					'origin'      => $origin->getValue(),
+					'data'        => $data !== null ? $this->dataToArray($data) : null,
+				],
 			]);
 
 			return;
@@ -152,17 +156,25 @@ final class Publisher implements IPublisher
 		);
 
 		if ($result) {
-			$this->logger->info('[FB:PLUGIN:WS_SERVER] Successfully published message', [
-				'routing_key' => $routingKey->getValue(),
-				'origin'      => $origin->getValue(),
-				'data'        => $data !== null ? $this->dataToArray($data) : null,
+			$this->logger->debug('Successfully published message', [
+				'source'  => 'ws-server-plugin-publisher',
+				'type'    => 'publish',
+				'message' => [
+					'routing_key' => $routingKey->getValue(),
+					'origin'      => $origin->getValue(),
+					'data'        => $data !== null ? $this->dataToArray($data) : null,
+				],
 			]);
 
 		} else {
-			$this->logger->error('[FB:PLUGIN:WS_SERVER] Message could not be published to exchange', [
-				'routing_key' => $routingKey->getValue(),
-				'origin'      => $origin->getValue(),
-				'data'        => $data !== null ? $this->dataToArray($data) : null,
+			$this->logger->error('Message could not be published to exchange', [
+				'source'  => 'ws-server-plugin-publisher',
+				'type'    => 'publish',
+				'message' => [
+					'routing_key' => $routingKey->getValue(),
+					'origin'      => $origin->getValue(),
+					'data'        => $data !== null ? $this->dataToArray($data) : null,
+				],
 			]);
 		}
 	}
@@ -201,8 +213,10 @@ final class Publisher implements IPublisher
 			if ($this->topicsStorage->hasTopic($link)) {
 				$topic = $this->topicsStorage->getTopic($link);
 
-				$this->logger->debug('[FB:PLUGIN:WS_SERVER] Broadcasting message to topic', [
-					'link' => $link,
+				$this->logger->debug('Broadcasting message to topic', [
+					'source' => 'ws-server-plugin-publisher',
+					'type'   => 'broadcast',
+					'link'   => $link,
 				]);
 
 				$topic->broadcast(Nette\Utils\Json::encode($data));
@@ -210,7 +224,9 @@ final class Publisher implements IPublisher
 				return true;
 			}
 		} catch (Nette\Utils\JsonException $ex) {
-			$this->logger->error('[FB:PLUGIN:WS_SERVER] Data could not be converted to message', [
+			$this->logger->error('Data could not be converted to message', [
+				'source'    => 'ws-server-plugin-publisher',
+				'type'      => 'broadcast',
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code'    => $ex->getCode(),
@@ -219,7 +235,9 @@ final class Publisher implements IPublisher
 
 		} catch (Throwable $ex) {
 			var_dump($ex->getMessage());
-			$this->logger->error('[FB:PLUGIN:WS_SERVER] Data could not be broadcasts to clients', [
+			$this->logger->error('Data could not be broadcasts to clients', [
+				'source'  => 'ws-server-plugin-publisher',
+				'type'    => 'broadcast',
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code'    => $ex->getCode(),

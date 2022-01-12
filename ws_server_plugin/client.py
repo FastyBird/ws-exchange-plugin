@@ -847,7 +847,14 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
     def __handle_wamp_subscribe(self, parsed_data: List) -> None:
         """Handle client subscribe message request"""
         if str(parsed_data[1]) == self.__WS_SERVER_TOPIC:
-            self.__logger.debug("New client: %s has subscribed to exchanges topic", self.get_id())
+            self.__logger.debug(
+                "New client: %s has subscribed to exchanges topic",
+                self.get_id(),
+                extra={
+                    "source": "ws-server-plugin-client",
+                    "type": "client-subscribed",
+                },
+            )
 
             self.__subscribe_callback(client=self)
 
@@ -860,7 +867,14 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
     def __handle_wamp_unsubscribe(self, parsed_data: List) -> None:
         """Handle client unsubscribe message request"""
         if str(parsed_data[1]) == self.__WS_SERVER_TOPIC:
-            self.__logger.debug("Client: %s has unsubscribed from exchanges topic", self.get_id())
+            self.__logger.debug(
+                "Client: %s has unsubscribed from exchanges topic",
+                self.get_id(),
+                extra={
+                    "source": "ws-server-plugin-client",
+                    "type": "client-unsubscribed",
+                },
+            )
 
             self.__unsubscribe_callback(client=self)
 
@@ -888,6 +902,10 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
                 "Schema file for origin: %s and routing key: %s could not be loaded",
                 origin.value,
                 routing_key.value,
+                extra={
+                    "source": "ws-server-plugin-client",
+                    "type": "validate-rpc-request",
+                },
             )
 
             raise HandleRpcException("Provided data could not be validated") from ex
@@ -897,6 +915,10 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
                 "Schema file for origin: %s and routing key: %s is not configured in mapping",
                 origin.value,
                 routing_key.value,
+                extra={
+                    "source": "ws-server-plugin-client",
+                    "type": "validate-rpc-request",
+                },
             )
 
             raise HandleRpcException("Provided data could not be validated") from ex
@@ -912,6 +934,10 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
                 "Schema file for origin: %s and routing key: %s could not be parsed & compiled",
                 origin.value,
                 routing_key.value,
+                extra={
+                    "source": "ws-server-plugin-client",
+                    "type": "validate-rpc-request",
+                },
             )
 
             raise HandleRpcException("Provided data could not be validated") from ex

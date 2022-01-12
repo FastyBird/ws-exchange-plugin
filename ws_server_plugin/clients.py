@@ -104,6 +104,10 @@ class ClientsManager:
             "Successfully published message to: %d clients via WS server plugin with key: %s",
             len(self.__clients),
             routing_key,
+            extra={
+                "source": "ws-server-plugin-clients",
+                "type": "publish",
+            },
         )
 
     # -----------------------------------------------------------------------------

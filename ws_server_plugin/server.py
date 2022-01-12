@@ -145,7 +145,13 @@ class Server:  # pylint: disable=too-many-instance-attributes
 
     def start(self) -> None:
         """Start server services"""
-        self.__logger.info("Starting WS server")
+        self.__logger.info(
+            "Starting WS server",
+            extra={
+                "source": "ws-server-plugin-server",
+                "type": "start",
+            },
+        )
 
     # -----------------------------------------------------------------------------
 
@@ -158,7 +164,13 @@ class Server:  # pylint: disable=too-many-instance-attributes
 
         self.__server_socket.close()
 
-        self.__logger.info("Closing WS server")
+        self.__logger.info(
+            "Closing WS server",
+            extra={
+                "source": "ws-server-plugin-server",
+                "type": "stop",
+            },
+        )
 
     # -----------------------------------------------------------------------------
 

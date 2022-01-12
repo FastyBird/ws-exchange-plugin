@@ -56,7 +56,9 @@ trait TSecurity
 		) {
 			$this->closeSession($client);
 
-			$this->logger->warning('[FB:PLUGIN:WS_SERVER] Client used invalid WS key', [
+			$this->logger->warning('Client used invalid WS key', [
+				'source' => 'ws-server-plugin-security',
+				'type'   => 'validate',
 				'ws_key' => $wsKey,
 			]);
 
@@ -71,7 +73,9 @@ trait TSecurity
 		) {
 			$this->closeSession($client);
 
-			$this->logger->warning('[FB:PLUGIN:WS_SERVER] Client is connecting from not allowed origin', [
+			$this->logger->warning('Client is connecting from not allowed origin', [
+				'source' => 'ws-server-plugin-security',
+				'type'   => 'validate',
 				'origin' => $origin,
 			]);
 
@@ -81,7 +85,10 @@ trait TSecurity
 		$authToken = $httpRequest->getHeader(WsServerPlugin\Constants::WS_HEADER_AUTHORIZATION);
 
 		if ($authToken === null) {
-			$this->logger->warning('[FB:PLUGIN:WS_SERVER] Client access token is missing');
+			$this->logger->warning('Client access token is missing', [
+				'source' => 'ws-server-plugin-security',
+				'type'   => 'validate',
+			]);
 
 			$this->closeSession($client);
 

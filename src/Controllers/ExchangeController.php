@@ -124,7 +124,9 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 			return $this->jsonValidator->validate(Utils\Json::encode($data), $schema);
 
 		} catch (Utils\JsonException $ex) {
-			$this->logger->error('[FB:PLUGIN:WS_SERVER] Received message could not be validated', [
+			$this->logger->error('Received message could not be validated', [
+				'source'    => 'ws-server-plugin-controller',
+				'type'      => 'parse-data',
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code'    => $ex->getCode(),
@@ -134,7 +136,9 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 			throw new Exceptions\InvalidArgumentException('Provided data are not valid json format', 0, $ex);
 
 		} catch (MetadataExceptions\InvalidDataException $ex) {
-			$this->logger->debug('[FB:PLUGIN:WS_SERVER] Received message is not valid', [
+			$this->logger->debug('Received message is not valid', [
+				'source'    => 'ws-server-plugin-controller',
+				'type'      => 'parse-data',
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code'    => $ex->getCode(),
@@ -144,7 +148,9 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 			throw new Exceptions\InvalidArgumentException('Provided data are not in valid structure', 0, $ex);
 
 		} catch (Throwable $ex) {
-			$this->logger->error('[FB:PLUGIN:WS_SERVER] Received message is not valid', [
+			$this->logger->error('Received message is not valid', [
+				'source'    => 'ws-server-plugin-controller',
+				'type'      => 'parse-data',
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code'    => $ex->getCode(),

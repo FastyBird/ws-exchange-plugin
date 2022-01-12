@@ -83,10 +83,25 @@ class ApplicationSubscriber implements EventDispatcher\EventSubscriberInterface
 		});
 
 		$socket->on('error', function (Throwable $ex): void {
-			$this->logger->error('[FB:PLUGIN:WS_SERVER] Could not establish connection: ' . $ex->getMessage());
+			$this->logger->error('Could not establish connection', [
+					'source'    => 'ws-server-plugin-server',
+					'type'      => 'start',
+					'exception' => [
+						'message' => $ex->getMessage(),
+						'code'    => $ex->getCode(),
+					],
+				]
+			);
 		});
 
-		$this->logger->debug(sprintf('[FB:PLUGIN:WS_SERVER] Launching WebSockets WS Server on: %s:%s', $this->configuration->getAddress(), $this->configuration->getPort()));
+		$this->logger->debug('Launching WebSockets WS Server', [
+			'source' => 'ws-server-plugin-server',
+			'type'   => 'start',
+			'server' => [
+				'address' => $this->configuration->getAddress(),
+				'port'    => $this->configuration->getPort(),
+			],
+		]);
 
 		$event->getServer()->on('connection', function (Socket\ConnectionInterface $connection): void {
 			if ($connection->getLocalAddress() === null) {
