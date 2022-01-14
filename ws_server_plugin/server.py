@@ -82,6 +82,8 @@ class Server:  # pylint: disable=too-many-instance-attributes
 
     __server_socket: socket.socket
 
+    __host_info: List
+
     __listeners: List[Union[int, socket.socket]] = []
 
     __secured_context: Optional[ssl.SSLContext]
@@ -112,7 +114,7 @@ class Server:  # pylint: disable=too-many-instance-attributes
 
         fam = socket.AF_INET6 if host is None else 0  # pylint: disable=no-member
 
-        host_info = socket.getaddrinfo(
+        self.__host_info = socket.getaddrinfo(
             host,
             port,
             fam,
@@ -121,14 +123,7 @@ class Server:  # pylint: disable=too-many-instance-attributes
             socket.AI_PASSIVE,  # pylint: disable=no-member
         )
 
-        self.__server_socket = socket.socket(host_info[0][0], host_info[0][1], host_info[0][2])
-        self.__server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # pylint: disable=no-member
-        self.__server_socket.bind(host_info[0][4])
-        self.__server_socket.listen(self.__request_queue_size)
-
         self.__select_interval = select_interval
-
-        self.__listeners = [self.__server_socket]
 
         self.__using_ssl = bool(cert_file and key_file)
 
@@ -153,6 +148,13 @@ class Server:  # pylint: disable=too-many-instance-attributes
             },
         )
 
+        self.__server_socket = socket.socket(self.__host_info[0][0], self.__host_info[0][1], self.__host_info[0][2])
+        self.__server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # pylint: disable=no-member
+        self.__server_socket.bind(self.__host_info[0][4])
+        self.__server_socket.listen(self.__request_queue_size)
+
+        self.__listeners = [self.__server_socket]
+
     # -----------------------------------------------------------------------------
 
     def stop(self) -> None:
@@ -163,6 +165,8 @@ class Server:  # pylint: disable=too-many-instance-attributes
             self.__handle_close(client=client)
 
         self.__server_socket.close()
+
+        self.__listeners = []
 
         self.__logger.info(
             "Closing WS server",
