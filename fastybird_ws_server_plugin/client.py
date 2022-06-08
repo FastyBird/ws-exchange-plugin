@@ -858,7 +858,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
             self.__subscribe_callback(client=self)
 
         else:
-            # TODO: reply error
+            # TODO: reply error  #  pylint: disable=fixme
             pass
 
     # -----------------------------------------------------------------------------
@@ -878,7 +878,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
             self.__unsubscribe_callback(client=self)
 
         else:
-            # TODO: reply error
+            # TODO: reply error  #  pylint: disable=fixme
             pass
 
     # -----------------------------------------------------------------------------
