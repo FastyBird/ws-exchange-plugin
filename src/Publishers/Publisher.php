@@ -15,12 +15,11 @@
 
 namespace FastyBird\WsServerPlugin\Publishers;
 
-use FastyBird\Metadata;
+use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Types as MetadataTypes;
 use IPub\WebSockets;
 use IPub\WebSocketsWAMP;
 use Nette;
-use Nette\Utils;
 use Psr\Log;
 use Throwable;
 
@@ -36,68 +35,6 @@ final class Publisher implements IPublisher
 {
 
 	use Nette\SmartObject;
-
-	private const ROUTING_KEYS = [
-		Metadata\Constants::MESSAGE_BUS_ACCOUNTS_CREATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_ACCOUNTS_UPDATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_ACCOUNTS_DELETED_ENTITY_ROUTING_KEY,
-
-		Metadata\Constants::MESSAGE_BUS_EMAILS_CREATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_EMAILS_UPDATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_EMAILS_DELETED_ENTITY_ROUTING_KEY,
-
-		Metadata\Constants::MESSAGE_BUS_IDENTITIES_CREATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_IDENTITIES_UPDATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_IDENTITIES_DELETED_ENTITY_ROUTING_KEY,
-
-		Metadata\Constants::MESSAGE_BUS_DEVICES_CREATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_DEVICES_UPDATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_DEVICES_DELETED_ENTITY_ROUTING_KEY,
-
-		Metadata\Constants::MESSAGE_BUS_DEVICES_CONFIGURATION_CREATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_DEVICES_CONFIGURATION_UPDATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_DEVICES_CONFIGURATION_DELETED_ENTITY_ROUTING_KEY,
-
-		Metadata\Constants::MESSAGE_BUS_DEVICES_PROPERTY_CREATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_DEVICES_PROPERTY_UPDATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_DEVICES_PROPERTY_DELETED_ENTITY_ROUTING_KEY,
-
-		Metadata\Constants::MESSAGE_BUS_CHANNELS_CREATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_CHANNELS_UPDATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_CHANNELS_DELETED_ENTITY_ROUTING_KEY,
-
-		Metadata\Constants::MESSAGE_BUS_CHANNELS_CONFIGURATION_CREATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_CHANNELS_CONFIGURATION_UPDATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_CHANNELS_CONFIGURATION_DELETED_ENTITY_ROUTING_KEY,
-
-		Metadata\Constants::MESSAGE_BUS_CHANNELS_PROPERTY_CREATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_CHANNELS_PROPERTY_UPDATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_CHANNELS_PROPERTY_DELETED_ENTITY_ROUTING_KEY,
-
-		Metadata\Constants::MESSAGE_BUS_CONNECTORS_CREATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_CONNECTORS_UPDATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_CONNECTORS_DELETED_ENTITY_ROUTING_KEY,
-
-		Metadata\Constants::MESSAGE_BUS_TRIGGERS_CREATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_TRIGGERS_UPDATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_TRIGGERS_DELETED_ENTITY_ROUTING_KEY,
-
-		Metadata\Constants::MESSAGE_BUS_TRIGGERS_CONTROL_CREATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_TRIGGERS_CONTROL_UPDATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_TRIGGERS_CONTROL_DELETED_ENTITY_ROUTING_KEY,
-
-		Metadata\Constants::MESSAGE_BUS_TRIGGERS_ACTIONS_CREATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_TRIGGERS_ACTIONS_UPDATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_TRIGGERS_ACTIONS_DELETED_ENTITY_ROUTING_KEY,
-
-		Metadata\Constants::MESSAGE_BUS_TRIGGERS_NOTIFICATIONS_CREATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_TRIGGERS_NOTIFICATIONS_UPDATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_TRIGGERS_NOTIFICATIONS_DELETED_ENTITY_ROUTING_KEY,
-
-		Metadata\Constants::MESSAGE_BUS_TRIGGERS_CONDITIONS_CREATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_TRIGGERS_CONDITIONS_UPDATED_ENTITY_ROUTING_KEY,
-		Metadata\Constants::MESSAGE_BUS_TRIGGERS_CONDITIONS_DELETED_ENTITY_ROUTING_KEY,
-	];
 
 	/** @var WebSockets\Router\LinkGenerator */
 	private WebSockets\Router\LinkGenerator $linkGenerator;
@@ -128,73 +65,41 @@ final class Publisher implements IPublisher
 	 * {@inheritDoc}
 	 */
 	public function publish(
-		MetadataTypes\ModuleOriginType $origin,
+		$source,
 		MetadataTypes\RoutingKeyType $routingKey,
-		?Utils\ArrayHash $data
+		?MetadataEntities\IEntity $entity
 	): void {
-		if (!in_array($routingKey->getValue(), self::ROUTING_KEYS, true)) {
-			$this->logger->warning('Provided routing key is not support by this publisher', [
-				'source'  => 'ws-server-plugin-publisher',
-				'type'    => 'publish',
-				'message' => [
-					'routing_key' => $routingKey->getValue(),
-					'origin'      => $origin->getValue(),
-					'data'        => $data !== null ? $this->dataToArray($data) : null,
-				],
-			]);
-
-			return;
-		}
-
 		$result = $this->sendMessage(
 			'Exchange:',
 			[
 				'routing_key' => $routingKey->getValue(),
-				'origin'      => $origin->getValue(),
-				'data'        => $data !== null ? $this->dataToArray($data) : null,
+				'origin'      => $source->getValue(),
+				'data'        => $entity !== null ? $entity->toArray() : null,
 			]
 		);
 
 		if ($result) {
 			$this->logger->debug('Successfully published message', [
-				'source'  => 'ws-server-plugin-publisher',
+				'source'  => 'ws-server-plugin',
 				'type'    => 'publish',
 				'message' => [
 					'routing_key' => $routingKey->getValue(),
-					'origin'      => $origin->getValue(),
-					'data'        => $data !== null ? $this->dataToArray($data) : null,
+					'origin'      => $source->getValue(),
+					'data'        => $entity !== null ? $entity->toArray() : null,
 				],
 			]);
 
 		} else {
 			$this->logger->error('Message could not be published to exchange', [
-				'source'  => 'ws-server-plugin-publisher',
+				'source'  => 'ws-server-plugin',
 				'type'    => 'publish',
 				'message' => [
 					'routing_key' => $routingKey->getValue(),
-					'origin'      => $origin->getValue(),
-					'data'        => $data !== null ? $this->dataToArray($data) : null,
+					'origin'      => $source->getValue(),
+					'data'        => $entity !== null ? $entity->toArray() : null,
 				],
 			]);
 		}
-	}
-
-	/**
-	 * @param Utils\ArrayHash $data
-	 *
-	 * @return mixed[]
-	 */
-	private function dataToArray(Utils\ArrayHash $data): array
-	{
-		$transformed = (array) $data;
-
-		foreach ($transformed as $key => $value) {
-			if ($value instanceof Utils\ArrayHash) {
-				$transformed[$key] = $this->dataToArray($value);
-			}
-		}
-
-		return $transformed;
 	}
 
 	/**
@@ -214,7 +119,7 @@ final class Publisher implements IPublisher
 				$topic = $this->topicsStorage->getTopic($link);
 
 				$this->logger->debug('Broadcasting message to topic', [
-					'source' => 'ws-server-plugin-publisher',
+					'source' => 'ws-server-plugin',
 					'type'   => 'broadcast',
 					'link'   => $link,
 				]);
@@ -225,7 +130,7 @@ final class Publisher implements IPublisher
 			}
 		} catch (Nette\Utils\JsonException $ex) {
 			$this->logger->error('Data could not be converted to message', [
-				'source'    => 'ws-server-plugin-publisher',
+				'source'    => 'ws-server-plugin',
 				'type'      => 'broadcast',
 				'exception' => [
 					'message' => $ex->getMessage(),
@@ -236,7 +141,7 @@ final class Publisher implements IPublisher
 		} catch (Throwable $ex) {
 			var_dump($ex->getMessage());
 			$this->logger->error('Data could not be broadcasts to clients', [
-				'source'  => 'ws-server-plugin-publisher',
+				'source'  => 'ws-server-plugin',
 				'type'    => 'broadcast',
 				'exception' => [
 					'message' => $ex->getMessage(),

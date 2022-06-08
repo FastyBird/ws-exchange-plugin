@@ -3,6 +3,8 @@
 namespace Tests\Cases;
 
 use FastyBird\Metadata;
+use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\WsServerPlugin\Publishers;
 use IPub\WebSockets;
 use IPub\WebSocketsWAMP;
@@ -22,15 +24,19 @@ final class PublisherTest extends BaseTestCase
 	/**
 	 * @param Utils\ArrayHash $data
 	 * @param Metadata\Types\RoutingKeyType $routingKey
-	 * @param Metadata\Types\ModuleOriginType $origin
+	 * @param MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType $source
 	 *
 	 * @dataProvider ./../../../fixtures/Publishers/deviceSuccessfulMessage.php
 	 */
 	public function testPublishSuccessfulDeviceMessage(
 		Utils\ArrayHash $data,
 		Metadata\Types\RoutingKeyType $routingKey,
-		Metadata\Types\ModuleOriginType $origin
+		$source
 	): void {
+		$entityFactory = $this->container->getByType(MetadataEntities\GlobalEntityFactory::class);
+
+		$entity = $entityFactory->create(Utils\Json::encode($data), $routingKey);
+
 		$linkGenerator = Mockery::mock(WebSockets\Router\LinkGenerator::class);
 		$linkGenerator
 			->shouldReceive('link')
@@ -45,14 +51,14 @@ final class PublisherTest extends BaseTestCase
 			->shouldReceive('broadcast')
 			->withArgs(
 				function ($message) use (
-					$origin,
+					$source,
 					$routingKey,
-					$data
+					$entity
 				): bool {
 					$mockedData = [
 						'routing_key' => $routingKey->getValue(),
-						'origin'      => $origin->getValue(),
-						'data'        => $this->dataToArray($data),
+						'origin'      => $source->getValue(),
+						'data'        => $entity->toArray(),
 					];
 
 					Assert::same(Utils\Json::encode($mockedData), $message);
@@ -75,39 +81,25 @@ final class PublisherTest extends BaseTestCase
 		$this->mockContainerService(WebSocketsWAMP\Topics\Storage::class, $topicsStorage);
 
 		$publisher = $this->container->getByType(Publishers\Publisher::class);
-		$publisher->publish($origin, $routingKey, $data);
-	}
-
-	/**
-	 * @param Utils\ArrayHash $data
-	 *
-	 * @return mixed[]
-	 */
-	private function dataToArray(Utils\ArrayHash $data): array
-	{
-		$transformed = (array) $data;
-
-		foreach ($transformed as $key => $value) {
-			if ($value instanceof Utils\ArrayHash) {
-				$transformed[$key] = $this->dataToArray($value);
-			}
-		}
-
-		return $transformed;
+		$publisher->publish($source, $routingKey, $entity);
 	}
 
 	/**
 	 * @param Utils\ArrayHash $data
 	 * @param Metadata\Types\RoutingKeyType $routingKey
-	 * @param Metadata\Types\ModuleOriginType $origin
+	 * @param MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType $source
 	 *
 	 * @dataProvider ./../../../fixtures/Publishers/devicePropertySuccessfulMessage.php
 	 */
 	public function testPublishSuccessfulDevicePropertyMessage(
 		Utils\ArrayHash $data,
 		Metadata\Types\RoutingKeyType $routingKey,
-		Metadata\Types\ModuleOriginType $origin
+		$source
 	): void {
+		$entityFactory = $this->container->getByType(MetadataEntities\GlobalEntityFactory::class);
+
+		$entity = $entityFactory->create(Utils\Json::encode($data), $routingKey);
+
 		$linkGenerator = Mockery::mock(WebSockets\Router\LinkGenerator::class);
 		$linkGenerator
 			->shouldReceive('link')
@@ -122,14 +114,14 @@ final class PublisherTest extends BaseTestCase
 			->shouldReceive('broadcast')
 			->withArgs(
 				function ($message) use (
-					$origin,
+					$source,
 					$routingKey,
-					$data
+					$entity
 				): bool {
 					$mockedData = [
 						'routing_key' => $routingKey->getValue(),
-						'origin'      => $origin->getValue(),
-						'data'        => $this->dataToArray($data),
+						'origin'      => $source->getValue(),
+						'data'        => $entity->toArray(),
 					];
 
 					Assert::same(Utils\Json::encode($mockedData), $message);
@@ -152,21 +144,25 @@ final class PublisherTest extends BaseTestCase
 		$this->mockContainerService(WebSocketsWAMP\Topics\Storage::class, $topicsStorage);
 
 		$publisher = $this->container->getByType(Publishers\Publisher::class);
-		$publisher->publish($origin, $routingKey, $data);
+		$publisher->publish($source, $routingKey, $entity);
 	}
 
 	/**
 	 * @param Utils\ArrayHash $data
 	 * @param Metadata\Types\RoutingKeyType $routingKey
-	 * @param Metadata\Types\ModuleOriginType $origin
+	 * @param MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType $source
 	 *
 	 * @dataProvider ./../../../fixtures/Publishers/channelSuccessfulMessage.php
 	 */
 	public function testPublishSuccessfulChannelMessage(
 		Utils\ArrayHash $data,
 		Metadata\Types\RoutingKeyType $routingKey,
-		Metadata\Types\ModuleOriginType $origin
+		$source
 	): void {
+		$entityFactory = $this->container->getByType(MetadataEntities\GlobalEntityFactory::class);
+
+		$entity = $entityFactory->create(Utils\Json::encode($data), $routingKey);
+
 		$linkGenerator = Mockery::mock(WebSockets\Router\LinkGenerator::class);
 		$linkGenerator
 			->shouldReceive('link')
@@ -181,14 +177,14 @@ final class PublisherTest extends BaseTestCase
 			->shouldReceive('broadcast')
 			->withArgs(
 				function ($message) use (
-					$origin,
+					$source,
 					$routingKey,
-					$data
+					$entity
 				): bool {
 					$mockedData = [
 						'routing_key' => $routingKey->getValue(),
-						'origin'      => $origin->getValue(),
-						'data'        => $this->dataToArray($data),
+						'origin'      => $source->getValue(),
+						'data'        => $entity->toArray(),
 					];
 
 					Assert::same(Utils\Json::encode($mockedData), $message);
@@ -211,21 +207,25 @@ final class PublisherTest extends BaseTestCase
 		$this->mockContainerService(WebSocketsWAMP\Topics\Storage::class, $topicsStorage);
 
 		$publisher = $this->container->getByType(Publishers\Publisher::class);
-		$publisher->publish($origin, $routingKey, $data);
+		$publisher->publish($source, $routingKey, $entity);
 	}
 
 	/**
 	 * @param Utils\ArrayHash $data
 	 * @param Metadata\Types\RoutingKeyType $routingKey
-	 * @param Metadata\Types\ModuleOriginType $origin
+	 * @param MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType $source
 	 *
 	 * @dataProvider ./../../../fixtures/Publishers/channelPropertySuccessfulMessage.php
 	 */
 	public function testPublishSuccessfulChannelPropertyMessage(
 		Utils\ArrayHash $data,
 		Metadata\Types\RoutingKeyType $routingKey,
-		Metadata\Types\ModuleOriginType $origin
+		$source
 	): void {
+		$entityFactory = $this->container->getByType(MetadataEntities\GlobalEntityFactory::class);
+
+		$entity = $entityFactory->create(Utils\Json::encode($data), $routingKey);
+
 		$linkGenerator = Mockery::mock(WebSockets\Router\LinkGenerator::class);
 		$linkGenerator
 			->shouldReceive('link')
@@ -240,14 +240,14 @@ final class PublisherTest extends BaseTestCase
 			->shouldReceive('broadcast')
 			->withArgs(
 				function ($message) use (
-					$origin,
+					$source,
 					$routingKey,
-					$data
+					$entity
 				): bool {
 					$mockedData = [
 						'routing_key' => $routingKey->getValue(),
-						'origin'      => $origin->getValue(),
-						'data'        => $this->dataToArray($data),
+						'origin'      => $source->getValue(),
+						'data'        => $entity->toArray(),
 					];
 
 					Assert::same(Utils\Json::encode($mockedData), $message);
@@ -270,7 +270,7 @@ final class PublisherTest extends BaseTestCase
 		$this->mockContainerService(WebSocketsWAMP\Topics\Storage::class, $topicsStorage);
 
 		$publisher = $this->container->getByType(Publishers\Publisher::class);
-		$publisher->publish($origin, $routingKey, $data);
+		$publisher->publish($source, $routingKey, $entity);
 	}
 
 }

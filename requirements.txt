@@ -1,4 +1,4 @@
-fastybird-metadata>=0.25
+fastybird-metadata>=0.60
 kink>=0.6
 setuptools>=57.4
 typing_extensions>=3.7

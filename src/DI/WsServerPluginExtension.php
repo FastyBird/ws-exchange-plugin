@@ -17,12 +17,15 @@ namespace FastyBird\WsServerPlugin\DI;
 
 use FastyBird\WsServerPlugin\Controllers;
 use FastyBird\WsServerPlugin\Events;
+use FastyBird\WsServerPlugin\Exceptions;
 use FastyBird\WsServerPlugin\Publishers;
 use FastyBird\WsServerPlugin\Subscribers;
 use IPub\WebSockets;
 use Nette;
 use Nette\DI;
+use Nette\PhpGenerator;
 use Nette\Schema;
+use Psr\EventDispatcher;
 use stdClass;
 
 /**
@@ -78,14 +81,8 @@ class WsServerPluginExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('subscribers.initialize'), new DI\Definitions\ServiceDefinition())
 			->setType(Subscribers\ApplicationSubscriber::class);
 
-		// Events
-		$builder->addDefinition($this->prefix('events.wsClientConnected'), new DI\Definitions\ServiceDefinition())
-			->setType(Events\WsClientConnectedHandler::class)
-			->setArgument('wsKeys', $configuration->keys)
-			->setArgument('allowedOrigins', $configuration->origins);
-
-		$builder->addDefinition($this->prefix('events.wsMessage'), new DI\Definitions\ServiceDefinition())
-			->setType(Events\WsMessageHandler::class)
+		$builder->addDefinition($this->prefix('subscribers.server'), new DI\Definitions\ServiceDefinition())
+			->setType(Subscribers\ServerSubscriber::class)
 			->setArgument('wsKeys', $configuration->keys)
 			->setArgument('allowedOrigins', $configuration->origins);
 
@@ -109,19 +106,32 @@ class WsServerPluginExtension extends DI\CompilerExtension
 		$builder = $this->getContainerBuilder();
 
 		/**
-		 * WS SERVER EVENTS
+		 * Events bridges
 		 */
 
-		$socketWrapperServiceName = $builder->getByType(WebSockets\Server\Wrapper::class);
-
-		if ($socketWrapperServiceName !== null) {
-			/** @var DI\Definitions\ServiceDefinition $socketWrapperService */
-			$socketWrapperService = $builder->getDefinition($socketWrapperServiceName);
-
-			$socketWrapperService
-				->addSetup('$onClientConnected[]', ['@' . $this->prefix('events.wsClientConnected')])
-				->addSetup('$onIncomingMessage[]', ['@' . $this->prefix('events.wsMessage')]);
+		if ($builder->getByType(EventDispatcher\EventDispatcherInterface::class) === null) {
+			throw new Exceptions\LogicException(sprintf('Service of type "%s" is needed. Please register it.', EventDispatcher\EventDispatcherInterface::class));
 		}
+
+		$dispatcher = $builder->getDefinition($builder->getByType(EventDispatcher\EventDispatcherInterface::class));
+
+		$socketWrapperServiceName = $builder->getByType(WebSockets\Server\Wrapper::class);
+		assert(is_string($socketWrapperServiceName));
+
+		$socketWrapperService = $builder->getDefinition($socketWrapperServiceName);
+		assert($socketWrapperService instanceof DI\Definitions\ServiceDefinition);
+
+		$socketWrapperService->addSetup('?->onClientConnected[] = function() {?->dispatch(new ?(...func_get_args()));}', [
+			'@self',
+			$dispatcher,
+			new PhpGenerator\Literal(Events\ClientConnectedEvent::class),
+		]);
+
+		$socketWrapperService->addSetup('?->onIncomingMessage[] = function() {?->dispatch(new ?(...func_get_args()));}', [
+			'@self',
+			$dispatcher,
+			new PhpGenerator\Literal(Events\IncomingMessage::class),
+		]);
 	}
 
 }

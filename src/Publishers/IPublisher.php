@@ -15,8 +15,8 @@
 
 namespace FastyBird\WsServerPlugin\Publishers;
 
+use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Types as MetadataTypes;
-use Nette\Utils;
 
 /**
  * WS publisher
@@ -30,16 +30,16 @@ interface IPublisher
 {
 
 	/**
-	 * @param MetadataTypes\ModuleOriginType $origin
+	 * @param MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType $source
 	 * @param MetadataTypes\RoutingKeyType $routingKey
-	 * @param Utils\ArrayHash|null $data
+	 * @param MetadataEntities\IEntity|null $entity
 	 *
 	 * @return void
 	 */
 	public function publish(
-		MetadataTypes\ModuleOriginType $origin,
+		$source,
 		MetadataTypes\RoutingKeyType $routingKey,
-		?Utils\ArrayHash $data
+		?MetadataEntities\IEntity $entity
 	): void;
 
 }

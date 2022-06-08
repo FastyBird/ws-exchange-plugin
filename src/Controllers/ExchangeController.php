@@ -6,22 +6,24 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsServerPlugin!
+ * @package        FastyBird:MiniServer!
  * @subpackage     Controllers
- * @since          0.1.0
+ * @since          0.2.0
  *
- * @date           01.05.20
+ * @date           15.01.22
  */
 
 namespace FastyBird\WsServerPlugin\Controllers;
 
+use FastyBird\Exchange\Publisher as ExchangePublisher;
 use FastyBird\Metadata;
+use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Loaders as MetadataLoaders;
 use FastyBird\Metadata\Schemas as MetadataSchemas;
-use FastyBird\WsServerPlugin\Consumer;
 use FastyBird\WsServerPlugin\Exceptions;
 use IPub\WebSockets;
+use IPub\WebSocketsWAMP;
 use Nette\Utils;
 use Psr\Log;
 use Throwable;
@@ -29,7 +31,7 @@ use Throwable;
 /**
  * Exchange sockets controller
  *
- * @package        FastyBird:WsServerPlugin!
+ * @package        FastyBird:MiniServer!
  * @subpackage     Controllers
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -37,8 +39,8 @@ use Throwable;
 final class ExchangeController extends WebSockets\Application\Controller\Controller
 {
 
-	/** @var Consumer\IConsumer|null */
-	private ?Consumer\IConsumer $consumer;
+	/** @var ExchangePublisher\IPublisher|null */
+	private ?ExchangePublisher\IPublisher $publisher;
 
 	/** @var MetadataLoaders\ISchemaLoader */
 	private MetadataLoaders\ISchemaLoader $schemaLoader;
@@ -46,54 +48,80 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 	/** @var MetadataSchemas\IValidator */
 	private MetadataSchemas\IValidator $jsonValidator;
 
+	/** @var MetadataEntities\GlobalEntityFactory */
+	private MetadataEntities\GlobalEntityFactory $entityFactory;
+
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
 		MetadataLoaders\ISchemaLoader $schemaLoader,
 		MetadataSchemas\IValidator $jsonValidator,
-		?Consumer\IConsumer $consumer = null,
+		MetadataEntities\GlobalEntityFactory $entityFactory,
+		?ExchangePublisher\IPublisher $publisher = null,
 		?Log\LoggerInterface $logger = null
 	) {
 		parent::__construct();
 
 		$this->schemaLoader = $schemaLoader;
-		$this->consumer = $consumer;
+		$this->publisher = $publisher;
 		$this->jsonValidator = $jsonValidator;
+		$this->entityFactory = $entityFactory;
+
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
 	/**
+	 * @param WebSocketsWAMP\Entities\Clients\IClient $client
+	 * @param WebSocketsWAMP\Entities\Topics\ITopic<mixed> $topic
+	 *
+	 * @return void
+	 */
+	public function actionSubscribe(
+		WebSocketsWAMP\Entities\Clients\IClient $client,
+		WebSocketsWAMP\Entities\Topics\ITopic $topic
+	): void {
+		// FIRE EVENT
+	}
+
+	/**
 	 * @param mixed[] $args
+	 * @param WebSocketsWAMP\Entities\Clients\IClient $client
+	 * @param WebSocketsWAMP\Entities\Topics\ITopic<mixed> $topic
 	 *
 	 * @return void
 	 *
-	 * @throws Exceptions\InvalidArgumentException
+	 * @throws MetadataExceptions\FileNotFoundException
+	 * @throws Utils\JsonException
 	 */
 	public function actionCall(
-		array $args
+		array $args,
+		WebSocketsWAMP\Entities\Clients\IClient $client,
+		WebSocketsWAMP\Entities\Topics\ITopic $topic
 	): void {
-		if (!array_key_exists('routing_key', $args) || !array_key_exists('origin', $args)) {
+		if (!array_key_exists('routing_key', $args) || !array_key_exists('source', $args)) {
 			throw new Exceptions\InvalidArgumentException('Provided message has invalid format');
 		}
 
 		switch ($args['routing_key']) {
-			case Metadata\Constants::MESSAGE_BUS_CONNECTOR_ACTION_ROUTING_KEY:
 			case Metadata\Constants::MESSAGE_BUS_DEVICE_ACTION_ROUTING_KEY:
 			case Metadata\Constants::MESSAGE_BUS_DEVICE_PROPERTY_ACTION_ROUTING_KEY:
-			case Metadata\Constants::MESSAGE_BUS_DEVICE_CONFIGURATION_ACTION_ROUTING_KEY:
 			case Metadata\Constants::MESSAGE_BUS_CHANNEL_ACTION_ROUTING_KEY:
 			case Metadata\Constants::MESSAGE_BUS_CHANNEL_PROPERTY_ACTION_ROUTING_KEY:
-			case Metadata\Constants::MESSAGE_BUS_CHANNEL_CONFIGURATION_ACTION_ROUTING_KEY:
+			case Metadata\Constants::MESSAGE_BUS_CONNECTOR_ACTION_ROUTING_KEY:
+			case Metadata\Constants::MESSAGE_BUS_CONNECTOR_PROPERTY_ACTION_ROUTING_KEY:
 			case Metadata\Constants::MESSAGE_BUS_TRIGGER_ACTION_ROUTING_KEY:
-				$schema = $this->schemaLoader->loadByRoutingKey($args['routing_key']);
-				$data = $this->parseData($args, $schema);
+				$schema = $this->schemaLoader->loadByRoutingKey(Metadata\Types\RoutingKeyType::get($args['routing_key']));
+				$data = isset($args['data']) ? $this->parseData($args['data'], $schema) : null;
 
-				if ($this->consumer !== null) {
-					$this->consumer->consume(
-						Metadata\Types\ModuleOriginType::get($args['origin']),
+				if ($this->publisher !== null) {
+					$this->publisher->publish(
+						Metadata\Types\ModuleSourceType::get($args['source']),
 						Metadata\Types\RoutingKeyType::get($args['routing_key']),
-						$data,
+						$this->entityFactory->create(
+							Utils\Json::encode($data),
+							Metadata\Types\RoutingKeyType::get($args['routing_key'])
+						),
 					);
 				}
 
@@ -125,7 +153,7 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 
 		} catch (Utils\JsonException $ex) {
 			$this->logger->error('Received message could not be validated', [
-				'source'    => 'ws-server-plugin-controller',
+				'source'    => 'ws-server-plugin',
 				'type'      => 'parse-data',
 				'exception' => [
 					'message' => $ex->getMessage(),
@@ -137,7 +165,7 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 
 		} catch (MetadataExceptions\InvalidDataException $ex) {
 			$this->logger->debug('Received message is not valid', [
-				'source'    => 'ws-server-plugin-controller',
+				'source'    => 'ws-server-plugin',
 				'type'      => 'parse-data',
 				'exception' => [
 					'message' => $ex->getMessage(),
@@ -149,7 +177,7 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 
 		} catch (Throwable $ex) {
 			$this->logger->error('Received message is not valid', [
-				'source'    => 'ws-server-plugin-controller',
+				'source'    => 'ws-server-plugin',
 				'type'      => 'parse-data',
 				'exception' => [
 					'message' => $ex->getMessage(),

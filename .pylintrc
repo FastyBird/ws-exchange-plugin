@@ -4,6 +4,7 @@
 max-line-length=120
 
 [MESSAGES CONTROL]
+disable=duplicate-code
 
 # Disable the message, report, category or checker with the given id(s). You
 # can either give multiple identifiers separated by comma (,) or put this

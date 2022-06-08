@@ -3,7 +3,6 @@
 namespace Tests\Cases;
 
 use FastyBird\WsServerPlugin\Controllers;
-use FastyBird\WsServerPlugin\Events;
 use FastyBird\WsServerPlugin\Subscribers;
 use Tester\Assert;
 
@@ -21,9 +20,7 @@ final class ServicesTest extends BaseTestCase
 		$container = $this->createContainer();
 
 		Assert::notNull($container->getByType(Subscribers\ApplicationSubscriber::class));
-
-		Assert::notNull($container->getByType(Events\WsClientConnectedHandler::class));
-		Assert::notNull($container->getByType(Events\WsMessageHandler::class));
+		Assert::notNull($container->getByType(Subscribers\ServerSubscriber::class));
 
 		Assert::notNull($container->getByType(Controllers\ExchangeController::class));
 	}
