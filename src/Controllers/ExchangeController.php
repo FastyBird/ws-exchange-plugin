@@ -21,10 +21,12 @@ use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Loaders as MetadataLoaders;
 use FastyBird\Metadata\Schemas as MetadataSchemas;
+use FastyBird\WsServerPlugin\Events;
 use FastyBird\WsServerPlugin\Exceptions;
 use IPub\WebSockets;
 use IPub\WebSocketsWAMP;
 use Nette\Utils;
+use Psr\EventDispatcher;
 use Psr\Log;
 use Throwable;
 
@@ -51,6 +53,9 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 	/** @var MetadataEntities\GlobalEntityFactory */
 	private MetadataEntities\GlobalEntityFactory $entityFactory;
 
+	/** @var EventDispatcher\EventDispatcherInterface|null */
+	private ?EventDispatcher\EventDispatcherInterface $dispatcher;
+
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
@@ -59,6 +64,7 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 		MetadataSchemas\IValidator $jsonValidator,
 		MetadataEntities\GlobalEntityFactory $entityFactory,
 		?ExchangePublisher\IPublisher $publisher = null,
+		?EventDispatcher\EventDispatcherInterface $dispatcher = null,
 		?Log\LoggerInterface $logger = null
 	) {
 		parent::__construct();
@@ -67,6 +73,7 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 		$this->publisher = $publisher;
 		$this->jsonValidator = $jsonValidator;
 		$this->entityFactory = $entityFactory;
+		$this->dispatcher = $dispatcher;
 
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
@@ -81,7 +88,9 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 		WebSocketsWAMP\Entities\Clients\IClient $client,
 		WebSocketsWAMP\Entities\Topics\ITopic $topic
 	): void {
-		// FIRE EVENT
+		if ($this->dispatcher !== null) {
+			$this->dispatcher->dispatch(new Events\ClientSubscribedEvent($client, $topic));
+		}
 	}
 
 	/**
