@@ -19,7 +19,6 @@ use FastyBird\SocketServerFactory\Events as SocketServerFactoryEvents;
 use IPub\WebSockets;
 use Nette\Utils;
 use Psr\Log;
-use React\EventLoop;
 use React\Socket;
 use Symfony\Component\EventDispatcher;
 use Throwable;
@@ -35,9 +34,6 @@ use Throwable;
 class ApplicationSubscriber implements EventDispatcher\EventSubscriberInterface
 {
 
-	/** @var EventLoop\LoopInterface */
-	private EventLoop\LoopInterface $loop;
-
 	/** @var WebSockets\Server\Handlers */
 	private WebSockets\Server\Handlers $handlers;
 
@@ -48,12 +44,10 @@ class ApplicationSubscriber implements EventDispatcher\EventSubscriberInterface
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
-		EventLoop\LoopInterface $loop,
 		WebSockets\Server\Handlers $handlers,
 		WebSockets\Server\Configuration $configuration,
 		?Log\LoggerInterface $logger = null
 	) {
-		$this->loop = $loop;
 		$this->handlers = $handlers;
 		$this->configuration = $configuration;
 
@@ -75,14 +69,19 @@ class ApplicationSubscriber implements EventDispatcher\EventSubscriberInterface
 	 */
 	public function initialize(SocketServerFactoryEvents\InitializeEvent $event): void
 	{
-		$client = $this->configuration->getAddress() . ':' . $this->configuration->getPort();
-		$socket = new Socket\SocketServer($client, [], $this->loop);
+		$event->getServer()->on('connection', function (Socket\ConnectionInterface $connection): void {
+			if ($connection->getLocalAddress() === null) {
+				return;
+			}
 
-		$socket->on('connection', function (Socket\ConnectionInterface $connection): void {
-			$this->handlers->handleConnect($connection);
+			$parsed = Utils\ArrayHash::from((array) parse_url($connection->getLocalAddress()));
+
+			if ($parsed->offsetExists('port') && $parsed->offsetGet('port') === $this->configuration->getPort()) {
+				$this->handlers->handleConnect($connection);
+			}
 		});
 
-		$socket->on('error', function (Throwable $ex): void {
+		$event->getServer()->on('error', function (Throwable $ex): void {
 			$this->logger->error('Could not establish connection', [
 				'source'    => 'ws-server-plugin',
 				'type'      => 'start',
@@ -101,18 +100,6 @@ class ApplicationSubscriber implements EventDispatcher\EventSubscriberInterface
 				'port'    => $this->configuration->getPort(),
 			],
 		]);
-
-		$event->getServer()->on('connection', function (Socket\ConnectionInterface $connection): void {
-			if ($connection->getLocalAddress() === null) {
-				return;
-			}
-
-			$parsed = Utils\ArrayHash::from((array) parse_url($connection->getLocalAddress()));
-
-			if ($parsed->offsetExists('port') && $parsed->offsetGet('port') === $this->configuration->getPort()) {
-				$this->handlers->handleConnect($connection);
-			}
-		});
 	}
 
 }
