@@ -24,12 +24,12 @@ from socket import socket
 from typing import Dict, Optional, Union
 
 # Library dependencies
-from metadata.routing import RoutingKey
-from metadata.types import ModuleOrigin
+from fastybird_metadata.routing import RoutingKey
+from fastybird_metadata.types import ModuleSource
 
 # Library libs
-from ws_server_plugin.client import WampClient
-from ws_server_plugin.logger import Logger
+from fastybird_ws_server_plugin.client import WampClient
+from fastybird_ws_server_plugin.logger import Logger
 
 
 class ClientsManager:
@@ -87,7 +87,7 @@ class ClientsManager:
 
     # -----------------------------------------------------------------------------
 
-    def publish(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Optional[Dict]) -> None:
+    def publish(self, origin: ModuleSource, routing_key: RoutingKey, data: Optional[Dict]) -> None:
         """Publish message to all clients"""
         raw_message = {
             "routing_key": routing_key.value,

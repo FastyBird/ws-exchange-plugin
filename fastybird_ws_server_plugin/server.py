@@ -26,23 +26,26 @@ from abc import ABC
 from typing import Dict, List, Optional, Union
 
 # Library dependencies
+from fastybird_metadata.routing import RoutingKey
+from fastybird_metadata.types import ModuleSource
 from kink import inject
-from metadata.routing import RoutingKey
-from metadata.types import ModuleOrigin
 from whistle import EventDispatcher
 
 # Library libs
-from ws_server_plugin.client import WampClient
-from ws_server_plugin.clients import ClientsManager
-from ws_server_plugin.events import ClientSubscribedEvent, ClientUnsubscribedEvent
-from ws_server_plugin.exceptions import (
+from fastybird_ws_server_plugin.client import WampClient
+from fastybird_ws_server_plugin.clients import ClientsManager
+from fastybird_ws_server_plugin.events import (
+    ClientSubscribedEvent,
+    ClientUnsubscribedEvent,
+)
+from fastybird_ws_server_plugin.exceptions import (
     ClientException,
     HandleDataException,
     HandleRequestException,
     HandleResponseException,
 )
-from ws_server_plugin.logger import Logger
-from ws_server_plugin.types import OPCode
+from fastybird_ws_server_plugin.logger import Logger
+from fastybird_ws_server_plugin.types import OPCode
 
 
 class IConsumer(ABC):  # pylint: disable=too-few-public-methods
@@ -57,7 +60,7 @@ class IConsumer(ABC):  # pylint: disable=too-few-public-methods
 
     def consume(
         self,
-        origin: ModuleOrigin,
+        origin: ModuleSource,
         routing_key: RoutingKey,
         data: Optional[Dict[str, Union[str, int, float, bool, None]]],
     ) -> None:
@@ -339,6 +342,6 @@ class Server:  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def __handle_rpc_message(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Optional[Dict]) -> None:
+    def __handle_rpc_message(self, origin: ModuleSource, routing_key: RoutingKey, data: Optional[Dict]) -> None:
         if self.__consumer is not None:
             self.__consumer.consume(origin=origin, routing_key=routing_key, data=data)

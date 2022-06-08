@@ -22,11 +22,11 @@ WS server plugin publisher
 from typing import Dict, Optional
 
 # Library dependencies
-from metadata.routing import RoutingKey
-from metadata.types import ModuleOrigin
+from fastybird_metadata.routing import RoutingKey
+from fastybird_metadata.types import ModuleSource
 
 # Library libs
-from ws_server_plugin.clients import ClientsManager
+from fastybird_ws_server_plugin.clients import ClientsManager
 
 
 class Publisher:  # pylint: disable=too-few-public-methods
@@ -53,7 +53,7 @@ class Publisher:  # pylint: disable=too-few-public-methods
 
     def publish(
         self,
-        origin: ModuleOrigin,
+        origin: ModuleSource,
         routing_key: RoutingKey,
         data: Optional[Dict],
     ) -> None:

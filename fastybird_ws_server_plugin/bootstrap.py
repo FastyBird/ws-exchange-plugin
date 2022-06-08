@@ -27,10 +27,10 @@ import logging
 from kink import di
 
 # Library libs
-from ws_server_plugin.clients import ClientsManager
-from ws_server_plugin.logger import Logger
-from ws_server_plugin.publisher import Publisher
-from ws_server_plugin.server import Server
+from fastybird_ws_server_plugin.clients import ClientsManager
+from fastybird_ws_server_plugin.logger import Logger
+from fastybird_ws_server_plugin.publisher import Publisher
+from fastybird_ws_server_plugin.server import Server
 
 
 def create_container(logger: logging.Logger = logging.getLogger("dummy")) -> None:

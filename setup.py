@@ -44,7 +44,7 @@ def find_version(*file_paths):
     raise RuntimeError("Unable to find version string.")
 
 
-VERSION: str = find_version("ws_server_plugin", "__init__.py")
+VERSION: str = find_version("fastybird_ws_server_plugin", "__init__.py")
 
 setup(
     version=VERSION,
@@ -58,7 +58,7 @@ setup(
     long_description_content_type="text/markdown",
     python_requires=">=3.7",
     packages=find_packages(),
-    package_data={"ws_server_plugin": ["py.typed"]},
+    package_data={"fastybird_ws_server_plugin": ["py.typed"]},
     install_requires=[
         "fastybird-metadata",
         "kink",

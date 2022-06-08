@@ -36,22 +36,22 @@ from io import BytesIO
 from typing import Dict, List, Optional, Tuple, Union
 
 # Library dependencies
-import metadata.exceptions as metadata_exceptions
-from metadata.loader import load_schema_by_routing_key
-from metadata.routing import RoutingKey
-from metadata.types import ModuleOrigin
-from metadata.validator import validate
+import fastybird_metadata.exceptions as metadata_exceptions
+from fastybird_metadata.loader import load_schema_by_routing_key
+from fastybird_metadata.routing import RoutingKey
+from fastybird_metadata.types import ModuleSource
+from fastybird_metadata.validator import validate
 from typing_extensions import Protocol
 
 # Library libs
-from ws_server_plugin.exceptions import (
+from fastybird_ws_server_plugin.exceptions import (
     HandleDataException,
     HandleRequestException,
     HandleResponseException,
     HandleRpcException,
 )
-from ws_server_plugin.logger import Logger
-from ws_server_plugin.types import OPCode, WampCode
+from fastybird_ws_server_plugin.logger import Logger
+from fastybird_ws_server_plugin.types import OPCode, WampCode
 
 
 class SubscribeCallback(Protocol):  # pylint: disable=too-few-public-methods
@@ -92,7 +92,7 @@ class RpcCallback(Protocol):  # pylint: disable=too-few-public-methods
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
 
-    def __call__(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Optional[Dict]) -> None:
+    def __call__(self, origin: ModuleSource, routing_key: RoutingKey, data: Optional[Dict]) -> None:
         ...
 
 
@@ -191,12 +191,11 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
     __ALLOWED_ROUTING_KEYS: List[RoutingKey] = [
         RoutingKey.CONNECTOR_ACTION,
+        RoutingKey.CONNECTOR_PROPERTY_ACTION,
         RoutingKey.DEVICE_ACTION,
         RoutingKey.DEVICE_PROPERTY_ACTION,
-        RoutingKey.DEVICE_CONFIGURATION_ACTION,
         RoutingKey.CHANNEL_ACTION,
         RoutingKey.CHANNEL_PROPERTY_ACTION,
-        RoutingKey.CHANNEL_CONFIGURATION_ACTION,
         RoutingKey.TRIGGER_ACTION,
     ]
 
@@ -787,7 +786,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
             or "routing_key" not in parsed_data
             or RoutingKey.has_value(str(dict(parsed_data).get("routing_key"))) is False
             or "origin" not in parsed_data
-            or ModuleOrigin.has_value(str(dict(parsed_data).get("origin"))) is False
+            or ModuleSource.has_value(str(dict(parsed_data).get("origin"))) is False
         ):
             self.__reply_rpc_error(
                 rpc_id,
@@ -801,7 +800,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
         # Transform message routing key
         message_routing_key: RoutingKey = RoutingKey(dict(parsed_data).get("routing_key"))
         # Transform message origin
-        message_origin: ModuleOrigin = ModuleOrigin(dict(parsed_data).get("origin"))
+        message_origin: ModuleSource = ModuleSource(dict(parsed_data).get("origin"))
         # Just prepare variable
         message_data: Optional[Dict] = dict(parsed_data).get("data", None)
 
@@ -889,7 +888,7 @@ class WampClient:  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def __validate_rpc_data(self, origin: ModuleOrigin, routing_key: RoutingKey, data: Dict) -> Dict:
+    def __validate_rpc_data(self, origin: ModuleSource, routing_key: RoutingKey, data: Dict) -> Dict:
         """Validate received RPC message against defined schema"""
         if routing_key not in self.__ALLOWED_ROUTING_KEYS:
             raise HandleRpcException("Unsupported routing key")
