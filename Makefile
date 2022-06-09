@@ -25,15 +25,3 @@ php_tests: vendor
 
 php_coverage: vendor
 	vendor/bin/tester -s -p php --colors 1 -C --coverage ./coverage.xml --coverage-src ./src tests/cases
-
-pylint:
-	python -m pip install pylint
-
-mypy:
-	python -m pip install mypy
-
-black:
-	python -m pip install black
-
-isort:
-	python -m pip install isort
