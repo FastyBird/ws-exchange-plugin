@@ -55,6 +55,25 @@ final class WsServerCommand extends Console\Command\Command
 	/** @var EventLoop\LoopInterface */
 	private EventLoop\LoopInterface $eventLoop;
 
+	public function __construct(
+		WebSockets\Server\Configuration $configuration,
+		WebSockets\Server\Handlers $handlers,
+		SocketServerFactory\SocketServerFactory $socketServerFactory,
+		EventLoop\LoopInterface $eventLoop,
+		?Log\LoggerInterface $logger = null,
+		?string $name = null
+	) {
+		parent::__construct($name);
+
+		$this->configuration = $configuration;
+		$this->handlers = $handlers;
+		$this->socketServerFactory = $socketServerFactory;
+
+		$this->eventLoop = $eventLoop;
+
+		$this->logger = $logger ?? new Log\NullLogger();
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
