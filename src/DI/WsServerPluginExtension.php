@@ -15,6 +15,7 @@
 
 namespace FastyBird\WsServerPlugin\DI;
 
+use FastyBird\WsServerPlugin\Commands;
 use FastyBird\WsServerPlugin\Controllers;
 use FastyBird\WsServerPlugin\Events;
 use FastyBird\WsServerPlugin\Exceptions;
@@ -63,8 +64,13 @@ class WsServerPluginExtension extends DI\CompilerExtension
 	public function getConfigSchema(): Schema\Schema
 	{
 		return Schema\Expect::structure([
-			'keys'    => Schema\Expect::string()->default(null),
-			'origins' => Schema\Expect::string()->default(null),
+			'access' => Schema\Expect::structure([
+				'keys'    => Schema\Expect::string()->default(null),
+				'origins' => Schema\Expect::string()->default(null),
+			]),
+			'server' => Schema\Expect::structure([
+				'command' => Schema\Expect::bool()->default(true),
+			]),
 		]);
 	}
 
@@ -78,13 +84,15 @@ class WsServerPluginExtension extends DI\CompilerExtension
 		$configuration = $this->getConfig();
 
 		// Subscribers
-		$builder->addDefinition($this->prefix('subscribers.initialize'), new DI\Definitions\ServiceDefinition())
-			->setType(Subscribers\ApplicationSubscriber::class);
+		if (!$configuration->server->command) {
+			$builder->addDefinition($this->prefix('subscribers.initialize'), new DI\Definitions\ServiceDefinition())
+				->setType(Subscribers\ApplicationSubscriber::class);
+		}
 
 		$builder->addDefinition($this->prefix('subscribers.server'), new DI\Definitions\ServiceDefinition())
 			->setType(Subscribers\ServerSubscriber::class)
-			->setArgument('wsKeys', $configuration->keys)
-			->setArgument('allowedOrigins', $configuration->origins);
+			->setArgument('wsKeys', $configuration->access->keys)
+			->setArgument('allowedOrigins', $configuration->access->origins);
 
 		// Controllers
 		$builder->addDefinition($this->prefix('controllers.exchange'), new DI\Definitions\ServiceDefinition())
@@ -94,6 +102,10 @@ class WsServerPluginExtension extends DI\CompilerExtension
 		// Publisher
 		$builder->addDefinition($this->prefix('exchange.publisher'), new DI\Definitions\ServiceDefinition())
 			->setType(Publishers\Publisher::class);
+
+		// Commands
+		$builder->addDefinition($this->prefix('command.server'), new DI\Definitions\ServiceDefinition())
+			->setType(Commands\WsServerCommand::class);
 	}
 
 	/**

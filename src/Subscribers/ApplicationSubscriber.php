@@ -84,7 +84,7 @@ class ApplicationSubscriber implements EventDispatcher\EventSubscriberInterface
 		$event->getServer()->on('error', function (Throwable $ex): void {
 			$this->logger->error('Could not establish connection', [
 				'source'    => 'ws-server-plugin',
-				'type'      => 'start',
+				'type'      => 'subscriber',
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code'    => $ex->getCode(),
@@ -94,7 +94,7 @@ class ApplicationSubscriber implements EventDispatcher\EventSubscriberInterface
 
 		$this->logger->debug('Launching WebSockets WS Server', [
 			'source' => 'ws-server-plugin',
-			'type'   => 'start',
+			'type'   => 'subscriber',
 			'server' => [
 				'address' => $this->configuration->getAddress(),
 				'port'    => $this->configuration->getPort(),
