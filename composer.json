@@ -40,8 +40,8 @@
   "require" : {
     "php": ">=7.4.0|>=8.0.0",
     "cweagans/composer-patches": "^1.7",
-    "fastybird/exchange": "^0.42.0",
-    "fastybird/metadata": "^0.60",
+    "fastybird/exchange": "^0.43",
+    "fastybird/metadata": "^0.61",
     "fastybird/socket-server-factory": "^0.4",
     "ipub/websockets-wamp": "^1.4",
     "nette/bootstrap": "^3.1",
