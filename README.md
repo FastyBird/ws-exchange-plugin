@@ -9,22 +9,17 @@
 [![PHP downloads total](https://badgen.net/packagist/dt/FastyBird/ws-server-plugin?cache=300&style=flat-square)](https://packagist.org/packages/FastyBird/ws-server-plugin)
 [![PHPStan](https://img.shields.io/badge/phpstan-enabled-brightgreen.svg?style=flat-square)](https://github.com/phpstan/phpstan)
 
-![Python](https://badgen.net/pypi/python/fastybird-ws-server-plugin?cache=300&style=flat-square)
-[![Python latest stable](https://badgen.net/pypi/v/fastybird-ws-server-plugin?cache=300&style=flat-square)](https://pypi.org/project/fastybird-ws-server-plugin/)
-[![Python downloads month](https://img.shields.io/pypi/dm/fastybird-ws-server-plugin?cache=300&style=flat-square)](https://pypi.org/project/fastybird-ws-server-plugin/)
-[![Black](https://img.shields.io/badge/black-enabled-brightgreen.svg?style=flat-square)](https://github.com/psf/black)
-[![MyPy](https://img.shields.io/badge/mypy-enabled-brightgreen.svg?style=flat-square)](http://mypy-lang.org)
-
 ## What is FastyBird WS server plugin?
 
-This is a combined plugin for [Nette framework](https://nette.org) and [Python](https://www.python.org) which is
-implementing [WAMPv1](https://wamp-proto.org) server based
-on [iPbulikuj WAMP server](https://github.com/ipublikuj/websockets-wamp) extension
-for [FastyBird](https://www.fastybird.com) IoT services
+This is a plugin for [FastyBird IoT](https://www.fastybird.com) ecosystem which is implementing websockets [WAMPv1](https://wamp-proto.org) server based on [iPbulikuj WAMP server](https://github.com/ipublikuj/websockets-wamp)
+
+### Features
+
+- Built-in server command for running standalone server
+- WAMP v1 pub/sub and RPC implemented via event system
+- Simple broadcast publisher
 
 ## Installation
-
-### PHP based project:
 
 The best way to install **fastybird/ws-server-plugin** is using [Composer](http://getcomposer.org/):
 
@@ -32,18 +27,9 @@ The best way to install **fastybird/ws-server-plugin** is using [Composer](http:
 $ composer require fastybird/ws-server-plugin
 ```
 
-### Python based project:
-
-The best way to install **fastybird-redisdb-storage-plugin** is using [Pip](https://pip.pypa.io/en/stable/):
-
-```sh
-$ pip install fastybird-ws-server-plugin
-```
-
 ## Documentation
 
-Learn how to connect & call RPC messages
-in [documentation](https://github.com/FastyBird/ws-server-plugin/blob/master/.docs/en/index.md).
+Learn how to connect & call RPC messages in [documentation](https://github.com/FastyBird/ws-server-plugin/blob/master/.docs/en/index.md).
 
 ***
 Homepage [https://www.fastybird.com](https://www.fastybird.com) and
