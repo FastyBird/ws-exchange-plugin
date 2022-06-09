@@ -65,6 +65,8 @@ class ApplicationSubscriber implements EventDispatcher\EventSubscriberInterface
 	}
 
 	/**
+	 * @param SocketServerFactoryEvents\InitializeEvent $event
+	 *
 	 * @return void
 	 */
 	public function initialize(SocketServerFactoryEvents\InitializeEvent $event): void
