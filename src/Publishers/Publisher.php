@@ -139,7 +139,6 @@ final class Publisher implements IPublisher
 			]);
 
 		} catch (Throwable $ex) {
-			var_dump($ex->getMessage());
 			$this->logger->error('Data could not be broadcasts to clients', [
 				'source'  => 'ws-server-plugin',
 				'type'    => 'broadcast',
