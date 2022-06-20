@@ -4,7 +4,6 @@ namespace Tests\Cases;
 
 use FastyBird\Exchange\Entities as ExchangeEntities;
 use FastyBird\Metadata;
-use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\WsServerPlugin\Publishers;
 use IPub\WebSockets;
