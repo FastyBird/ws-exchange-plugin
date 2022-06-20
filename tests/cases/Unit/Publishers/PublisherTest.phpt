@@ -2,6 +2,7 @@
 
 namespace Tests\Cases;
 
+use FastyBird\Exchange\Entities as ExchangeEntities;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Types as MetadataTypes;
@@ -33,7 +34,7 @@ final class PublisherTest extends BaseTestCase
 		Metadata\Types\RoutingKeyType $routingKey,
 		$source
 	): void {
-		$entityFactory = $this->container->getByType(MetadataEntities\GlobalEntityFactory::class);
+		$entityFactory = $this->container->getByType(ExchangeEntities\EntityFactory::class);
 
 		$entity = $entityFactory->create(Utils\Json::encode($data), $routingKey);
 
@@ -96,7 +97,7 @@ final class PublisherTest extends BaseTestCase
 		Metadata\Types\RoutingKeyType $routingKey,
 		$source
 	): void {
-		$entityFactory = $this->container->getByType(MetadataEntities\GlobalEntityFactory::class);
+		$entityFactory = $this->container->getByType(ExchangeEntities\EntityFactory::class);
 
 		$entity = $entityFactory->create(Utils\Json::encode($data), $routingKey);
 
@@ -159,7 +160,7 @@ final class PublisherTest extends BaseTestCase
 		Metadata\Types\RoutingKeyType $routingKey,
 		$source
 	): void {
-		$entityFactory = $this->container->getByType(MetadataEntities\GlobalEntityFactory::class);
+		$entityFactory = $this->container->getByType(ExchangeEntities\EntityFactory::class);
 
 		$entity = $entityFactory->create(Utils\Json::encode($data), $routingKey);
 
@@ -222,7 +223,7 @@ final class PublisherTest extends BaseTestCase
 		Metadata\Types\RoutingKeyType $routingKey,
 		$source
 	): void {
-		$entityFactory = $this->container->getByType(MetadataEntities\GlobalEntityFactory::class);
+		$entityFactory = $this->container->getByType(ExchangeEntities\EntityFactory::class);
 
 		$entity = $entityFactory->create(Utils\Json::encode($data), $routingKey);
 

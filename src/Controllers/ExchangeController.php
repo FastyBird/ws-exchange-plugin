@@ -15,9 +15,9 @@
 
 namespace FastyBird\WsServerPlugin\Controllers;
 
+use FastyBird\Exchange\Entities as ExchangeEntities;
 use FastyBird\Exchange\Publisher as ExchangePublisher;
 use FastyBird\Metadata;
-use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Loaders as MetadataLoaders;
 use FastyBird\Metadata\Schemas as MetadataSchemas;
@@ -50,8 +50,8 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 	/** @var MetadataSchemas\IValidator */
 	private MetadataSchemas\IValidator $jsonValidator;
 
-	/** @var MetadataEntities\GlobalEntityFactory */
-	private MetadataEntities\GlobalEntityFactory $entityFactory;
+	/** @var ExchangeEntities\EntityFactory */
+	private ExchangeEntities\EntityFactory $entityFactory;
 
 	/** @var EventDispatcher\EventDispatcherInterface|null */
 	private ?EventDispatcher\EventDispatcherInterface $dispatcher;
@@ -62,7 +62,7 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 	public function __construct(
 		MetadataLoaders\ISchemaLoader $schemaLoader,
 		MetadataSchemas\IValidator $jsonValidator,
-		MetadataEntities\GlobalEntityFactory $entityFactory,
+		ExchangeEntities\EntityFactory $entityFactory,
 		?ExchangePublisher\IPublisher $publisher = null,
 		?EventDispatcher\EventDispatcherInterface $dispatcher = null,
 		?Log\LoggerInterface $logger = null
