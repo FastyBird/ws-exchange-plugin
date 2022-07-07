@@ -20,7 +20,7 @@ final class ServicesTest extends BaseTestCase
 		$container = $this->createContainer();
 
 		// Assert::notNull($container->getByType(Subscribers\ApplicationSubscriber::class));
-		Assert::notNull($container->getByType(Subscribers\ServerSubscriber::class));
+		Assert::notNull($container->getByType(Subscribers\ClientSubscriber::class));
 
 		Assert::notNull($container->getByType(Controllers\ExchangeController::class));
 	}

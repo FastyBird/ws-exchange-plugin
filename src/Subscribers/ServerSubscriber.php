@@ -3,26 +3,28 @@
 /**
  * ServerSubscriber.php
  *
- * @license        More in LICENSE.md
+ * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:WsServerPlugin!
  * @subpackage     Subscribers
- * @since          0.2.0
+ * @since          0.1.0
  *
- * @date           15.01.22
+ * @date           21.12.20
  */
 
 namespace FastyBird\WsServerPlugin\Subscribers;
 
-use FastyBird\WsServerPlugin;
-use FastyBird\WsServerPlugin\Events;
+use FastyBird\SocketServerFactory\Events as SocketServerFactoryEvents;
 use IPub\WebSockets;
+use Nette\Utils;
 use Psr\Log;
+use React\Socket;
 use Symfony\Component\EventDispatcher;
+use Throwable;
 
 /**
- * WS events subscriber
+ * Server startup subscriber
  *
  * @package         FastyBird:WsServerPlugin!
  * @subpackage      Subscribers
@@ -32,14 +34,25 @@ use Symfony\Component\EventDispatcher;
 class ServerSubscriber implements EventDispatcher\EventSubscriberInterface
 {
 
+	/** @var WebSockets\Server\Handlers */
+	private WebSockets\Server\Handlers $handlers;
+
+	/** @var WebSockets\Server\Configuration */
+	private WebSockets\Server\Configuration $configuration;
+
 	/** @var Log\LoggerInterface */
-	protected Log\LoggerInterface $logger;
+	private Log\LoggerInterface $logger;
 
-	/** @var string[] */
-	private array $wsKeys;
+	public function __construct(
+		WebSockets\Server\Handlers $handlers,
+		WebSockets\Server\Configuration $configuration,
+		?Log\LoggerInterface $logger = null
+	) {
+		$this->handlers = $handlers;
+		$this->configuration = $configuration;
 
-	/** @var string[] */
-	private array $allowedOrigins;
+		$this->logger = $logger ?? new Log\NullLogger();
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -47,125 +60,48 @@ class ServerSubscriber implements EventDispatcher\EventSubscriberInterface
 	public static function getSubscribedEvents(): array
 	{
 		return [
-			Events\ClientConnectedEvent::class => 'clientConnected',
-			Events\IncomingMessage::class      => 'incomingMessage',
+			SocketServerFactoryEvents\InitializeEvent::class => 'initialize',
 		];
 	}
 
-	public function __construct(
-		?Log\LoggerInterface $logger,
-		?string $wsKeys = null,
-		?string $allowedOrigins = null
-	) {
-		$this->wsKeys = $wsKeys !== null ? explode(',', $wsKeys) : [];
-		$this->allowedOrigins = $allowedOrigins !== null ? explode(',', $allowedOrigins) : [];
-
-		$this->logger = $logger ?? new Log\NullLogger();
-	}
-
 	/**
+	 * @param SocketServerFactoryEvents\InitializeEvent $event
+	 *
 	 * @return void
 	 */
-	public function clientConnected(
-		Events\ClientConnectedEvent $event
-	): void {
-		$this->checkSecurity($event->getClient(), $event->getHttpRequest(), $this->wsKeys, $this->allowedOrigins);
-	}
-
-	/**
-	 * @return void
-	 */
-	public function incomingMessage(
-		Events\IncomingMessage $event
-	): void {
-		$this->checkSecurity($event->getClient(), $event->getHttpRequest(), $this->wsKeys, $this->allowedOrigins);
-	}
-
-	/**
-	 * @param WebSockets\Entities\Clients\IClient $client
-	 * @param WebSockets\Http\IRequest $httpRequest
-	 * @param string[] $allowedWsKeys
-	 * @param string[] $allowedOrigins
-	 *
-	 * @return bool
-	 *
-	 * @throws WebSockets\Exceptions\InvalidArgumentException
-	 */
-	public function checkSecurity(
-		WebSockets\Entities\Clients\IClient $client,
-		WebSockets\Http\IRequest $httpRequest,
-		array $allowedWsKeys,
-		array $allowedOrigins
-	): bool {
-		$wsKey = $httpRequest->getHeader(WsServerPlugin\Constants::WS_HEADER_WS_KEY);
-
-		if (
-			($wsKey === null && $allowedWsKeys !== [])
-			|| (!in_array($wsKey, $allowedWsKeys, true) && $allowedWsKeys !== [])
-		) {
-			$this->closeSession($client);
-
-			$this->logger->warning('Client used invalid WS key', [
-				'source' => 'ws-server-plugin',
-				'type'   => 'validate',
-				'ws_key' => $wsKey,
-			]);
-
-			return false;
-		}
-
-		$origin = $httpRequest->getHeader(WsServerPlugin\Constants::WS_HEADER_ORIGIN);
-
-		if (
-			($origin === null && $allowedOrigins !== [])
-			|| (!in_array($origin, $allowedOrigins, true) && $allowedOrigins !== [])
-		) {
-			$this->closeSession($client);
-
-			$this->logger->warning('Client is connecting from not allowed origin', [
-				'source' => 'ws-server-plugin',
-				'type'   => 'validate',
-				'origin' => $origin,
-			]);
-
-			return false;
-		}
-
-		$authToken = $httpRequest->getHeader(WsServerPlugin\Constants::WS_HEADER_AUTHORIZATION);
-
-		if ($authToken === null) {
-			$cookieToken = $httpRequest->getCookie('token');
-
-			if ($cookieToken === null) {
-				$this->logger->warning('Client access token is missing', [
-					'source' => 'ws-server-plugin',
-					'type'   => 'validate',
-				]);
-
-				$this->closeSession($client);
-
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * @param WebSockets\Entities\Clients\IClient $client
-	 *
-	 * @throws WebSockets\Exceptions\InvalidArgumentException
-	 */
-	private function closeSession(WebSockets\Entities\Clients\IClient $client): void
+	public function initialize(SocketServerFactoryEvents\InitializeEvent $event): void
 	{
-		$headers = [
-			'X-Powered-By' => WebSockets\Server\Server::VERSION,
-		];
+		$event->getServer()->on('connection', function (Socket\ConnectionInterface $connection): void {
+			if ($connection->getLocalAddress() === null) {
+				return;
+			}
 
-		$response = new WebSockets\Application\Responses\ErrorResponse(401, $headers);
+			$parsed = Utils\ArrayHash::from((array) parse_url($connection->getLocalAddress()));
 
-		$client->send($response);
-		$client->close();
+			if ($parsed->offsetExists('port') && $parsed->offsetGet('port') === $this->configuration->getPort()) {
+				$this->handlers->handleConnect($connection);
+			}
+		});
+
+		$event->getServer()->on('error', function (Throwable $ex): void {
+			$this->logger->error('Could not establish connection', [
+				'source'    => 'ws-server-plugin',
+				'type'      => 'subscriber',
+				'exception' => [
+					'message' => $ex->getMessage(),
+					'code'    => $ex->getCode(),
+				],
+			]);
+		});
+
+		$this->logger->debug('Launching WebSockets WS Server', [
+			'source' => 'ws-server-plugin',
+			'type'   => 'subscriber',
+			'server' => [
+				'address' => $this->configuration->getAddress(),
+				'port'    => $this->configuration->getPort(),
+			],
+		]);
 	}
 
 }

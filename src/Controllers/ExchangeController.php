@@ -15,8 +15,8 @@
 
 namespace FastyBird\WsServerPlugin\Controllers;
 
+use FastyBird\Exchange\Consumer as ExchangeConsumer;
 use FastyBird\Exchange\Entities as ExchangeEntities;
-use FastyBird\Exchange\Publisher as ExchangePublisher;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Loaders as MetadataLoaders;
@@ -41,8 +41,8 @@ use Throwable;
 final class ExchangeController extends WebSockets\Application\Controller\Controller
 {
 
-	/** @var ExchangePublisher\IPublisher|null */
-	private ?ExchangePublisher\IPublisher $publisher;
+	/** @var ExchangeConsumer\IConsumer|null */
+	private ?ExchangeConsumer\IConsumer $consumer;
 
 	/** @var MetadataLoaders\ISchemaLoader */
 	private MetadataLoaders\ISchemaLoader $schemaLoader;
@@ -63,14 +63,14 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 		MetadataLoaders\ISchemaLoader $schemaLoader,
 		MetadataSchemas\IValidator $jsonValidator,
 		ExchangeEntities\EntityFactory $entityFactory,
-		?ExchangePublisher\IPublisher $publisher = null,
+		?ExchangeConsumer\IConsumer $consumer = null,
 		?EventDispatcher\EventDispatcherInterface $dispatcher = null,
 		?Log\LoggerInterface $logger = null
 	) {
 		parent::__construct();
 
 		$this->schemaLoader = $schemaLoader;
-		$this->publisher = $publisher;
+		$this->consumer = $consumer;
 		$this->jsonValidator = $jsonValidator;
 		$this->entityFactory = $entityFactory;
 		$this->dispatcher = $dispatcher;
@@ -112,6 +112,10 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 			throw new Exceptions\InvalidArgumentException('Provided message has invalid format');
 		}
 
+		if ($this->dispatcher !== null) {
+			$this->dispatcher->dispatch(new Events\ClientRpcEvent($client, $topic, $args));
+		}
+
 		switch ($args['routing_key']) {
 			case Metadata\Constants::MESSAGE_BUS_DEVICE_ACTION_ROUTING_KEY:
 			case Metadata\Constants::MESSAGE_BUS_DEVICE_PROPERTY_ACTION_ROUTING_KEY:
@@ -123,8 +127,8 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 				$schema = $this->schemaLoader->loadByRoutingKey(Metadata\Types\RoutingKeyType::get($args['routing_key']));
 				$data = isset($args['data']) ? $this->parseData($args['data'], $schema) : null;
 
-				if ($this->publisher !== null) {
-					$this->publisher->publish(
+				if ($this->consumer !== null) {
+					$this->consumer->consume(
 						Metadata\Types\ModuleSourceType::get($args['source']),
 						Metadata\Types\RoutingKeyType::get($args['routing_key']),
 						$this->entityFactory->create(

@@ -18,10 +18,8 @@ namespace FastyBird\WsServerPlugin\Commands;
 use FastyBird\SocketServerFactory;
 use IPub\WebSockets;
 use Nette;
-use Nette\Utils;
 use Psr\Log;
 use React\EventLoop;
-use React\Socket;
 use Symfony\Component\Console;
 use Symfony\Component\Console\Input;
 use Symfony\Component\Console\Output;
@@ -57,21 +55,19 @@ final class WsServerCommand extends Console\Command\Command
 
 	public function __construct(
 		WebSockets\Server\Configuration $configuration,
-		WebSockets\Server\Handlers $handlers,
 		SocketServerFactory\SocketServerFactory $socketServerFactory,
 		EventLoop\LoopInterface $eventLoop,
 		?Log\LoggerInterface $logger = null,
 		?string $name = null
 	) {
-		parent::__construct($name);
-
 		$this->configuration = $configuration;
-		$this->handlers = $handlers;
 		$this->socketServerFactory = $socketServerFactory;
 
 		$this->eventLoop = $eventLoop;
 
 		$this->logger = $logger ?? new Log\NullLogger();
+
+		parent::__construct($name);
 	}
 
 	/**
@@ -94,47 +90,15 @@ final class WsServerCommand extends Console\Command\Command
 		Output\OutputInterface $output
 	): int {
 		$this->logger->info(
-			'Starting HTTP server',
+			'Starting WS server',
 			[
 				'source' => 'ws-server-plugin',
 				'type'   => 'command',
 			]
 		);
 
-		$server = $this->socketServerFactory->create($this->eventLoop, $this->configuration->getAddress(), $this->configuration->getPort());
-
 		try {
-			$server->on('connection', function (Socket\ConnectionInterface $connection): void {
-				if ($connection->getLocalAddress() === null) {
-					return;
-				}
-
-				$parsed = Utils\ArrayHash::from((array) parse_url($connection->getLocalAddress()));
-
-				if ($parsed->offsetExists('port') && $parsed->offsetGet('port') === $this->configuration->getPort()) {
-					$this->handlers->handleConnect($connection);
-				}
-			});
-
-			$server->on('error', function (Throwable $ex): void {
-				$this->logger->error('Could not establish connection', [
-					'source'    => 'ws-server-plugin',
-					'type'      => 'command',
-					'exception' => [
-						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
-					],
-				]);
-			});
-
-			$this->logger->debug('Launching WebSockets Server', [
-				'source' => 'ws-server-plugin',
-				'type'   => 'command',
-				'server' => [
-					'address' => $this->configuration->getAddress(),
-					'port'    => $this->configuration->getPort(),
-				],
-			]);
+			$this->socketServerFactory->create($this->eventLoop, $this->configuration->getAddress(), $this->configuration->getPort());
 
 			$this->eventLoop->run();
 

@@ -68,9 +68,6 @@ class WsServerPluginExtension extends DI\CompilerExtension
 				'keys'    => Schema\Expect::string()->default(null),
 				'origins' => Schema\Expect::string()->default(null),
 			]),
-			'server' => Schema\Expect::structure([
-				'command' => Schema\Expect::bool()->default(true),
-			]),
 		]);
 	}
 
@@ -84,13 +81,11 @@ class WsServerPluginExtension extends DI\CompilerExtension
 		$configuration = $this->getConfig();
 
 		// Subscribers
-		if (!$configuration->server->command) {
-			$builder->addDefinition($this->prefix('subscribers.initialize'), new DI\Definitions\ServiceDefinition())
-				->setType(Subscribers\ApplicationSubscriber::class);
-		}
-
 		$builder->addDefinition($this->prefix('subscribers.server'), new DI\Definitions\ServiceDefinition())
-			->setType(Subscribers\ServerSubscriber::class)
+			->setType(Subscribers\ServerSubscriber::class);
+
+		$builder->addDefinition($this->prefix('subscribers.client'), new DI\Definitions\ServiceDefinition())
+			->setType(Subscribers\ClientSubscriber::class)
 			->setArgument('wsKeys', $configuration->access->keys)
 			->setArgument('allowedOrigins', $configuration->access->origins);
 
