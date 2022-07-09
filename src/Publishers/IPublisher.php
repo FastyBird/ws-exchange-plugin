@@ -37,7 +37,7 @@ interface IPublisher
 	 * @return void
 	 */
 	public function publish(
-		$source,
+		MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType $source,
 		MetadataTypes\RoutingKeyType $routingKey,
 		?MetadataEntities\IEntity $entity
 	): void;

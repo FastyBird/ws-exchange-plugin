@@ -16,6 +16,7 @@
 namespace FastyBird\WsServerPlugin\DI;
 
 use FastyBird\WsServerPlugin\Commands;
+use FastyBird\WsServerPlugin\Consumers;
 use FastyBird\WsServerPlugin\Controllers;
 use FastyBird\WsServerPlugin\Events;
 use FastyBird\WsServerPlugin\Exceptions;
@@ -97,6 +98,10 @@ class WsServerPluginExtension extends DI\CompilerExtension
 		// Publisher
 		$builder->addDefinition($this->prefix('exchange.publisher'), new DI\Definitions\ServiceDefinition())
 			->setType(Publishers\Publisher::class);
+
+		// Consumers
+		$builder->addDefinition($this->prefix('consumers.clients'), new DI\Definitions\ServiceDefinition())
+			->setType(Consumers\Consumer::class);
 
 		// Commands
 		$builder->addDefinition($this->prefix('command.server'), new DI\Definitions\ServiceDefinition())

@@ -65,7 +65,7 @@ final class Publisher implements IPublisher
 	 * {@inheritDoc}
 	 */
 	public function publish(
-		$source,
+		MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType $source,
 		MetadataTypes\RoutingKeyType $routingKey,
 		?MetadataEntities\IEntity $entity
 	): void {
@@ -74,7 +74,7 @@ final class Publisher implements IPublisher
 			[
 				'routing_key' => $routingKey->getValue(),
 				'origin'      => $source->getValue(),
-				'data'        => $entity !== null ? $entity->toArray() : null,
+				'data'        => $entity?->toArray(),
 			]
 		);
 
@@ -85,7 +85,7 @@ final class Publisher implements IPublisher
 				'message' => [
 					'routing_key' => $routingKey->getValue(),
 					'origin'      => $source->getValue(),
-					'data'        => $entity !== null ? $entity->toArray() : null,
+					'data'        => $entity?->toArray(),
 				],
 			]);
 
@@ -96,7 +96,7 @@ final class Publisher implements IPublisher
 				'message' => [
 					'routing_key' => $routingKey->getValue(),
 					'origin'      => $source->getValue(),
-					'data'        => $entity !== null ? $entity->toArray() : null,
+					'data'        => $entity?->toArray(),
 				],
 			]);
 		}
@@ -104,7 +104,7 @@ final class Publisher implements IPublisher
 
 	/**
 	 * @param string $destination
-	 * @param mixed[] $data
+	 * @param Array<string, mixed> $data
 	 *
 	 * @return bool
 	 */
@@ -140,8 +140,8 @@ final class Publisher implements IPublisher
 
 		} catch (Throwable $ex) {
 			$this->logger->error('Data could not be broadcasts to clients', [
-				'source'  => 'ws-server-plugin',
-				'type'    => 'broadcast',
+				'source'    => 'ws-server-plugin',
+				'type'      => 'broadcast',
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code'    => $ex->getCode(),
