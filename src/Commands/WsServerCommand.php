@@ -16,6 +16,7 @@
 namespace FastyBird\WsServerPlugin\Commands;
 
 use FastyBird\SocketServerFactory;
+use FastyBird\WsServerPlugin\Server;
 use IPub\WebSockets;
 use Nette;
 use Psr\Log;
@@ -38,6 +39,9 @@ final class WsServerCommand extends Console\Command\Command
 
 	use Nette\SmartObject;
 
+	/** @var Server\ServerFactory */
+	private Server\ServerFactory $serverFactory;
+
 	/** @var WebSockets\Server\Configuration */
 	private WebSockets\Server\Configuration $configuration;
 
@@ -55,11 +59,14 @@ final class WsServerCommand extends Console\Command\Command
 
 	public function __construct(
 		WebSockets\Server\Configuration $configuration,
+		Server\ServerFactory $serverFactory,
 		SocketServerFactory\SocketServerFactory $socketServerFactory,
 		EventLoop\LoopInterface $eventLoop,
 		?Log\LoggerInterface $logger = null,
 		?string $name = null
 	) {
+		$this->serverFactory = $serverFactory;
+
 		$this->configuration = $configuration;
 		$this->socketServerFactory = $socketServerFactory;
 
@@ -98,7 +105,13 @@ final class WsServerCommand extends Console\Command\Command
 		);
 
 		try {
-			$this->socketServerFactory->create($this->eventLoop, $this->configuration->getAddress(), $this->configuration->getPort());
+			$socketServer = $this->socketServerFactory->create(
+				$this->eventLoop,
+				$this->configuration->getAddress(),
+				$this->configuration->getPort()
+			);
+
+			$this->serverFactory->create($socketServer);
 
 			$this->eventLoop->run();
 

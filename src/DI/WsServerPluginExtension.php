@@ -21,6 +21,7 @@ use FastyBird\WsServerPlugin\Controllers;
 use FastyBird\WsServerPlugin\Events;
 use FastyBird\WsServerPlugin\Exceptions;
 use FastyBird\WsServerPlugin\Publishers;
+use FastyBird\WsServerPlugin\Server;
 use FastyBird\WsServerPlugin\Subscribers;
 use IPub\WebSockets;
 use Nette;
@@ -69,6 +70,9 @@ class WsServerPluginExtension extends DI\CompilerExtension
 				'keys'    => Schema\Expect::string()->default(null),
 				'origins' => Schema\Expect::string()->default(null),
 			]),
+			'server' => Schema\Expect::structure([
+				'command' => Schema\Expect::bool()->default(true),
+			]),
 		]);
 	}
 
@@ -82,8 +86,10 @@ class WsServerPluginExtension extends DI\CompilerExtension
 		$configuration = $this->getConfig();
 
 		// Subscribers
-		$builder->addDefinition($this->prefix('subscribers.server'), new DI\Definitions\ServiceDefinition())
-			->setType(Subscribers\ServerSubscriber::class);
+		if (!$configuration->server->command) {
+			$builder->addDefinition($this->prefix('subscribers.server'), new DI\Definitions\ServiceDefinition())
+				->setType(Subscribers\ServerSubscriber::class);
+		}
 
 		$builder->addDefinition($this->prefix('subscribers.client'), new DI\Definitions\ServiceDefinition())
 			->setType(Subscribers\ClientSubscriber::class)
@@ -100,12 +106,20 @@ class WsServerPluginExtension extends DI\CompilerExtension
 			->setType(Publishers\Publisher::class);
 
 		// Consumers
-		$builder->addDefinition($this->prefix('consumers.clients'), new DI\Definitions\ServiceDefinition())
-			->setType(Consumers\Consumer::class);
+		$builder->addDefinition($this->prefix('consumers.exchange'), new DI\Definitions\ServiceDefinition())
+			->setType(Consumers\Consumer::class)
+			->setAutowired(false);
 
 		// Commands
 		$builder->addDefinition($this->prefix('command.server'), new DI\Definitions\ServiceDefinition())
 			->setType(Commands\WsServerCommand::class);
+
+		// Server
+		$builder->addDefinition($this->prefix('server.factory'), new DI\Definitions\ServiceDefinition())
+			->setType(Server\ServerFactory::class)
+			->setArguments([
+				'exchangeConsumer' => '@' . $this->prefix('consumers.exchange'),
+			]);
 	}
 
 	/**
