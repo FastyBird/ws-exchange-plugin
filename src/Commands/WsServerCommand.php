@@ -86,7 +86,7 @@ final class WsServerCommand extends Console\Command\Command
 
 		$this
 			->setName('fb:ws-server:start')
-			->setDescription('Start WS server.');
+			->setDescription('WebSockets server service');
 	}
 
 	/**
