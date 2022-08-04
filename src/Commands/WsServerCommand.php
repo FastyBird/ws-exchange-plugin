@@ -45,9 +45,6 @@ final class WsServerCommand extends Console\Command\Command
 	/** @var WebSockets\Server\Configuration */
 	private WebSockets\Server\Configuration $configuration;
 
-	/** @var WebSockets\Server\Handlers */
-	private WebSockets\Server\Handlers $handlers;
-
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 

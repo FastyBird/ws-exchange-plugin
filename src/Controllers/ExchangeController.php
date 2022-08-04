@@ -15,8 +15,8 @@
 
 namespace FastyBird\WsServerPlugin\Controllers;
 
-use FastyBird\Exchange\Consumer as ExchangeConsumer;
 use FastyBird\Exchange\Entities as ExchangeEntities;
+use FastyBird\Exchange\Publisher as ExchangePublisher;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Loaders as MetadataLoaders;
@@ -41,8 +41,8 @@ use Throwable;
 final class ExchangeController extends WebSockets\Application\Controller\Controller
 {
 
-	/** @var ExchangeConsumer\IConsumer|null */
-	private ?ExchangeConsumer\IConsumer $consumer;
+	/** @var ExchangePublisher\IPublisher|null */
+	private ?ExchangePublisher\IPublisher $publisher;
 
 	/** @var MetadataLoaders\ISchemaLoader */
 	private MetadataLoaders\ISchemaLoader $schemaLoader;
@@ -63,14 +63,14 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 		MetadataLoaders\ISchemaLoader $schemaLoader,
 		MetadataSchemas\IValidator $jsonValidator,
 		ExchangeEntities\EntityFactory $entityFactory,
-		?ExchangeConsumer\IConsumer $consumer = null,
+		?ExchangePublisher\IPublisher $publisher = null,
 		?EventDispatcher\EventDispatcherInterface $dispatcher = null,
 		?Log\LoggerInterface $logger = null
 	) {
 		parent::__construct();
 
 		$this->schemaLoader = $schemaLoader;
-		$this->consumer = $consumer;
+		$this->publisher = $publisher;
 		$this->jsonValidator = $jsonValidator;
 		$this->entityFactory = $entityFactory;
 		$this->dispatcher = $dispatcher;
@@ -112,9 +112,7 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 			throw new Exceptions\InvalidArgumentException('Provided message has invalid format');
 		}
 
-		if ($this->dispatcher !== null) {
-			$this->dispatcher->dispatch(new Events\ClientRpcEvent($client, $topic, $args));
-		}
+		$this->dispatcher?->dispatch(new Events\ClientRpcEvent($client, $topic, $args));
 
 		switch ($args['routing_key']) {
 			case Metadata\Constants::MESSAGE_BUS_DEVICE_CONTROL_ACTION_ROUTING_KEY:
@@ -127,17 +125,14 @@ final class ExchangeController extends WebSockets\Application\Controller\Control
 				$schema = $this->schemaLoader->loadByRoutingKey(Metadata\Types\RoutingKeyType::get($args['routing_key']));
 				$data = isset($args['data']) ? $this->parseData($args['data'], $schema) : null;
 
-				if ($this->consumer !== null) {
-					$this->consumer->consume(
-						Metadata\Types\ModuleSourceType::get($args['source']),
-						Metadata\Types\RoutingKeyType::get($args['routing_key']),
-						$this->entityFactory->create(
-							Utils\Json::encode($data),
-							Metadata\Types\RoutingKeyType::get($args['routing_key'])
-						),
-					);
-				}
-
+				$this->publisher?->publish(
+					Metadata\Types\ModuleSourceType::get($args['source']),
+					Metadata\Types\RoutingKeyType::get($args['routing_key']),
+					$this->entityFactory->create(
+						Utils\Json::encode($data),
+						Metadata\Types\RoutingKeyType::get($args['routing_key'])
+					),
+				);
 				break;
 
 			default:

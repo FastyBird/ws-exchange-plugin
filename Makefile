@@ -1,4 +1,4 @@
-.PHONY: php_qa php_lint php_cs php_csf phpstan php_tests php_coverage
+.PHONY: qa lint cs csf phpstan tests coverage
 
 all:
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs
@@ -6,22 +6,22 @@ all:
 vendor: composer.json composer.lock
 	composer install
 
-php_qa: php_lint phpstan php_cs
+qa: lint phpstan cs
 
-php_lint: vendor
+lint: vendor
 	vendor/bin/linter src tests
 
-php_cs: vendor
+cs: vendor
 	vendor/bin/codesniffer src tests
 
-php_csf: vendor
+csf: vendor
 	vendor/bin/codefixer src tests
 
 phpstan: vendor
 	vendor/bin/phpstan analyse -c phpstan.neon src
 
-php_tests: vendor
+tests: vendor
 	vendor/bin/tester -s -p php --colors 1 -C tests/cases
 
-php_coverage: vendor
+coverage: vendor
 	vendor/bin/tester -s -p php --colors 1 -C --coverage ./coverage.xml --coverage-src ./src tests/cases

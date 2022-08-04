@@ -40,6 +40,12 @@ final class ServerFactory
 	/** @var WebSockets\Server\Configuration */
 	private WebSockets\Server\Configuration $configuration;
 
+	/** @var Consumers\Consumer */
+	private Consumers\Consumer $exchangeConsumer;
+
+	/** @var ExchangeConsumer\Consumer */
+	private ExchangeConsumer\Consumer $consumer;
+
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
@@ -55,7 +61,8 @@ final class ServerFactory
 
 		$this->logger = $logger ?? new Log\NullLogger();
 
-		$consumer->register($exchangeConsumer);
+		$this->consumer = $consumer;
+		$this->exchangeConsumer = $exchangeConsumer;
 	}
 
 	/**
@@ -65,6 +72,8 @@ final class ServerFactory
 	 */
 	public function create(Socket\ServerInterface $server): void
 	{
+		$this->consumer->register($this->exchangeConsumer);
+
 		$server->on('connection', function (Socket\ConnectionInterface $connection): void {
 			if ($connection->getLocalAddress() === null) {
 				return;
