@@ -1,7 +1,7 @@
 # FastyBird WS server plugin
 
-[![Build Status](https://badgen.net/github/checks/FastyBird/ws-server-plugin/master?cache=300&style=flat-square)](https://github.com/FastyBird/ws-server-plugin/actions)
-[![Licence](https://badgen.net/github/license/FastyBird/ws-server-plugin?cache=300&style=flat-square)](https://github.com/FastyBird/ws-server-plugin/blob/master/LICENSE.md)
+[![Build Status](https://badgen.net/github/checks/FastyBird/ws-server-plugin/main?cache=300&style=flat-square)](https://github.com/FastyBird/ws-server-plugin/actions)
+[![Licence](https://badgen.net/github/license/FastyBird/ws-server-plugin?cache=300&style=flat-square)](https://github.com/FastyBird/ws-server-plugin/blob/main/LICENSE.md)
 [![Code coverage](https://badgen.net/coveralls/c/github/FastyBird/ws-server-plugin?cache=300&style=flat-square)](https://coveralls.io/r/FastyBird/ws-server-plugin)
 
 ![PHP](https://badgen.net/packagist/php/FastyBird/ws-server-plugin?cache=300&style=flat-square)
@@ -29,7 +29,7 @@ $ composer require fastybird/ws-server-plugin
 
 ## Documentation
 
-Learn how to connect & call RPC messages in [documentation](https://github.com/FastyBird/ws-server-plugin/blob/master/.docs/en/index.md).
+Learn how to connect & call RPC messages in [documentation](https://github.com/FastyBird/ws-server-plugin/blob/main/.docs/en/index.md).
 
 ***
 Homepage [https://www.fastybird.com](https://www.fastybird.com) and
