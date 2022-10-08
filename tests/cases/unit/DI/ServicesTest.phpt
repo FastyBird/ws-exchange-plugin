@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases;
+namespace Tests\Cases\Unit;
 
 use FastyBird\WsServerPlugin\Controllers;
 use FastyBird\WsServerPlugin\Subscribers;
@@ -20,9 +20,9 @@ final class ServicesTest extends BaseTestCase
 		$container = $this->createContainer();
 
 		// Assert::notNull($container->getByType(Subscribers\ApplicationSubscriber::class));
-		Assert::notNull($container->getByType(Subscribers\ClientSubscriber::class));
+		Assert::notNull($container->getByType(Subscribers\Client::class));
 
-		Assert::notNull($container->getByType(Controllers\ExchangeController::class));
+		Assert::notNull($container->getByType(Controllers\Exchange::class));
 	}
 
 }

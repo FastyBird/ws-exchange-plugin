@@ -31,7 +31,9 @@ final class Constants
 	 */
 
 	public const WS_HEADER_AUTHORIZATION = 'authorization';
+
 	public const WS_HEADER_WS_KEY = 'x-ws-key';
+
 	public const WS_HEADER_ORIGIN = 'origin';
 
 }

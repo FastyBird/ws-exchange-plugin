@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * IException.php
+ * InvalidArgument.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
@@ -15,9 +15,9 @@
 
 namespace FastyBird\WsServerPlugin\Exceptions;
 
-use Throwable;
+use InvalidArgumentException as PHPInvalidArgumentException;
 
-interface IException extends Throwable
+class InvalidArgument extends PHPInvalidArgumentException implements Exception
 {
 
 }

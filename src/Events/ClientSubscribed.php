@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * ClientSubscribedEvent.php
+ * ClientSubscribed.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
@@ -25,30 +25,19 @@ use IPub\WebSocketsWAMP;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class ClientSubscribedEvent
+class ClientSubscribed
 {
 
-	/** @var WebSocketsWAMP\Entities\Clients\IClient */
-	private WebSocketsWAMP\Entities\Clients\IClient $client;
-
-	/** @var WebSocketsWAMP\Entities\Topics\ITopic<mixed> */
-	private WebSocketsWAMP\Entities\Topics\ITopic $topic;
-
 	/**
-	 * @param WebSocketsWAMP\Entities\Clients\IClient $client
-	 * @param WebSocketsWAMP\Entities\Topics\ITopic<mixed> $topic
+	 * @phpstan-param WebSocketsWAMP\Entities\Topics\ITopic<mixed> $topic
 	 */
 	public function __construct(
-		WebSocketsWAMP\Entities\Clients\IClient $client,
-		WebSocketsWAMP\Entities\Topics\ITopic $topic
-	) {
-		$this->client = $client;
-		$this->topic = $topic;
+		private readonly WebSocketsWAMP\Entities\Clients\IClient $client,
+		private readonly WebSocketsWAMP\Entities\Topics\ITopic $topic,
+	)
+	{
 	}
 
-	/**
-	 * @return WebSocketsWAMP\Entities\Clients\IClient
-	 */
 	public function getClient(): WebSocketsWAMP\Entities\Clients\IClient
 	{
 		return $this->client;

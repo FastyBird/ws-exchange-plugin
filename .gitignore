@@ -1,9 +1,6 @@
 .idea
 /vendor
-/dist
-/node_modules
-tests/*/output
-tests/tmp
-composer.lock
-yarn.lock
+/composer.lock
+/tests/*/output
+/tests/tmp
 .DS_Store

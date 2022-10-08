@@ -16,7 +16,6 @@ php:
 extensions:
     fbMetadata              : FastyBird\Metadata\DI\MetadataExtension
     fbExchange              : FastyBird\Exchange\DI\ExchangeExtension
-    fbSocketServerFactory   : FastyBird\SocketServerFactory\DI\SocketServerFactoryExtension
     ipubWebSocketsWAMP      : IPub\WebSocketsWAMP\DI\WebSocketsWAMPExtension
     ipubWebSockets          : IPub\WebSockets\DI\WebSocketsExtension
     ipubPhone               : IPub\Phone\DI\PhoneExtension
@@ -26,4 +25,4 @@ services:
 
 ipubWebSockets:
     routes:
-        '/io/exchange' : 'ExchangeController:'
+        '/io/exchange' : 'Exchange:'

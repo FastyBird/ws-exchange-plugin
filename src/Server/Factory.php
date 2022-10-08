@@ -22,6 +22,7 @@ use Nette\Utils;
 use Psr\Log;
 use React\Socket;
 use Throwable;
+use function parse_url;
 
 /**
  * WS server factory
@@ -31,45 +32,22 @@ use Throwable;
  *
  * @author          Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class ServerFactory
+final class Factory
 {
 
-	/** @var WebSockets\Server\Handlers */
-	private WebSockets\Server\Handlers $handlers;
-
-	/** @var WebSockets\Server\Configuration */
-	private WebSockets\Server\Configuration $configuration;
-
-	/** @var Consumers\Consumer */
-	private Consumers\Consumer $exchangeConsumer;
-
-	/** @var ExchangeConsumer\Consumer */
-	private ExchangeConsumer\Consumer $consumer;
-
-	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
-		WebSockets\Server\Handlers $handlers,
-		WebSockets\Server\Configuration $configuration,
-		Consumers\Consumer $exchangeConsumer,
-		ExchangeConsumer\Consumer $consumer,
-		?Log\LoggerInterface $logger = null
-	) {
-		$this->handlers = $handlers;
-		$this->configuration = $configuration;
-
+		private readonly WebSockets\Server\Handlers $handlers,
+		private readonly WebSockets\Server\Configuration $configuration,
+		private readonly Consumers\Consumer $exchangeConsumer,
+		private readonly ExchangeConsumer\Container $consumer,
+		Log\LoggerInterface|null $logger = null,
+	)
+	{
 		$this->logger = $logger ?? new Log\NullLogger();
-
-		$this->consumer = $consumer;
-		$this->exchangeConsumer = $exchangeConsumer;
 	}
 
-	/**
-	 * @param Socket\ServerInterface $server
-	 *
-	 * @return void
-	 */
 	public function create(Socket\ServerInterface $server): void
 	{
 		$this->consumer->register($this->exchangeConsumer);
@@ -91,21 +69,21 @@ final class ServerFactory
 
 		$server->on('error', function (Throwable $ex): void {
 			$this->logger->error('Could not establish connection', [
-				'source'    => 'ws-server-plugin',
-				'type'      => 'server',
+				'source' => 'ws-server-plugin',
+				'type' => 'server',
 				'exception' => [
 					'message' => $ex->getMessage(),
-					'code'    => $ex->getCode(),
+					'code' => $ex->getCode(),
 				],
 			]);
 		});
 
 		$this->logger->debug('Launching WebSockets WS Server', [
 			'source' => 'ws-server-plugin',
-			'type'   => 'server',
+			'type' => 'server',
 			'server' => [
 				'address' => $this->configuration->getAddress(),
-				'port'    => $this->configuration->getPort(),
+				'port' => $this->configuration->getPort(),
 			],
 		]);
 	}

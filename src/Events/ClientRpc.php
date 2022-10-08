@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * ClientRpcEvent.php
+ * ClientRpc.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
@@ -25,36 +25,21 @@ use IPub\WebSocketsWAMP;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class ClientRpcEvent
+class ClientRpc
 {
 
-	/** @var WebSocketsWAMP\Entities\Clients\IClient */
-	private WebSocketsWAMP\Entities\Clients\IClient $client;
-
-	/** @var WebSocketsWAMP\Entities\Topics\ITopic<mixed> */
-	private WebSocketsWAMP\Entities\Topics\ITopic $topic;
-
-	/** @var mixed[] */
-	private array $args;
-
 	/**
-	 * @param WebSocketsWAMP\Entities\Clients\IClient $client
-	 * @param WebSocketsWAMP\Entities\Topics\ITopic<mixed> $topic
-	 * @param mixed[] $args
+	 * @phpstan-param WebSocketsWAMP\Entities\Topics\ITopic<mixed> $topic
+	 * @phpstan-param array<mixed> $args
 	 */
 	public function __construct(
-		WebSocketsWAMP\Entities\Clients\IClient $client,
-		WebSocketsWAMP\Entities\Topics\ITopic $topic,
-		array $args
-	) {
-		$this->client = $client;
-		$this->topic = $topic;
-		$this->args = $args;
+		private readonly WebSocketsWAMP\Entities\Clients\IClient $client,
+		private readonly WebSocketsWAMP\Entities\Topics\ITopic $topic,
+		private readonly array $args,
+	)
+	{
 	}
 
-	/**
-	 * @return WebSocketsWAMP\Entities\Clients\IClient
-	 */
 	public function getClient(): WebSocketsWAMP\Entities\Clients\IClient
 	{
 		return $this->client;
@@ -69,7 +54,7 @@ class ClientRpcEvent
 	}
 
 	/**
-	 * @return mixed[]
+	 * @return array<mixed>
 	 */
 	public function getArgs(): array
 	{

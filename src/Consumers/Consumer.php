@@ -29,33 +29,22 @@ use Nette;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class Consumer implements ExchangeConsumer\IConsumer
+final class Consumer implements ExchangeConsumer\Consumer
 {
 
 	use Nette\SmartObject;
 
-	/** @var Publishers\IPublisher */
-	private Publishers\IPublisher $publisher;
-
-	public function __construct(
-		Publishers\IPublisher $publisher
-	) {
-		$this->publisher = $publisher;
+	public function __construct(private readonly Publishers\Publisher $publisher)
+	{
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function consume(
-		MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType $source,
-		MetadataTypes\RoutingKeyType $routingKey,
-		?MetadataEntities\IEntity $entity
-	): void {
-		$this->publisher->publish(
-			$source,
-			$routingKey,
-			$entity
-		);
+		MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource $source,
+		MetadataTypes\RoutingKey $routingKey,
+		MetadataEntities\Entity|null $entity,
+	): void
+	{
+		$this->publisher->publish($source, $routingKey, $entity);
 	}
 
 }

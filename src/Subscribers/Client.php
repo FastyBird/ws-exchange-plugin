@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * ClientSubscriber.php
+ * Client.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -20,6 +20,8 @@ use FastyBird\WsServerPlugin\Events;
 use IPub\WebSockets;
 use Psr\Log;
 use Symfony\Component\EventDispatcher;
+use function explode;
+use function in_array;
 
 /**
  * WS client events subscriber
@@ -29,72 +31,56 @@ use Symfony\Component\EventDispatcher;
  *
  * @author          Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class ClientSubscriber implements EventDispatcher\EventSubscriberInterface
+class Client implements EventDispatcher\EventSubscriberInterface
 {
 
-	/** @var Log\LoggerInterface */
 	protected Log\LoggerInterface $logger;
 
-	/** @var string[] */
+	/** @var array<string> */
 	private array $wsKeys;
 
-	/** @var string[] */
+	/** @var array<string> */
 	private array $allowedOrigins;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public static function getSubscribedEvents(): array
-	{
-		return [
-			Events\ClientConnectedEvent::class => 'clientConnected',
-			Events\IncomingMessage::class      => 'incomingMessage',
-		];
-	}
-
 	public function __construct(
-		?Log\LoggerInterface $logger,
-		?string $wsKeys = null,
-		?string $allowedOrigins = null
-	) {
+		Log\LoggerInterface|null $logger,
+		string|null $wsKeys = null,
+		string|null $allowedOrigins = null,
+	)
+	{
 		$this->wsKeys = $wsKeys !== null ? explode(',', $wsKeys) : [];
 		$this->allowedOrigins = $allowedOrigins !== null ? explode(',', $allowedOrigins) : [];
 
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
+	public static function getSubscribedEvents(): array
+	{
+		return [
+			Events\ClientConnected::class => 'clientConnected',
+			Events\IncomingMessage::class => 'incomingMessage',
+		];
+	}
+
 	/**
-	 * @param Events\ClientConnectedEvent $event
-	 *
-	 * @return void
-	 *
 	 * @throws WebSockets\Exceptions\InvalidArgumentException
 	 */
-	public function clientConnected(
-		Events\ClientConnectedEvent $event
-	): void {
+	public function clientConnected(Events\ClientConnected $event): void
+	{
 		$this->checkSecurity($event->getClient(), $event->getHttpRequest(), $this->wsKeys, $this->allowedOrigins);
 	}
 
 	/**
-	 * @param Events\IncomingMessage $event
-	 *
-	 * @return void
 	 * @throws WebSockets\Exceptions\InvalidArgumentException
 	 */
-	public function incomingMessage(
-		Events\IncomingMessage $event
-	): void {
+	public function incomingMessage(Events\IncomingMessage $event): void
+	{
 		$this->checkSecurity($event->getClient(), $event->getHttpRequest(), $this->wsKeys, $this->allowedOrigins);
 	}
 
 	/**
-	 * @param WebSockets\Entities\Clients\IClient $client
-	 * @param WebSockets\Http\IRequest $httpRequest
-	 * @param string[] $allowedWsKeys
-	 * @param string[] $allowedOrigins
-	 *
-	 * @return bool
+	 * @param array<string> $allowedWsKeys
+	 * @param array<string> $allowedOrigins
 	 *
 	 * @throws WebSockets\Exceptions\InvalidArgumentException
 	 */
@@ -102,8 +88,9 @@ class ClientSubscriber implements EventDispatcher\EventSubscriberInterface
 		WebSockets\Entities\Clients\IClient $client,
 		WebSockets\Http\IRequest $httpRequest,
 		array $allowedWsKeys,
-		array $allowedOrigins
-	): bool {
+		array $allowedOrigins,
+	): bool
+	{
 		$wsKey = $httpRequest->getHeader(WsServerPlugin\Constants::WS_HEADER_WS_KEY);
 
 		if (
@@ -114,7 +101,7 @@ class ClientSubscriber implements EventDispatcher\EventSubscriberInterface
 
 			$this->logger->warning('Client used invalid WS key', [
 				'source' => 'ws-server-plugin',
-				'type'   => 'validate',
+				'type' => 'validate',
 				'ws_key' => $wsKey,
 			]);
 
@@ -131,7 +118,7 @@ class ClientSubscriber implements EventDispatcher\EventSubscriberInterface
 
 			$this->logger->warning('Client is connecting from not allowed origin', [
 				'source' => 'ws-server-plugin',
-				'type'   => 'validate',
+				'type' => 'validate',
 				'origin' => $origin,
 			]);
 
@@ -146,7 +133,7 @@ class ClientSubscriber implements EventDispatcher\EventSubscriberInterface
 			if ($cookieToken === null) {
 				$this->logger->warning('Client access token is missing', [
 					'source' => 'ws-server-plugin',
-					'type'   => 'validate',
+					'type' => 'validate',
 				]);
 
 				$this->closeSession($client);
@@ -159,8 +146,6 @@ class ClientSubscriber implements EventDispatcher\EventSubscriberInterface
 	}
 
 	/**
-	 * @param WebSockets\Entities\Clients\IClient $client
-	 *
 	 * @throws WebSockets\Exceptions\InvalidArgumentException
 	 */
 	private function closeSession(WebSockets\Entities\Clients\IClient $client): void

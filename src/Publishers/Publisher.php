@@ -31,87 +31,69 @@ use Throwable;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class Publisher implements IPublisher
+final class Publisher
 {
 
 	use Nette\SmartObject;
 
-	/** @var WebSockets\Router\LinkGenerator */
-	private WebSockets\Router\LinkGenerator $linkGenerator;
-
-	/** @var WebSocketsWAMP\Topics\IStorage<WebSocketsWAMP\Entities\Topics\Topic> */
-	private WebSocketsWAMP\Topics\IStorage $topicsStorage;
-
-	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
 	/**
-	 * @param WebSockets\Router\LinkGenerator $linkGenerator
-	 * @param WebSocketsWAMP\Topics\IStorage<WebSocketsWAMP\Entities\Topics\Topic> $topicsStorage
-	 * @param Log\LoggerInterface|null $logger
+	 * @phpstan-param WebSocketsWAMP\Topics\IStorage<WebSocketsWAMP\Entities\Topics\Topic> $topicsStorage
 	 */
 	public function __construct(
-		WebSockets\Router\LinkGenerator $linkGenerator,
-		WebSocketsWAMP\Topics\IStorage $topicsStorage,
-		?Log\LoggerInterface $logger
-	) {
-		$this->linkGenerator = $linkGenerator;
-		$this->topicsStorage = $topicsStorage;
-
+		private readonly WebSockets\Router\LinkGenerator $linkGenerator,
+		private readonly WebSocketsWAMP\Topics\IStorage $topicsStorage,
+		Log\LoggerInterface|null $logger,
+	)
+	{
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function publish(
-		MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType $source,
-		MetadataTypes\RoutingKeyType $routingKey,
-		?MetadataEntities\IEntity $entity
-	): void {
+		MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource $source,
+		MetadataTypes\RoutingKey $routingKey,
+		MetadataEntities\Entity|null $entity,
+	): void
+	{
 		$result = $this->sendMessage(
 			'Exchange:',
 			[
 				'routing_key' => $routingKey->getValue(),
-				'origin'      => $source->getValue(),
-				'data'        => $entity?->toArray(),
-			]
+				'origin' => $source->getValue(),
+				'data' => $entity?->toArray(),
+			],
 		);
 
 		if ($result) {
 			$this->logger->debug('Successfully published message', [
-				'source'  => 'ws-server-plugin',
-				'type'    => 'publish',
+				'source' => 'ws-server-plugin',
+				'type' => 'publish',
 				'message' => [
 					'routing_key' => $routingKey->getValue(),
-					'origin'      => $source->getValue(),
-					'data'        => $entity?->toArray(),
+					'origin' => $source->getValue(),
+					'data' => $entity?->toArray(),
 				],
 			]);
 
 		} else {
 			$this->logger->error('Message could not be published to exchange', [
-				'source'  => 'ws-server-plugin',
-				'type'    => 'publish',
+				'source' => 'ws-server-plugin',
+				'type' => 'publish',
 				'message' => [
 					'routing_key' => $routingKey->getValue(),
-					'origin'      => $source->getValue(),
-					'data'        => $entity?->toArray(),
+					'origin' => $source->getValue(),
+					'data' => $entity?->toArray(),
 				],
 			]);
 		}
 	}
 
 	/**
-	 * @param string $destination
 	 * @param Array<string, mixed> $data
-	 *
-	 * @return bool
 	 */
-	private function sendMessage(
-		string $destination,
-		array $data
-	): bool {
+	private function sendMessage(string $destination, array $data): bool
+	{
 		try {
 			$link = $this->linkGenerator->link($destination);
 
@@ -120,8 +102,8 @@ final class Publisher implements IPublisher
 
 				$this->logger->debug('Broadcasting message to topic', [
 					'source' => 'ws-server-plugin',
-					'type'   => 'broadcast',
-					'link'   => $link,
+					'type' => 'broadcast',
+					'link' => $link,
 				]);
 
 				$topic->broadcast(Nette\Utils\Json::encode($data));
@@ -130,21 +112,21 @@ final class Publisher implements IPublisher
 			}
 		} catch (Nette\Utils\JsonException $ex) {
 			$this->logger->error('Data could not be converted to message', [
-				'source'    => 'ws-server-plugin',
-				'type'      => 'broadcast',
+				'source' => 'ws-server-plugin',
+				'type' => 'broadcast',
 				'exception' => [
 					'message' => $ex->getMessage(),
-					'code'    => $ex->getCode(),
+					'code' => $ex->getCode(),
 				],
 			]);
 
 		} catch (Throwable $ex) {
 			$this->logger->error('Data could not be broadcasts to clients', [
-				'source'    => 'ws-server-plugin',
-				'type'      => 'broadcast',
+				'source' => 'ws-server-plugin',
+				'type' => 'broadcast',
 				'exception' => [
 					'message' => $ex->getMessage(),
-					'code'    => $ex->getCode(),
+					'code' => $ex->getCode(),
 				],
 			]);
 		}

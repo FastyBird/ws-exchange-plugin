@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * WsServerCommand.php
+ * WsServer.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
@@ -15,12 +15,12 @@
 
 namespace FastyBird\WsServerPlugin\Commands;
 
-use FastyBird\SocketServerFactory;
 use FastyBird\WsServerPlugin\Server;
 use IPub\WebSockets;
 use Nette;
 use Psr\Log;
 use React\EventLoop;
+use React\Socket;
 use Symfony\Component\Console;
 use Symfony\Component\Console\Input;
 use Symfony\Component\Console\Output;
@@ -34,78 +34,55 @@ use Throwable;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class WsServerCommand extends Console\Command\Command
+final class WsServer extends Console\Command\Command
 {
 
 	use Nette\SmartObject;
 
-	/** @var Server\ServerFactory */
-	private Server\ServerFactory $serverFactory;
+	public const NAME = 'fb:ws-server:start';
 
-	/** @var WebSockets\Server\Configuration */
-	private WebSockets\Server\Configuration $configuration;
-
-	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
-	/** @var SocketServerFactory\SocketServerFactory */
-	private SocketServerFactory\SocketServerFactory $socketServerFactory;
-
-	/** @var EventLoop\LoopInterface */
-	private EventLoop\LoopInterface $eventLoop;
-
 	public function __construct(
-		WebSockets\Server\Configuration $configuration,
-		Server\ServerFactory $serverFactory,
-		SocketServerFactory\SocketServerFactory $socketServerFactory,
-		EventLoop\LoopInterface $eventLoop,
-		?Log\LoggerInterface $logger = null,
-		?string $name = null
-	) {
-		$this->serverFactory = $serverFactory;
-
-		$this->configuration = $configuration;
-		$this->socketServerFactory = $socketServerFactory;
-
-		$this->eventLoop = $eventLoop;
-
+		private readonly WebSockets\Server\Configuration $configuration,
+		private readonly Server\Factory $serverFactory,
+		private readonly EventLoop\LoopInterface $eventLoop,
+		Log\LoggerInterface|null $logger = null,
+		string|null $name = null,
+	)
+	{
 		$this->logger = $logger ?? new Log\NullLogger();
 
 		parent::__construct($name);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	protected function configure(): void
 	{
 		parent::configure();
 
 		$this
-			->setName('fb:ws-server:start')
+			->setName(self::NAME)
 			->setDescription('WebSockets server service');
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	protected function execute(
 		Input\InputInterface $input,
-		Output\OutputInterface $output
-	): int {
+		Output\OutputInterface $output,
+	): int
+	{
 		$this->logger->info(
 			'Starting WS server',
 			[
 				'source' => 'ws-server-plugin',
-				'type'   => 'command',
-			]
+				'type' => 'command',
+			],
 		);
 
 		try {
-			$socketServer = $this->socketServerFactory->create(
+			$socketServer = new Socket\SocketServer(
+				$this->configuration->getAddress() . ':' . $this->configuration->getPort(),
+				[],
 				$this->eventLoop,
-				$this->configuration->getAddress(),
-				$this->configuration->getPort()
 			);
 
 			$this->serverFactory->create($socketServer);
@@ -117,14 +94,14 @@ final class WsServerCommand extends Console\Command\Command
 			$this->logger->error(
 				'WS server was forced to close',
 				[
-					'source'    => 'ws-server-plugin',
-					'type'      => 'command',
+					'source' => 'ws-server-plugin',
+					'type' => 'command',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
-					'cmd'       => $this->getName(),
-				]
+					'cmd' => $this->getName(),
+				],
 			);
 
 			$this->eventLoop->stop();
@@ -134,14 +111,14 @@ final class WsServerCommand extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred. Stopping WS server',
 				[
-					'source'    => 'ws-server-plugin',
-					'type'      => 'command',
+					'source' => 'ws-server-plugin',
+					'type' => 'command',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
-					'cmd'       => $this->getName(),
-				]
+					'cmd' => $this->getName(),
+				],
 			);
 
 			$this->eventLoop->stop();

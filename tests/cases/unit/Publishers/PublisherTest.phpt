@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases;
+namespace Tests\Cases\Unit;
 
 use FastyBird\Exchange\Entities as ExchangeEntities;
 use FastyBird\Metadata;
@@ -23,14 +23,14 @@ final class PublisherTest extends BaseTestCase
 
 	/**
 	 * @param Utils\ArrayHash $data
-	 * @param Metadata\Types\RoutingKeyType $routingKey
-	 * @param MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType $source
+	 * @param Metadata\Types\RoutingKey $routingKey
+	 * @param MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource $source
 	 *
 	 * @dataProvider ./../../../fixtures/Publishers/deviceSuccessfulMessage.php
 	 */
 	public function testPublishSuccessfulDeviceMessage(
 		Utils\ArrayHash $data,
-		Metadata\Types\RoutingKeyType $routingKey,
+		Metadata\Types\RoutingKey $routingKey,
 		$source
 	): void {
 		$entityFactory = $this->container->getByType(ExchangeEntities\EntityFactory::class);
@@ -86,14 +86,14 @@ final class PublisherTest extends BaseTestCase
 
 	/**
 	 * @param Utils\ArrayHash $data
-	 * @param Metadata\Types\RoutingKeyType $routingKey
-	 * @param MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType $source
+	 * @param Metadata\Types\RoutingKey $routingKey
+	 * @param MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource $source
 	 *
 	 * @dataProvider ./../../../fixtures/Publishers/devicePropertySuccessfulMessage.php
 	 */
 	public function testPublishSuccessfulDevicePropertyMessage(
 		Utils\ArrayHash $data,
-		Metadata\Types\RoutingKeyType $routingKey,
+		Metadata\Types\RoutingKey $routingKey,
 		$source
 	): void {
 		$entityFactory = $this->container->getByType(ExchangeEntities\EntityFactory::class);
@@ -149,14 +149,14 @@ final class PublisherTest extends BaseTestCase
 
 	/**
 	 * @param Utils\ArrayHash $data
-	 * @param Metadata\Types\RoutingKeyType $routingKey
-	 * @param MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType $source
+	 * @param Metadata\Types\RoutingKey $routingKey
+	 * @param MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource $source
 	 *
 	 * @dataProvider ./../../../fixtures/Publishers/channelSuccessfulMessage.php
 	 */
 	public function testPublishSuccessfulChannelMessage(
 		Utils\ArrayHash $data,
-		Metadata\Types\RoutingKeyType $routingKey,
+		Metadata\Types\RoutingKey $routingKey,
 		$source
 	): void {
 		$entityFactory = $this->container->getByType(ExchangeEntities\EntityFactory::class);
@@ -212,14 +212,14 @@ final class PublisherTest extends BaseTestCase
 
 	/**
 	 * @param Utils\ArrayHash $data
-	 * @param Metadata\Types\RoutingKeyType $routingKey
-	 * @param MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType $source
+	 * @param Metadata\Types\RoutingKey $routingKey
+	 * @param MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource $source
 	 *
 	 * @dataProvider ./../../../fixtures/Publishers/channelPropertySuccessfulMessage.php
 	 */
 	public function testPublishSuccessfulChannelPropertyMessage(
 		Utils\ArrayHash $data,
-		Metadata\Types\RoutingKeyType $routingKey,
+		Metadata\Types\RoutingKey $routingKey,
 		$source
 	): void {
 		$entityFactory = $this->container->getByType(ExchangeEntities\EntityFactory::class);

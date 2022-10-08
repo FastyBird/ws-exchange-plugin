@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * LogicException.php
+ * Logic.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
@@ -17,7 +17,7 @@ namespace FastyBird\WsServerPlugin\Exceptions;
 
 use LogicException as PHPLogicException;
 
-class LogicException extends PHPLogicException implements IException
+class Logic extends PHPLogicException implements Exception
 {
 
 }

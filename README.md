@@ -9,6 +9,8 @@
 [![PHP downloads total](https://badgen.net/packagist/dt/FastyBird/ws-server-plugin?cache=300&style=flat-square)](https://packagist.org/packages/FastyBird/ws-server-plugin)
 [![PHPStan](https://img.shields.io/badge/phpstan-enabled-brightgreen.svg?style=flat-square)](https://github.com/phpstan/phpstan)
 
+***
+
 ## What is FastyBird WS server plugin?
 
 This is a plugin for [FastyBird IoT](https://www.fastybird.com) ecosystem which is implementing websockets [WAMPv1](https://wamp-proto.org) server based on [iPbulikuj WAMP server](https://github.com/ipublikuj/websockets-wamp)
@@ -24,7 +26,7 @@ This is a plugin for [FastyBird IoT](https://www.fastybird.com) ecosystem which 
 The best way to install **fastybird/ws-server-plugin** is using [Composer](http://getcomposer.org/):
 
 ```sh
-$ composer require fastybird/ws-server-plugin
+composer require fastybird/ws-server-plugin
 ```
 
 ## Documentation
