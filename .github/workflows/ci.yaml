@@ -21,13 +21,13 @@ env:
 
 jobs:
   qa:
-    name: "Quality assurance of PHP code"
+    name: "Code quality assurance"
     runs-on: "${{ matrix.operating-system }}"
 
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.0", "8.1"]
+        php-version: ["8.1"]
         operating-system: ["ubuntu-latest"]
 
     steps:
@@ -81,13 +81,13 @@ jobs:
         run: "make cs"
 
   static-analysis:
-    name: "Static analysis of PHP code"
+    name: "Code static analysis"
     runs-on: "${{ matrix.operating-system }}"
 
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.0", "8.1"]
+        php-version: ["8.1"]
         operating-system: ["ubuntu-latest"]
 
     steps:
@@ -138,19 +138,26 @@ jobs:
         run: "make phpstan"
 
   tests:
-    name: "Tests of PHP code"
+    name: "Code tests"
     runs-on: "${{ matrix.operating-system }}"
     needs: ["qa", "static-analysis"]
 
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.0", "8.1"]
+        php-version: ["8.1"]
         operating-system: ["ubuntu-latest"]
 
     steps:
       - name: "Checkout"
         uses: "actions/checkout@v2"
+
+      - name : "Setup MySQL"
+        uses : "mirromutth/mysql-action@v1.1"
+        with :
+          mysql version : "5.7"
+          mysql database : "testdb"
+          mysql root password : "root"
 
       - name: "Setup PHP cache environment"
         id: "extcache"
@@ -203,7 +210,7 @@ jobs:
           path: tests/**/output
 
   tests-code-coverage:
-    name: "Tests of PHP code with code coverage"
+    name: "Code tests with code coverage"
     runs-on: "${{ matrix.operating-system }}"
     needs: ["tests"]
 
@@ -218,6 +225,13 @@ jobs:
     steps:
       - name: "Checkout"
         uses: "actions/checkout@v2"
+
+      - name : "Setup MySQL"
+        uses : "mirromutth/mysql-action@v1.1"
+        with :
+          mysql version : "5.7"
+          mysql database : "testdb"
+          mysql root password : "root"
 
       - name: "Setup PHP cache environment"
         id: "extcache"
