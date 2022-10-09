@@ -68,7 +68,7 @@ final class Publisher
 		if ($result) {
 			$this->logger->debug('Successfully published message', [
 				'source' => 'ws-server-plugin',
-				'type' => 'publish',
+				'type' => 'publisher',
 				'message' => [
 					'routing_key' => $routingKey->getValue(),
 					'origin' => $source->getValue(),
@@ -79,7 +79,7 @@ final class Publisher
 		} else {
 			$this->logger->error('Message could not be published to exchange', [
 				'source' => 'ws-server-plugin',
-				'type' => 'publish',
+				'type' => 'publisher',
 				'message' => [
 					'routing_key' => $routingKey->getValue(),
 					'origin' => $source->getValue(),
@@ -102,7 +102,7 @@ final class Publisher
 
 				$this->logger->debug('Broadcasting message to topic', [
 					'source' => 'ws-server-plugin',
-					'type' => 'broadcast',
+					'type' => 'publisher',
 					'link' => $link,
 				]);
 
@@ -113,7 +113,7 @@ final class Publisher
 		} catch (Nette\Utils\JsonException $ex) {
 			$this->logger->error('Data could not be converted to message', [
 				'source' => 'ws-server-plugin',
-				'type' => 'broadcast',
+				'type' => 'publisher',
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code' => $ex->getCode(),
@@ -123,7 +123,7 @@ final class Publisher
 		} catch (Throwable $ex) {
 			$this->logger->error('Data could not be broadcasts to clients', [
 				'source' => 'ws-server-plugin',
-				'type' => 'broadcast',
+				'type' => 'publisher',
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code' => $ex->getCode(),

@@ -130,7 +130,7 @@ final class Exchange extends WebSockets\Application\Controller\Controller
 		} catch (Utils\JsonException $ex) {
 			$this->logger->error('Received message could not be validated', [
 				'source' => 'ws-server-plugin',
-				'type' => 'parse-data',
+				'type' => 'exchange-controller',
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code' => $ex->getCode(),
@@ -141,7 +141,7 @@ final class Exchange extends WebSockets\Application\Controller\Controller
 		} catch (MetadataExceptions\InvalidData $ex) {
 			$this->logger->debug('Received message is not valid', [
 				'source' => 'ws-server-plugin',
-				'type' => 'parse-data',
+				'type' => 'exchange-controller',
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code' => $ex->getCode(),
@@ -152,7 +152,7 @@ final class Exchange extends WebSockets\Application\Controller\Controller
 		} catch (Throwable $ex) {
 			$this->logger->error('Received message is not valid', [
 				'source' => 'ws-server-plugin',
-				'type' => 'parse-data',
+				'type' => 'exchange-controller',
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code' => $ex->getCode(),

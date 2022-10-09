@@ -7,7 +7,7 @@
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:WsServerPlugin!
- * @subpackage     common
+ * @subpackage     Commands
  * @since          0.13.0
  *
  * @date           09.06.22
@@ -30,7 +30,7 @@ use Throwable;
  * WS server command
  *
  * @package        FastyBird:WsServerPlugin!
- * @subpackage     common
+ * @subpackage     Commands
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */

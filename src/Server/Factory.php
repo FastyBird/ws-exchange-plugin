@@ -7,7 +7,7 @@
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:WsServerPlugin!
- * @subpackage     Subscribers
+ * @subpackage     Server
  * @since          0.1.0
  *
  * @date           21.12.20
@@ -28,7 +28,7 @@ use function parse_url;
  * WS server factory
  *
  * @package         FastyBird:WsServerPlugin!
- * @subpackage      Subscribers
+ * @subpackage      Server
  *
  * @author          Adam Kadlec <adam.kadlec@fastybird.com>
  */
@@ -70,7 +70,7 @@ final class Factory
 		$server->on('error', function (Throwable $ex): void {
 			$this->logger->error('Could not establish connection', [
 				'source' => 'ws-server-plugin',
-				'type' => 'server',
+				'type' => 'factory',
 				'exception' => [
 					'message' => $ex->getMessage(),
 					'code' => $ex->getCode(),
@@ -80,7 +80,7 @@ final class Factory
 
 		$this->logger->debug('Launching WebSockets WS Server', [
 			'source' => 'ws-server-plugin',
-			'type' => 'server',
+			'type' => 'factory',
 			'server' => [
 				'address' => $this->configuration->getAddress(),
 				'port' => $this->configuration->getPort(),

@@ -45,9 +45,11 @@ use function sprintf;
 class WsServerPluginExtension extends DI\CompilerExtension
 {
 
+	public const NAME = 'fbWsServerPlugin';
+
 	public static function register(
 		Nette\Configurator $config,
-		string $extensionName = 'fbWsServerPlugin',
+		string $extensionName = self::NAME,
 	): void
 	{
 		$config->onCompile[] = static function (

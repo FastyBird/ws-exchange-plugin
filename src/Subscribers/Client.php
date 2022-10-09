@@ -101,7 +101,7 @@ class Client implements EventDispatcher\EventSubscriberInterface
 
 			$this->logger->warning('Client used invalid WS key', [
 				'source' => 'ws-server-plugin',
-				'type' => 'validate',
+				'type' => 'subscriber',
 				'ws_key' => $wsKey,
 			]);
 
@@ -118,7 +118,7 @@ class Client implements EventDispatcher\EventSubscriberInterface
 
 			$this->logger->warning('Client is connecting from not allowed origin', [
 				'source' => 'ws-server-plugin',
-				'type' => 'validate',
+				'type' => 'subscriber',
 				'origin' => $origin,
 			]);
 
@@ -133,7 +133,7 @@ class Client implements EventDispatcher\EventSubscriberInterface
 			if ($cookieToken === null) {
 				$this->logger->warning('Client access token is missing', [
 					'source' => 'ws-server-plugin',
-					'type' => 'validate',
+					'type' => 'subscriber',
 				]);
 
 				$this->closeSession($client);
