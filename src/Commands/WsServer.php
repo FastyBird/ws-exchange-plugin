@@ -16,9 +16,11 @@
 namespace FastyBird\WsExchangePlugin\Commands;
 
 use FastyBird\Metadata\Types as MetadataTypes;
+use FastyBird\WsExchangePlugin\Events;
 use FastyBird\WsExchangePlugin\Server;
 use IPub\WebSockets;
 use Nette;
+use Psr\EventDispatcher;
 use Psr\Log;
 use React\EventLoop;
 use React\Socket;
@@ -48,6 +50,7 @@ final class WsServer extends Console\Command\Command
 		private readonly WebSockets\Server\Configuration $configuration,
 		private readonly Server\Factory $serverFactory,
 		private readonly EventLoop\LoopInterface $eventLoop,
+		private readonly EventDispatcher\EventDispatcherInterface|null $dispatcher = null,
 		Log\LoggerInterface|null $logger = null,
 		string|null $name = null,
 	)
@@ -80,11 +83,17 @@ final class WsServer extends Console\Command\Command
 		);
 
 		try {
+			$this->dispatcher?->dispatch(new Events\Startup());
+
 			$socketServer = new Socket\SocketServer(
 				$this->configuration->getAddress() . ':' . $this->configuration->getPort(),
 				[],
 				$this->eventLoop,
 			);
+
+			$socketServer->on('error', function (Throwable $ex): void {
+				$this->dispatcher?->dispatch(new Events\Error($ex));
+			});
 
 			$this->serverFactory->create($socketServer);
 

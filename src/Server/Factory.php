@@ -69,24 +69,30 @@ final class Factory
 		});
 
 		$server->on('error', function (Throwable $ex): void {
-			$this->logger->error('Could not establish connection', [
-				'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
-				'type' => 'factory',
-				'exception' => [
-					'message' => $ex->getMessage(),
-					'code' => $ex->getCode(),
+			$this->logger->error(
+				'An error occurred during handling requests. Stopping WS server',
+				[
+					'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
+					'type' => 'factory',
+					'exception' => [
+						'message' => $ex->getMessage(),
+						'code' => $ex->getCode(),
+					],
 				],
-			]);
+			);
 		});
 
-		$this->logger->debug('Launching WebSockets WS Server', [
-			'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
-			'type' => 'factory',
-			'server' => [
-				'address' => $this->configuration->getAddress(),
-				'port' => $this->configuration->getPort(),
+		$this->logger->debug(
+			'Launching WebSockets WS Server',
+			[
+				'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
+				'type' => 'factory',
+				'server' => [
+					'address' => $this->configuration->getAddress(),
+					'port' => $this->configuration->getPort(),
+				],
 			],
-		]);
+		);
 	}
 
 }
