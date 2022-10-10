@@ -1,5 +1,5 @@
 {
-  "name": "@fastybird/vue-wamp-v1",
+  "name": "@fastybird/ws-exchange-plugin",
   "version": "0.2.1",
   "description": "WAMPv1 websockets communication for VUE app",
   "keywords": [
@@ -10,7 +10,7 @@
     "ws"
   ],
   "homepage": "https://www.fastybird.com",
-  "bugs": "https://github.com/FastyBird/vue-wamp-v1/issues",
+  "bugs": "https://github.com/FastyBird/ws-exchange-plugin/issues",
   "license": "Apache-2.0",
   "author": {
     "name": "FastyBird s.r.o.",
@@ -19,13 +19,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/FastyBird/vue-wamp-v1.git"
+    "url": "https://github.com/FastyBird/ws-exchange-plugin.git"
   },
-  "main": "dist/vue-wamp-v1.ssr.js",
-  "browser": "dist/vue-wamp-v1.esm.js",
-  "module": "dist/vue-wamp-v1.esm.js",
-  "unpkg": "dist/vue-wamp-v1.min.js",
-  "types": "dist/vue-wamp-v1.d.ts",
+  "main": "dist/ws-exchange-plugin.ssr.js",
+  "browser": "dist/ws-exchange-plugin.esm.js",
+  "module": "dist/ws-exchange-plugin.esm.js",
+  "unpkg": "dist/ws-exchange-plugin.min.js",
+  "types": "dist/ws-exchange-plugin.d.ts",
   "files": [
     "dist/*"
   ],

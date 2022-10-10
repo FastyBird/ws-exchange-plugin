@@ -21,7 +21,7 @@ const argv = minimist(process.argv.slice(2));
 const projectRoot = path.resolve(__dirname, '..');
 
 const baseConfig = {
-  input: 'src/entry.ts',
+  input: 'public/entry.ts',
 };
 
 const basePlugins = {
@@ -29,7 +29,7 @@ const basePlugins = {
     alias({
       resolve: ['.js', '.ts'],
       entries: {
-        '@': path.resolve(projectRoot, 'src'),
+        '@': path.resolve(projectRoot, 'public'),
       },
     }),
     eslint(),
@@ -71,7 +71,7 @@ if (!argv.format || argv.format === 'es') {
     ...baseConfig,
     external,
     output: {
-      file: 'dist/vue-wamp-v1.esm.js',
+      file: 'dist/ws-exchange-plugin.esm.js',
       format: 'esm',
       exports: 'named',
     },
@@ -104,7 +104,7 @@ if (!argv.format || argv.format === 'cjs') {
     external,
     output: {
       compact: true,
-      file: 'dist/vue-wamp-v1.ssr.js',
+      file: 'dist/ws-exchange-plugin.ssr.js',
       format: 'cjs',
       name: 'VueWampV1',
       exports: 'named',
@@ -126,7 +126,7 @@ if (!argv.format || argv.format === 'iife') {
     external,
     output: {
       compact: true,
-      file: 'dist/vue-wamp-v1.min.js',
+      file: 'dist/ws-exchange-plugin.min.js',
       format: 'iife',
       name: 'VueWampV1',
       exports: 'named',
@@ -151,7 +151,7 @@ buildFormats.push({
   ...baseConfig,
   external,
   output: {
-    file: 'dist/vue-wamp-v1.d.ts',
+    file: 'dist/ws-exchange-plugin.d.ts',
     format: 'es',
   },
   plugins: [
