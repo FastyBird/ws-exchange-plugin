@@ -19,6 +19,7 @@ and websockets [WAMPv1](https://wamp-proto.org) client for [Vue 3](https://vuejs
 ### Features
 
 - Built-in server command for running standalone server
+- Built-in Vue 3 client interface
 - WAMP v1 pub/sub and RPC implemented via event system
 - Simple broadcast publisher
 
@@ -30,7 +31,7 @@ The best way to install **fastybird/ws-exchange-plugin** is using [Composer](htt
 composer require fastybird/ws-exchange-plugin
 ```
 
-And for user interface is the best way to install **@fastybird/ws-exchange-plugin** is using [Yarn](https://yarnpkg.com/):
+And for user interface is the best way to install **@fastybird/ws-exchange-plugin** with [Yarn](https://yarnpkg.com/):
 
 ```sh
 yarn add @fastybird/ws-exchange-plugin
