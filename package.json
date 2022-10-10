@@ -1,0 +1,74 @@
+{
+  "name": "@fastybird/vue-wamp-v1",
+  "version": "0.2.1",
+  "description": "WAMPv1 websockets communication for VUE app",
+  "keywords": [
+    "vue wamp",
+    "wamp",
+    "wampv1",
+    "websockets",
+    "ws"
+  ],
+  "homepage": "https://www.fastybird.com",
+  "bugs": "https://github.com/FastyBird/vue-wamp-v1/issues",
+  "license": "Apache-2.0",
+  "author": {
+    "name": "FastyBird s.r.o.",
+    "email": "info@fastybird.com",
+    "url": "https://www.fastybird.com/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FastyBird/vue-wamp-v1.git"
+  },
+  "main": "dist/vue-wamp-v1.ssr.js",
+  "browser": "dist/vue-wamp-v1.esm.js",
+  "module": "dist/vue-wamp-v1.esm.js",
+  "unpkg": "dist/vue-wamp-v1.min.js",
+  "types": "dist/vue-wamp-v1.d.ts",
+  "files": [
+    "dist/*"
+  ],
+  "scripts": {
+    "build": "cross-env NODE_ENV=production rollup --config build/rollup.config.js",
+    "build:ssr": "cross-env NODE_ENV=production rollup --config build/rollup.config.js --format cjs",
+    "build:es": "cross-env NODE_ENV=production rollup --config build/rollup.config.js --format es",
+    "build:unpkg": "cross-env NODE_ENV=production rollup --config build/rollup.config.js --format iife",
+    "lint:js": "eslint src/**/* --ext \".js,.ts,.json,\" --ignore-path .gitignore src/",
+    "lint:ts": "tslint -c tslint.json 'src/**/*.ts'"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/core": "^7.9",
+    "@babel/plugin-proposal-class-properties": "^7.10",
+    "@babel/preset-env": "^7.9",
+    "@babel/preset-typescript": "^7.9",
+    "@rollup/plugin-alias": "^2.2",
+    "@rollup/plugin-babel": "^5.3",
+    "@rollup/plugin-commonjs": "^11.1",
+    "@rollup/plugin-eslint": "^8.0",
+    "@rollup/plugin-replace": "^2.3",
+    "@types/lodash": "^4.14",
+    "@types/node": "^15.12",
+    "@types/uuid": "^8.3",
+    "@typescript-eslint/eslint-plugin": "^4.26",
+    "@typescript-eslint/parser": "^4.26",
+    "cross-env": "^7.0",
+    "eslint": "^7.28",
+    "eslint-plugin-json": "^3.0",
+    "minimist": "^1.2",
+    "rollup": "^2.7",
+    "rollup-plugin-dts": "^3.0",
+    "rollup-plugin-terser": "^5.3",
+    "tslib": "^2.2",
+    "tslint": "^6.1",
+    "typescript": "^4.3",
+    "vue": "^3.2"
+  },
+  "peerDependencies": {
+    "vue": "^3.2"
+  },
+  "engines": {
+    "node": ">=10"
+  }
+}

@@ -6,17 +6,18 @@
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsServerPlugin!
+ * @package        FastyBird:WsExchangePlugin!
  * @subpackage     Subscribers
  * @since          0.2.0
  *
  * @date           15.01.22
  */
 
-namespace FastyBird\WsServerPlugin\Subscribers;
+namespace FastyBird\WsExchangePlugin\Subscribers;
 
-use FastyBird\WsServerPlugin;
-use FastyBird\WsServerPlugin\Events;
+use FastyBird\Metadata\Types as MetadataTypes;
+use FastyBird\WsExchangePlugin;
+use FastyBird\WsExchangePlugin\Events;
 use IPub\WebSockets;
 use Psr\Log;
 use Symfony\Component\EventDispatcher;
@@ -26,7 +27,7 @@ use function in_array;
 /**
  * WS client events subscriber
  *
- * @package         FastyBird:WsServerPlugin!
+ * @package         FastyBird:WsExchangePlugin!
  * @subpackage      Subscribers
  *
  * @author          Adam Kadlec <adam.kadlec@fastybird.com>
@@ -91,7 +92,7 @@ class Client implements EventDispatcher\EventSubscriberInterface
 		array $allowedOrigins,
 	): bool
 	{
-		$wsKey = $httpRequest->getHeader(WsServerPlugin\Constants::WS_HEADER_WS_KEY);
+		$wsKey = $httpRequest->getHeader(WsExchangePlugin\Constants::WS_HEADER_WS_KEY);
 
 		if (
 			($wsKey === null && $allowedWsKeys !== [])
@@ -100,7 +101,7 @@ class Client implements EventDispatcher\EventSubscriberInterface
 			$this->closeSession($client);
 
 			$this->logger->warning('Client used invalid WS key', [
-				'source' => 'ws-server-plugin',
+				'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
 				'type' => 'subscriber',
 				'ws_key' => $wsKey,
 			]);
@@ -108,7 +109,7 @@ class Client implements EventDispatcher\EventSubscriberInterface
 			return false;
 		}
 
-		$origin = $httpRequest->getHeader(WsServerPlugin\Constants::WS_HEADER_ORIGIN);
+		$origin = $httpRequest->getHeader(WsExchangePlugin\Constants::WS_HEADER_ORIGIN);
 
 		if (
 			($origin === null && $allowedOrigins !== [])
@@ -117,7 +118,7 @@ class Client implements EventDispatcher\EventSubscriberInterface
 			$this->closeSession($client);
 
 			$this->logger->warning('Client is connecting from not allowed origin', [
-				'source' => 'ws-server-plugin',
+				'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
 				'type' => 'subscriber',
 				'origin' => $origin,
 			]);
@@ -125,14 +126,14 @@ class Client implements EventDispatcher\EventSubscriberInterface
 			return false;
 		}
 
-		$authToken = $httpRequest->getHeader(WsServerPlugin\Constants::WS_HEADER_AUTHORIZATION);
+		$authToken = $httpRequest->getHeader(WsExchangePlugin\Constants::WS_HEADER_AUTHORIZATION);
 
 		if ($authToken === null) {
 			$cookieToken = $httpRequest->getCookie('token');
 
 			if ($cookieToken === null) {
 				$this->logger->warning('Client access token is missing', [
-					'source' => 'ws-server-plugin',
+					'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
 					'type' => 'subscriber',
 				]);
 

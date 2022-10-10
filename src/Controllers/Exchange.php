@@ -13,7 +13,7 @@
  * @date           15.01.22
  */
 
-namespace FastyBird\WsServerPlugin\Controllers;
+namespace FastyBird\WsExchangePlugin\Controllers;
 
 use FastyBird\Exchange\Entities as ExchangeEntities;
 use FastyBird\Exchange\Publisher as ExchangePublisher;
@@ -21,8 +21,9 @@ use FastyBird\Metadata;
 use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Loaders as MetadataLoaders;
 use FastyBird\Metadata\Schemas as MetadataSchemas;
-use FastyBird\WsServerPlugin\Events;
-use FastyBird\WsServerPlugin\Exceptions;
+use FastyBird\Metadata\Types as MetadataTypes;
+use FastyBird\WsExchangePlugin\Events;
+use FastyBird\WsExchangePlugin\Exceptions;
 use IPub\WebSockets;
 use IPub\WebSocketsWAMP;
 use Nette\Utils;
@@ -129,7 +130,7 @@ final class Exchange extends WebSockets\Application\Controller\Controller
 			return $this->jsonValidator->validate(Utils\Json::encode($data), $schema);
 		} catch (Utils\JsonException $ex) {
 			$this->logger->error('Received message could not be validated', [
-				'source' => 'ws-server-plugin',
+				'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
 				'type' => 'exchange-controller',
 				'exception' => [
 					'message' => $ex->getMessage(),
@@ -140,7 +141,7 @@ final class Exchange extends WebSockets\Application\Controller\Controller
 			throw new Exceptions\InvalidArgument('Provided data are not valid json format', 0, $ex);
 		} catch (MetadataExceptions\InvalidData $ex) {
 			$this->logger->debug('Received message is not valid', [
-				'source' => 'ws-server-plugin',
+				'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
 				'type' => 'exchange-controller',
 				'exception' => [
 					'message' => $ex->getMessage(),
@@ -151,7 +152,7 @@ final class Exchange extends WebSockets\Application\Controller\Controller
 			throw new Exceptions\InvalidArgument('Provided data are not in valid structure', 0, $ex);
 		} catch (Throwable $ex) {
 			$this->logger->error('Received message is not valid', [
-				'source' => 'ws-server-plugin',
+				'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
 				'type' => 'exchange-controller',
 				'exception' => [
 					'message' => $ex->getMessage(),

@@ -6,17 +6,18 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsServerPlugin!
+ * @package        FastyBird:WsExchangePlugin!
  * @subpackage     Server
  * @since          0.1.0
  *
  * @date           21.12.20
  */
 
-namespace FastyBird\WsServerPlugin\Server;
+namespace FastyBird\WsExchangePlugin\Server;
 
 use FastyBird\Exchange\Consumer as ExchangeConsumer;
-use FastyBird\WsServerPlugin\Consumers;
+use FastyBird\Metadata\Types as MetadataTypes;
+use FastyBird\WsExchangePlugin\Consumers;
 use IPub\WebSockets;
 use Nette\Utils;
 use Psr\Log;
@@ -27,7 +28,7 @@ use function parse_url;
 /**
  * WS server factory
  *
- * @package         FastyBird:WsServerPlugin!
+ * @package         FastyBird:WsExchangePlugin!
  * @subpackage      Server
  *
  * @author          Adam Kadlec <adam.kadlec@fastybird.com>
@@ -69,7 +70,7 @@ final class Factory
 
 		$server->on('error', function (Throwable $ex): void {
 			$this->logger->error('Could not establish connection', [
-				'source' => 'ws-server-plugin',
+				'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
 				'type' => 'factory',
 				'exception' => [
 					'message' => $ex->getMessage(),
@@ -79,7 +80,7 @@ final class Factory
 		});
 
 		$this->logger->debug('Launching WebSockets WS Server', [
-			'source' => 'ws-server-plugin',
+			'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
 			'type' => 'factory',
 			'server' => [
 				'address' => $this->configuration->getAddress(),

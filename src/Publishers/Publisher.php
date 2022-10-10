@@ -6,14 +6,14 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsServerPlugin!
+ * @package        FastyBird:WsExchangePlugin!
  * @subpackage     Publishers
  * @since          0.2.0
  *
  * @date           08.10.21
  */
 
-namespace FastyBird\WsServerPlugin\Publishers;
+namespace FastyBird\WsExchangePlugin\Publishers;
 
 use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Types as MetadataTypes;
@@ -26,7 +26,7 @@ use Throwable;
 /**
  * Websockets exchange publisher
  *
- * @package        FastyBird:WsServerPlugin!
+ * @package        FastyBird:WsExchangePlugin!
  * @subpackage     Publishers
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -51,7 +51,7 @@ final class Publisher
 	}
 
 	public function publish(
-		MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource $source,
+		MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource|MetadataTypes\TriggerSource $source,
 		MetadataTypes\RoutingKey $routingKey,
 		MetadataEntities\Entity|null $entity,
 	): void
@@ -67,7 +67,7 @@ final class Publisher
 
 		if ($result) {
 			$this->logger->debug('Successfully published message', [
-				'source' => 'ws-server-plugin',
+				'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
 				'type' => 'publisher',
 				'message' => [
 					'routing_key' => $routingKey->getValue(),
@@ -78,7 +78,7 @@ final class Publisher
 
 		} else {
 			$this->logger->error('Message could not be published to exchange', [
-				'source' => 'ws-server-plugin',
+				'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
 				'type' => 'publisher',
 				'message' => [
 					'routing_key' => $routingKey->getValue(),
@@ -101,7 +101,7 @@ final class Publisher
 				$topic = $this->topicsStorage->getTopic($link);
 
 				$this->logger->debug('Broadcasting message to topic', [
-					'source' => 'ws-server-plugin',
+					'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
 					'type' => 'publisher',
 					'link' => $link,
 				]);
@@ -112,7 +112,7 @@ final class Publisher
 			}
 		} catch (Nette\Utils\JsonException $ex) {
 			$this->logger->error('Data could not be converted to message', [
-				'source' => 'ws-server-plugin',
+				'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
 				'type' => 'publisher',
 				'exception' => [
 					'message' => $ex->getMessage(),
@@ -122,7 +122,7 @@ final class Publisher
 
 		} catch (Throwable $ex) {
 			$this->logger->error('Data could not be broadcasts to clients', [
-				'source' => 'ws-server-plugin',
+				'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
 				'type' => 'publisher',
 				'exception' => [
 					'message' => $ex->getMessage(),

@@ -6,16 +6,17 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsServerPlugin!
+ * @package        FastyBird:WsExchangePlugin!
  * @subpackage     Commands
  * @since          0.13.0
  *
  * @date           09.06.22
  */
 
-namespace FastyBird\WsServerPlugin\Commands;
+namespace FastyBird\WsExchangePlugin\Commands;
 
-use FastyBird\WsServerPlugin\Server;
+use FastyBird\Metadata\Types as MetadataTypes;
+use FastyBird\WsExchangePlugin\Server;
 use IPub\WebSockets;
 use Nette;
 use Psr\Log;
@@ -29,7 +30,7 @@ use Throwable;
 /**
  * WS server command
  *
- * @package        FastyBird:WsServerPlugin!
+ * @package        FastyBird:WsExchangePlugin!
  * @subpackage     Commands
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -39,7 +40,7 @@ final class WsServer extends Console\Command\Command
 
 	use Nette\SmartObject;
 
-	public const NAME = 'fb:ws-server:start';
+	public const NAME = 'fb:ws-exchange:start';
 
 	private Log\LoggerInterface $logger;
 
@@ -73,7 +74,7 @@ final class WsServer extends Console\Command\Command
 		$this->logger->info(
 			'Starting WS server',
 			[
-				'source' => 'ws-server-plugin',
+				'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
 				'type' => 'command',
 			],
 		);
@@ -94,7 +95,7 @@ final class WsServer extends Console\Command\Command
 			$this->logger->error(
 				'WS server was forced to close',
 				[
-					'source' => 'ws-server-plugin',
+					'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
 					'type' => 'command',
 					'exception' => [
 						'message' => $ex->getMessage(),
@@ -111,7 +112,7 @@ final class WsServer extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred. Stopping WS server',
 				[
-					'source' => 'ws-server-plugin',
+					'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
 					'type' => 'command',
 					'exception' => [
 						'message' => $ex->getMessage(),

@@ -1,28 +1,28 @@
 <?php declare(strict_types = 1);
 
 /**
- * WsServerPluginExtension.php
+ * WsExchangePluginExtension.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsServerPlugin!
+ * @package        FastyBird:WsExchangePlugin!
  * @subpackage     DI
  * @since          0.1.0
  *
  * @date           22.02.21
  */
 
-namespace FastyBird\WsServerPlugin\DI;
+namespace FastyBird\WsExchangePlugin\DI;
 
-use FastyBird\WsServerPlugin\Commands;
-use FastyBird\WsServerPlugin\Consumers;
-use FastyBird\WsServerPlugin\Controllers;
-use FastyBird\WsServerPlugin\Events;
-use FastyBird\WsServerPlugin\Exceptions;
-use FastyBird\WsServerPlugin\Publishers;
-use FastyBird\WsServerPlugin\Server;
-use FastyBird\WsServerPlugin\Subscribers;
+use FastyBird\WsExchangePlugin\Commands;
+use FastyBird\WsExchangePlugin\Consumers;
+use FastyBird\WsExchangePlugin\Controllers;
+use FastyBird\WsExchangePlugin\Events;
+use FastyBird\WsExchangePlugin\Exceptions;
+use FastyBird\WsExchangePlugin\Publishers;
+use FastyBird\WsExchangePlugin\Server;
+use FastyBird\WsExchangePlugin\Subscribers;
 use IPub\WebSockets;
 use Nette;
 use Nette\DI;
@@ -37,15 +37,15 @@ use function sprintf;
 /**
  * WS server plugin
  *
- * @package        FastyBird:WsServerPlugin!
+ * @package        FastyBird:WsExchangePlugin!
  * @subpackage     DI
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class WsServerPluginExtension extends DI\CompilerExtension
+class WsExchangePluginExtension extends DI\CompilerExtension
 {
 
-	public const NAME = 'fbWsServerPlugin';
+	public const NAME = 'fbWsExchangePlugin';
 
 	public static function register(
 		Nette\Configurator $config,
@@ -56,7 +56,7 @@ class WsServerPluginExtension extends DI\CompilerExtension
 			Nette\Configurator $config,
 			DI\Compiler $compiler,
 		) use ($extensionName): void {
-			$compiler->addExtension($extensionName, new WsServerPluginExtension());
+			$compiler->addExtension($extensionName, new WsExchangePluginExtension());
 		};
 	}
 

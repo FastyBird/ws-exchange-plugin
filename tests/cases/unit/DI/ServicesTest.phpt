@@ -2,8 +2,8 @@
 
 namespace Tests\Cases\Unit;
 
-use FastyBird\WsServerPlugin\Controllers;
-use FastyBird\WsServerPlugin\Subscribers;
+use FastyBird\WsExchangePlugin\Controllers;
+use FastyBird\WsExchangePlugin\Subscribers;
 use Tester\Assert;
 
 require_once __DIR__ . '/../../../bootstrap.php';

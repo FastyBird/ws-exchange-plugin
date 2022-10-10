@@ -1,7 +1,7 @@
 {
-  "name" : "fastybird/ws-server-plugin",
+  "name" : "fastybird/ws-exchange-plugin",
   "type" : "plugin",
-  "description" : "FastyBird WS server plugin",
+  "description" : "FastyBird WS exchange plugin",
   "keywords" : [
     "fastybird",
     "fb",
@@ -29,8 +29,8 @@
 
   "support" : {
     "email" : "code@fastybird.com",
-    "issues" : "https://github.com/FastyBird/ws-server-plugin/issues",
-    "source" : "https://github.com/FastyBird/ws-server-plugin"
+    "issues" : "https://github.com/FastyBird/ws-exchange-plugin/issues",
+    "source" : "https://github.com/FastyBird/ws-exchange-plugin"
   },
 
   "prefer-stable" : true,
@@ -40,8 +40,8 @@
   "require" : {
     "php" : ">=8.1.0",
     "cweagans/composer-patches" : "^1.7",
-    "fastybird/exchange" : "^0.61",
-    "fastybird/metadata" : "^0.77",
+    "fastybird/exchange" : "^1.0",
+    "fastybird/metadata" : "^1.1",
     "ipub/websockets-wamp" : "^1.4",
     "nette/bootstrap" : "^3.1",
     "nette/di" : "^3.0",
@@ -68,7 +68,7 @@
 
   "autoload" : {
     "psr-4" : {
-      "FastyBird\\WsServerPlugin\\" : "src/"
+      "FastyBird\\WsExchangePlugin\\" : "src/"
     }
   },
 
