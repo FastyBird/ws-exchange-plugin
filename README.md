@@ -47,6 +47,34 @@ npm install @fastybird/ws-exchange-plugin
 
 Learn how to connect & call RPC messages in [documentation](https://github.com/FastyBird/ws-exchange-plugin/blob/main/.docs/en/index.md).
 
+## Feedback
+
+Use the [issue tracker](https://github.com/FastyBird/ws-exchange-plugin/issues) for bugs
+or [mail](mailto:code@fastybird.com) or [Tweet](https://twitter.com/fastybird) us for any idea that can improve the
+project.
+
+Thank you for testing, reporting and contributing.
+
+## Changelog
+
+For release info check [release page](https://github.com/FastyBird/ws-exchange-plugin/releases)
+
+## Maintainers
+
+<table>
+	<tbody>
+		<tr>
+			<td align="center">
+				<a href="https://github.com/akadlec">
+					<img width="80" height="80" src="https://avatars3.githubusercontent.com/u/1866672?s=460&amp;v=4">
+				</a>
+				<br>
+				<a href="https://github.com/akadlec">Adam Kadlec</a>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
 ***
 Homepage [https://www.fastybird.com](https://www.fastybird.com) and
 repository [https://github.com/FastyBird/ws-exchange-plugin](https://github.com/FastyBird/ws-exchange-plugin).
