@@ -43,12 +43,12 @@ In you component you could establish connection and subscribe to wamp events:
 
 ```vue
 <script>
-import { useWampV1Client } from '@fastybird/ws-exchange-plugin'
+import { useWsExchangeClient } from '@fastybird/ws-exchange-plugin'
 
 export default {
     setup() {
         // Get wamp client interface
-        const { open, close, status, client } = useWampV1Client();
+        const { open, close, status, client } = useWsExchangeClient();
 
         onMounted(() => {
             open()

@@ -2,7 +2,7 @@ import { computed, inject } from 'vue'
 
 import { IWebSocketResult, key, RpCallResponse } from '@/entry'
 
-export function useWampV1Client<T>(): IWebSocketResult<T> {
+export function useWsExchangeClient<T>(): IWebSocketResult<T> {
   const wampClient = inject(key)
 
   if (wampClient === undefined) {

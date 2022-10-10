@@ -3,7 +3,7 @@ import { App, InjectionKey } from 'vue'
 // Import library
 import WampClient from '@/lib/Client'
 import WampLogger from '@/lib/Logger'
-import { useWampV1Client } from '@/lib/useWampV1Client'
+import { useWsExchangeClient } from '@/lib/useWsExchangeClient'
 import { InstallFunction, IWampClient, PluginOptions } from '@/types/ws-exchange-plugin'
 
 export const WampClientDefaultOptions = {
@@ -14,7 +14,7 @@ export const WampClientDefaultOptions = {
 
 export const key: InjectionKey<IWampClient> = Symbol('wampClient')
 
-export function createWampV1Client(): InstallFunction {
+export function createWsExchangeClient(): InstallFunction {
   const plugin: InstallFunction = {
     install(app: App, options: PluginOptions) {
       if (this.installed) { return; }
@@ -31,6 +31,6 @@ export function createWampV1Client(): InstallFunction {
   return plugin;
 }
 
-export { WampClient, useWampV1Client };
+export { WampClient, useWsExchangeClient };
 
 export * from '@/types/ws-exchange-plugin';
