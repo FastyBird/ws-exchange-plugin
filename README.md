@@ -1,4 +1,4 @@
-# FastyBird WS server plugin
+# FastyBird WS exchange plugin
 
 [![Build Status](https://badgen.net/github/checks/FastyBird/ws-exchange-plugin/main?cache=300&style=flat-square)](https://github.com/FastyBird/ws-exchange-plugin/actions)
 [![Licence](https://badgen.net/github/license/FastyBird/ws-exchange-plugin?cache=300&style=flat-square)](https://github.com/FastyBird/ws-exchange-plugin/blob/main/LICENSE.md)
