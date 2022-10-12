@@ -473,5 +473,3 @@ jobs:
         env :
           NODE_AUTH_TOKEN : ${{ secrets.GITHUB_TOKEN }}
         run : "npm publish --access public"
-https://github:
-  blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands:
