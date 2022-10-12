@@ -11,10 +11,10 @@
 
 ***
 
-## What is FastyBird WS exchange plugin?
+## What is WS exchange plugin?
 
-This is a plugin for [FastyBird IoT](https://www.fastybird.com) ecosystem which is implementing websockets [WAMPv1](https://wamp-proto.org) server based on [iPbulikuj WAMP server](https://github.com/ipublikuj/websockets-wamp)
-and websockets [WAMPv1](https://wamp-proto.org) client for [Vue 3](https://vuejs.org) base user interface
+This is a plugin for [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things) ecosystem which is implementing websockets [WAMPv1](https://wamp-proto.org) server based on [iPbulikuj WAMP server](https://github.com/ipublikuj/websockets-wamp)
+and websockets [WAMPv1](https://wamp-proto.org) client for [Vue 3](https://vuejs.org) based user interface
 
 ### Features
 
@@ -45,7 +45,7 @@ npm install @fastybird/ws-exchange-plugin
 
 ## Documentation
 
-Learn how to connect & call RPC messages in [documentation](https://github.com/FastyBird/ws-exchange-plugin/blob/main/.docs/en/index.md).
+Learn how to connect, consume & call RPC messages in [documentation](https://github.com/FastyBird/ws-exchange-plugin/blob/main/.docs/en/index.md).
 
 ## Feedback
 
@@ -66,7 +66,7 @@ For release info check [release page](https://github.com/FastyBird/ws-exchange-p
 		<tr>
 			<td align="center">
 				<a href="https://github.com/akadlec">
-					<img width="80" height="80" src="https://avatars3.githubusercontent.com/u/1866672?s=460&amp;v=4">
+					<img alt="akadlec" width="80" height="80" src="https://avatars3.githubusercontent.com/u/1866672?s=460&amp;v=4" />
 				</a>
 				<br>
 				<a href="https://github.com/akadlec">Adam Kadlec</a>
