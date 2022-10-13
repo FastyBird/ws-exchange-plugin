@@ -71,10 +71,12 @@ final class Exchange extends WebSockets\Application\Controller\Controller
 	}
 
 	/**
-	 * @phpstan-param array<mixed> $args
+	 * @phpstan-param Array<mixed> $args
 	 * @phpstan-param WebSocketsWAMP\Entities\Topics\ITopic<mixed> $topic
 	 *
+	 * @throws Exceptions\InvalidArgument
 	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws Utils\JsonException
 	 */
 	public function actionCall(
@@ -120,7 +122,7 @@ final class Exchange extends WebSockets\Application\Controller\Controller
 	}
 
 	/**
-	 * @param array<mixed> $data
+	 * @param Array<mixed> $data
 	 *
 	 * @throws Exceptions\InvalidArgument
 	 */

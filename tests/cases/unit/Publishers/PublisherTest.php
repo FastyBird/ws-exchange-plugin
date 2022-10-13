@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases\Unit;
+namespace Tests\Cases\Unit\Publishers;
 
 use FastyBird\Exchange\Entities as ExchangeEntities;
 use FastyBird\Metadata;
@@ -9,6 +9,7 @@ use FastyBird\WsExchangePlugin\Publishers;
 use IPub\WebSockets;
 use IPub\WebSocketsWAMP;
 use Nette\Utils;
+use Tests\Cases\Unit\BaseTestCase;
 
 final class PublisherTest extends BaseTestCase
 {

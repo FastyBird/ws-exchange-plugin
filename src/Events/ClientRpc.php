@@ -30,7 +30,7 @@ class ClientRpc
 
 	/**
 	 * @phpstan-param WebSocketsWAMP\Entities\Topics\ITopic<mixed> $topic
-	 * @phpstan-param array<mixed> $args
+	 * @phpstan-param Array<mixed> $args
 	 */
 	public function __construct(
 		private readonly WebSocketsWAMP\Entities\Clients\IClient $client,
@@ -54,7 +54,7 @@ class ClientRpc
 	}
 
 	/**
-	 * @return array<mixed>
+	 * @return Array<mixed>
 	 */
 	public function getArgs(): array
 	{

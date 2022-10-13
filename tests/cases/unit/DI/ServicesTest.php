@@ -1,13 +1,11 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases\Unit;
+namespace Tests\Cases\Unit\DI;
 
 use FastyBird\WsExchangePlugin\Controllers;
 use FastyBird\WsExchangePlugin\Subscribers;
+use Tests\Cases\Unit\BaseTestCase;
 
-/**
- * @testCase
- */
 final class ServicesTest extends BaseTestCase
 {
 
@@ -21,6 +19,3 @@ final class ServicesTest extends BaseTestCase
 	}
 
 }
-
-$test_case = new ServicesTest();
-$test_case->run();

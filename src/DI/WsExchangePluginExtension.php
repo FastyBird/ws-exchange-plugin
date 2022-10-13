@@ -107,6 +107,10 @@ class WsExchangePluginExtension extends DI\CompilerExtension
 			]);
 	}
 
+	/**
+	 * @throws Exceptions\Logic
+	 * @throws Nette\DI\MissingServiceException
+	 */
 	public function beforeCompile(): void
 	{
 		parent::beforeCompile();
