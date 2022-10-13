@@ -24,6 +24,7 @@ use Psr\Log;
 use React\Socket;
 use Throwable;
 use function parse_url;
+use function property_exists;
 
 /**
  * WS server factory
@@ -61,7 +62,7 @@ final class Factory
 			$parsed = Utils\ArrayHash::from((array) parse_url($connection->getLocalAddress()));
 
 			if (
-				$parsed->offsetExists('port')
+				property_exists($parsed, 'port')
 				&& $parsed->offsetGet('port') === $this->configuration->getPort()
 			) {
 				$this->handlers->handleConnect($connection);
