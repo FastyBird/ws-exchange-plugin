@@ -21,6 +21,9 @@ csf: ## Fix PHP files coding style
 	mkdir -p var/tools/PHP_CodeSniffer
 	$(PRE_PHP) "vendor/bin/phpcbf" src tests --standard=$(PHPCS_CONFIG) --parallel=$(LOGICAL_CORES) $(ARGS)
 
+lint:
+	$(PRE_PHP) "vendor/bin/parallel-lint" src tests --exclude .git --exclude vendor
+
 phpstan: ## Analyse code with PHPStan
 	mkdir -p var/tools
 	$(PRE_PHP) "vendor/bin/phpstan" analyse src -c $(PHPSTAN_SRC_CONFIG) $(ARGS)
