@@ -34,7 +34,7 @@ abstract class BaseTestCase extends TestCase
 
 		$config->addConfig(__DIR__ . '/../../common.neon');
 
-		if ($additionalConfig && file_exists($additionalConfig)) {
+		if ($additionalConfig !== null && file_exists($additionalConfig)) {
 			$config->addConfig($additionalConfig);
 		}
 

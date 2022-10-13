@@ -27,7 +27,7 @@ lint:
 phpstan: ## Analyse code with PHPStan
 	mkdir -p var/tools
 	$(PRE_PHP) "vendor/bin/phpstan" analyse src -c $(PHPSTAN_SRC_CONFIG) $(ARGS)
-	## $(PRE_PHP) "vendor/bin/phpstan" analyse tests -c $(PHPSTAN_TESTS_CONFIG) $(ARGS)
+	$(PRE_PHP) "vendor/bin/phpstan" analyse tests/cases -c $(PHPSTAN_TESTS_CONFIG) $(ARGS)
 
 # Tests
 

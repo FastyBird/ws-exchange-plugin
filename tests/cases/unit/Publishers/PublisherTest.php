@@ -4,10 +4,12 @@ namespace Tests\Cases\Unit\Publishers;
 
 use FastyBird\Exchange\Entities as ExchangeEntities;
 use FastyBird\Metadata;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\WsExchangePlugin\Publishers;
 use IPub\WebSockets;
 use IPub\WebSocketsWAMP;
+use Nette;
 use Nette\Utils;
 use Tests\Cases\Unit\BaseTestCase;
 
@@ -15,6 +17,10 @@ final class PublisherTest extends BaseTestCase
 {
 
 	/**
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws Nette\DI\MissingServiceException
+	 * @throws Utils\JsonException
+	 *
 	 * @dataProvider deviceSuccessfulMessage
 	 */
 	public function testPublishSuccessfulDeviceMessage(
@@ -29,7 +35,7 @@ final class PublisherTest extends BaseTestCase
 
 		$linkGenerator = $this->createMock(WebSockets\Router\LinkGenerator::class);
 		$linkGenerator
-			->expects($this->exactly(1))
+			->expects(self::exactly(1))
 			->method('link')
 			->with('Exchange:')
 			->willReturn('topic-link');
@@ -38,10 +44,10 @@ final class PublisherTest extends BaseTestCase
 
 		$topicMock = $this->createMock(WebSocketsWAMP\Entities\Topics\Topic::class);
 		$topicMock
-			->expects($this->exactly(1))
+			->expects(self::exactly(1))
 			->method('broadcast')
-			->with($this->callback(
-				function ($message) use (
+			->with(self::callback(
+				static function ($message) use (
 					$source,
 					$routingKey,
 					$entity,
@@ -52,7 +58,7 @@ final class PublisherTest extends BaseTestCase
 						'data' => $entity->toArray(),
 					];
 
-					$this->assertSame(Utils\Json::encode($mockedData), $message);
+					self::assertSame(Utils\Json::encode($mockedData), $message);
 
 					return true;
 				},
@@ -60,12 +66,12 @@ final class PublisherTest extends BaseTestCase
 
 		$topicsStorage = $this->createMock(WebSocketsWAMP\Topics\Storage::class);
 		$topicsStorage
-			->expects($this->exactly(1))
+			->expects(self::exactly(1))
 			->method('hasTopic')
 			->willReturn(true);
 
 		$topicsStorage
-			->expects($this->exactly(1))
+			->expects(self::exactly(1))
 			->method('getTopic')
 			->willReturn($topicMock);
 
@@ -78,6 +84,10 @@ final class PublisherTest extends BaseTestCase
 	}
 
 	/**
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws Nette\DI\MissingServiceException
+	 * @throws Utils\JsonException
+	 *
 	 * @dataProvider devicePropertySuccessfulMessage
 	 */
 	public function testPublishSuccessfulDevicePropertyMessage(
@@ -92,7 +102,7 @@ final class PublisherTest extends BaseTestCase
 
 		$linkGenerator = $this->createMock(WebSockets\Router\LinkGenerator::class);
 		$linkGenerator
-			->expects($this->exactly(1))
+			->expects(self::exactly(1))
 			->method('link')
 			->with('Exchange:')
 			->willReturn('topic-link');
@@ -101,10 +111,10 @@ final class PublisherTest extends BaseTestCase
 
 		$topicMock = $this->createMock(WebSocketsWAMP\Entities\Topics\Topic::class);
 		$topicMock
-			->expects($this->exactly(1))
+			->expects(self::exactly(1))
 			->method('broadcast')
-			->with($this->callback(
-				function ($message) use (
+			->with(self::callback(
+				static function ($message) use (
 					$source,
 					$routingKey,
 					$entity,
@@ -115,7 +125,7 @@ final class PublisherTest extends BaseTestCase
 						'data' => $entity->toArray(),
 					];
 
-					$this->assertSame(Utils\Json::encode($mockedData), $message);
+					self::assertSame(Utils\Json::encode($mockedData), $message);
 
 					return true;
 				},
@@ -123,11 +133,11 @@ final class PublisherTest extends BaseTestCase
 
 		$topicsStorage = $this->createMock(WebSocketsWAMP\Topics\Storage::class);
 		$topicsStorage
-			->expects($this->exactly(1))
+			->expects(self::exactly(1))
 			->method('hasTopic')
 			->willReturn(true);
 		$topicsStorage
-			->expects($this->exactly(1))
+			->expects(self::exactly(1))
 			->method('getTopic')
 			->willReturn($topicMock);
 
@@ -140,6 +150,10 @@ final class PublisherTest extends BaseTestCase
 	}
 
 	/**
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws Nette\DI\MissingServiceException
+	 * @throws Utils\JsonException
+	 *
 	 * @dataProvider channelSuccessfulMessage
 	 */
 	public function testPublishSuccessfulChannelMessage(
@@ -154,7 +168,7 @@ final class PublisherTest extends BaseTestCase
 
 		$linkGenerator = $this->createMock(WebSockets\Router\LinkGenerator::class);
 		$linkGenerator
-			->expects($this->exactly(1))
+			->expects(self::exactly(1))
 			->method('link')
 			->with('Exchange:')
 			->willReturn('topic-link');
@@ -163,10 +177,10 @@ final class PublisherTest extends BaseTestCase
 
 		$topicMock = $this->createMock(WebSocketsWAMP\Entities\Topics\Topic::class);
 		$topicMock
-			->expects($this->exactly(1))
+			->expects(self::exactly(1))
 			->method('broadcast')
-			->with($this->callback(
-				function ($message) use (
+			->with(self::callback(
+				static function ($message) use (
 					$source,
 					$routingKey,
 					$entity,
@@ -177,7 +191,7 @@ final class PublisherTest extends BaseTestCase
 						'data' => $entity->toArray(),
 					];
 
-					$this->assertSame(Utils\Json::encode($mockedData), $message);
+					self::assertSame(Utils\Json::encode($mockedData), $message);
 
 					return true;
 				},
@@ -185,11 +199,11 @@ final class PublisherTest extends BaseTestCase
 
 		$topicsStorage = $this->createMock(WebSocketsWAMP\Topics\Storage::class);
 		$topicsStorage
-			->expects($this->exactly(1))
+			->expects(self::exactly(1))
 			->method('hasTopic')
 			->willReturn(true);
 		$topicsStorage
-			->expects($this->exactly(1))
+			->expects(self::exactly(1))
 			->method('getTopic')
 			->willReturn($topicMock);
 
@@ -202,6 +216,10 @@ final class PublisherTest extends BaseTestCase
 	}
 
 	/**
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws Nette\DI\MissingServiceException
+	 * @throws Utils\JsonException
+	 *
 	 * @dataProvider channelPropertySuccessfulMessage
 	 */
 	public function testPublishSuccessfulChannelPropertyMessage(
@@ -216,7 +234,7 @@ final class PublisherTest extends BaseTestCase
 
 		$linkGenerator = $this->createMock(WebSockets\Router\LinkGenerator::class);
 		$linkGenerator
-			->expects($this->exactly(1))
+			->expects(self::exactly(1))
 			->method('link')
 			->with('Exchange:')
 			->willReturn('topic-link');
@@ -225,10 +243,10 @@ final class PublisherTest extends BaseTestCase
 
 		$topicMock = $this->createMock(WebSocketsWAMP\Entities\Topics\Topic::class);
 		$topicMock
-			->expects($this->exactly(1))
+			->expects(self::exactly(1))
 			->method('broadcast')
-			->with($this->callback(
-				function ($message) use (
+			->with(self::callback(
+				static function ($message) use (
 					$source,
 					$routingKey,
 					$entity,
@@ -239,7 +257,7 @@ final class PublisherTest extends BaseTestCase
 						'data' => $entity->toArray(),
 					];
 
-					$this->assertSame(Utils\Json::encode($mockedData), $message);
+					self::assertSame(Utils\Json::encode($mockedData), $message);
 
 					return true;
 				},
@@ -247,11 +265,11 @@ final class PublisherTest extends BaseTestCase
 
 		$topicsStorage = $this->createMock(WebSocketsWAMP\Topics\Storage::class);
 		$topicsStorage
-			->expects($this->exactly(1))
+			->expects(self::exactly(1))
 			->method('hasTopic')
 			->willReturn(true);
 		$topicsStorage
-			->expects($this->exactly(1))
+			->expects(self::exactly(1))
 			->method('getTopic')
 			->willReturn($topicMock);
 
@@ -263,6 +281,9 @@ final class PublisherTest extends BaseTestCase
 		$publisher->publish($source, $routingKey, $entity);
 	}
 
+	/**
+	 * @return Array<string, Array<Utils\ArrayHash|MetadataTypes\RoutingKey|MetadataTypes\ModuleSource>>
+	 */
 	public function deviceSuccessfulMessage(): array
 	{
 		return [
@@ -314,6 +335,9 @@ final class PublisherTest extends BaseTestCase
 		];
 	}
 
+	/**
+	 * @return Array<string, Array<Utils\ArrayHash|MetadataTypes\RoutingKey|MetadataTypes\ModuleSource>>
+	 */
 	public function devicePropertySuccessfulMessage(): array
 	{
 		return [
@@ -377,6 +401,9 @@ final class PublisherTest extends BaseTestCase
 		];
 	}
 
+	/**
+	 * @return Array<string, Array<Utils\ArrayHash|MetadataTypes\RoutingKey|MetadataTypes\ModuleSource>>
+	 */
 	public function channelSuccessfulMessage(): array
 	{
 		return [
@@ -422,6 +449,9 @@ final class PublisherTest extends BaseTestCase
 		];
 	}
 
+	/**
+	 * @return Array<string, Array<Utils\ArrayHash|MetadataTypes\RoutingKey|MetadataTypes\ModuleSource>>
+	 */
 	public function channelPropertySuccessfulMessage(): array
 	{
 		return [

@@ -4,18 +4,22 @@ namespace Tests\Cases\Unit\DI;
 
 use FastyBird\WsExchangePlugin\Controllers;
 use FastyBird\WsExchangePlugin\Subscribers;
+use Nette;
 use Tests\Cases\Unit\BaseTestCase;
 
 final class ServicesTest extends BaseTestCase
 {
 
+	/**
+	 * @throws Nette\DI\MissingServiceException
+	 */
 	public function testServicesRegistration(): void
 	{
 		$container = $this->createContainer();
 
-		$this->assertNotNull($container->getByType(Subscribers\Client::class));
+		self::assertNotNull($container->getByType(Subscribers\Client::class, false));
 
-		$this->assertNotNull($container->getByType(Controllers\Exchange::class));
+		self::assertNotNull($container->getByType(Controllers\Exchange::class, false));
 	}
 
 }
