@@ -266,7 +266,7 @@ jobs:
         env:
           CI_NAME: github
           CI: true
-          COVERALLS_REPO_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           wget https://github.com/php-coveralls/php-coveralls/releases/download/v2.1.0/php-coveralls.phar
           php php-coveralls.phar --verbose --config tools/.coveralls.yml
@@ -338,14 +338,14 @@ jobs:
           restore-keys: "ori-php-infection-${{ runner.os }}"
 
       - name: "Mutation tests with report"
-        if: "${{ secrets.STRYKER_DASHBOARD_API_KEY }}"
+        if: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
         env:
-          STRYKER_DASHBOARD_API_KEY: "${{ secrets.STRYKER_DASHBOARD_API_KEY }}"
+          STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
         shell: "bash"
         run: "make mutations-infection ARGS='--logger-github'"
 
       - name: "Mutation tests"
-        if: "${{ secrets.STRYKER_DASHBOARD_API_KEY }}"
+        if: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
         shell: "bash"
         run: "make mutations-infection ARGS='--logger-github'"
 
