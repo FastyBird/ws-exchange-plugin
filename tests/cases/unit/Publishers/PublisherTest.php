@@ -14,17 +14,14 @@ final class PublisherTest extends BaseTestCase
 {
 
 	/**
-	 * @param Utils\ArrayHash $data
-	 * @param Metadata\Types\RoutingKey $routingKey
-	 * @param MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource $source
-	 *
 	 * @dataProvider deviceSuccessfulMessage
 	 */
 	public function testPublishSuccessfulDeviceMessage(
 		Utils\ArrayHash $data,
 		Metadata\Types\RoutingKey $routingKey,
-		$source
-	): void {
+		MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource $source,
+	): void
+	{
 		$entityFactory = $this->container->getByType(ExchangeEntities\EntityFactory::class);
 
 		$entity = $entityFactory->create(Utils\Json::encode($data), $routingKey);
@@ -46,18 +43,19 @@ final class PublisherTest extends BaseTestCase
 				function ($message) use (
 					$source,
 					$routingKey,
-					$entity
+					$entity,
 				): bool {
 					$mockedData = [
 						'routing_key' => $routingKey->getValue(),
-						'origin'      => $source->getValue(),
-						'data'        => $entity->toArray(),
+						'origin' => $source->getValue(),
+						'data' => $entity->toArray(),
 					];
 
 					$this->assertSame(Utils\Json::encode($mockedData), $message);
 
 					return true;
-				}));
+				},
+			));
 
 		$topicsStorage = $this->createMock(WebSocketsWAMP\Topics\Storage::class);
 		$topicsStorage
@@ -79,17 +77,14 @@ final class PublisherTest extends BaseTestCase
 	}
 
 	/**
-	 * @param Utils\ArrayHash $data
-	 * @param Metadata\Types\RoutingKey $routingKey
-	 * @param MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource $source
-	 *
 	 * @dataProvider devicePropertySuccessfulMessage
 	 */
 	public function testPublishSuccessfulDevicePropertyMessage(
 		Utils\ArrayHash $data,
 		Metadata\Types\RoutingKey $routingKey,
-		$source
-	): void {
+		MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource $source,
+	): void
+	{
 		$entityFactory = $this->container->getByType(ExchangeEntities\EntityFactory::class);
 
 		$entity = $entityFactory->create(Utils\Json::encode($data), $routingKey);
@@ -111,18 +106,19 @@ final class PublisherTest extends BaseTestCase
 				function ($message) use (
 					$source,
 					$routingKey,
-					$entity
+					$entity,
 				): bool {
 					$mockedData = [
 						'routing_key' => $routingKey->getValue(),
-						'origin'      => $source->getValue(),
-						'data'        => $entity->toArray(),
+						'origin' => $source->getValue(),
+						'data' => $entity->toArray(),
 					];
 
 					$this->assertSame(Utils\Json::encode($mockedData), $message);
 
 					return true;
-				}));
+				},
+			));
 
 		$topicsStorage = $this->createMock(WebSocketsWAMP\Topics\Storage::class);
 		$topicsStorage
@@ -143,17 +139,14 @@ final class PublisherTest extends BaseTestCase
 	}
 
 	/**
-	 * @param Utils\ArrayHash $data
-	 * @param Metadata\Types\RoutingKey $routingKey
-	 * @param MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource $source
-	 *
 	 * @dataProvider channelSuccessfulMessage
 	 */
 	public function testPublishSuccessfulChannelMessage(
 		Utils\ArrayHash $data,
 		Metadata\Types\RoutingKey $routingKey,
-		$source
-	): void {
+		MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource $source,
+	): void
+	{
 		$entityFactory = $this->container->getByType(ExchangeEntities\EntityFactory::class);
 
 		$entity = $entityFactory->create(Utils\Json::encode($data), $routingKey);
@@ -175,18 +168,19 @@ final class PublisherTest extends BaseTestCase
 				function ($message) use (
 					$source,
 					$routingKey,
-					$entity
+					$entity,
 				): bool {
 					$mockedData = [
 						'routing_key' => $routingKey->getValue(),
-						'origin'      => $source->getValue(),
-						'data'        => $entity->toArray(),
+						'origin' => $source->getValue(),
+						'data' => $entity->toArray(),
 					];
 
 					$this->assertSame(Utils\Json::encode($mockedData), $message);
 
 					return true;
-				}));
+				},
+			));
 
 		$topicsStorage = $this->createMock(WebSocketsWAMP\Topics\Storage::class);
 		$topicsStorage
@@ -207,17 +201,14 @@ final class PublisherTest extends BaseTestCase
 	}
 
 	/**
-	 * @param Utils\ArrayHash $data
-	 * @param Metadata\Types\RoutingKey $routingKey
-	 * @param MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource $source
-	 *
 	 * @dataProvider channelPropertySuccessfulMessage
 	 */
 	public function testPublishSuccessfulChannelPropertyMessage(
 		Utils\ArrayHash $data,
 		Metadata\Types\RoutingKey $routingKey,
-		$source
-	): void {
+		MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource $source,
+	): void
+	{
 		$entityFactory = $this->container->getByType(ExchangeEntities\EntityFactory::class);
 
 		$entity = $entityFactory->create(Utils\Json::encode($data), $routingKey);
@@ -239,18 +230,19 @@ final class PublisherTest extends BaseTestCase
 				function ($message) use (
 					$source,
 					$routingKey,
-					$entity
+					$entity,
 				): bool {
 					$mockedData = [
 						'routing_key' => $routingKey->getValue(),
-						'origin'      => $source->getValue(),
-						'data'        => $entity->toArray(),
+						'origin' => $source->getValue(),
+						'data' => $entity->toArray(),
 					];
 
 					$this->assertSame(Utils\Json::encode($mockedData), $message);
 
 					return true;
-				}));
+				},
+			));
 
 		$topicsStorage = $this->createMock(WebSocketsWAMP\Topics\Storage::class);
 		$topicsStorage
