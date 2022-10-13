@@ -3,6 +3,7 @@
 [![Build Status](https://badgen.net/github/checks/FastyBird/ws-exchange-plugin/main?cache=300&style=flat-square)](https://github.com/FastyBird/ws-exchange-plugin/actions)
 [![Licence](https://badgen.net/github/license/FastyBird/ws-exchange-plugin?cache=300&style=flat-square)](https://github.com/FastyBird/ws-exchange-plugin/blob/main/LICENSE.md)
 [![Code coverage](https://badgen.net/coveralls/c/github/FastyBird/ws-exchange-plugin?cache=300&style=flat-square)](https://coveralls.io/r/FastyBird/ws-exchange-plugin)
+[![Mutation testing](https://img.shields.io/endpoint?style=flat-square&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2FFastyBird%2Fws-exchange-plugin%2Fmain)](https://dashboard.stryker-mutator.io/reports/github.com/FastyBird/ws-exchange-plugin/main)
 
 ![PHP](https://badgen.net/packagist/php/FastyBird/ws-exchange-plugin?cache=300&style=flat-square)
 [![PHP latest stable](https://badgen.net/packagist/v/FastyBird/ws-exchange-plugin/latest?cache=300&style=flat-square)](https://packagist.org/packages/FastyBird/ws-exchange-plugin)
