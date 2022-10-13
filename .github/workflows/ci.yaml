@@ -26,8 +26,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.1"]
-        operating-system: ["ubuntu-latest"]
+        php-version: [ "8.1" ]
+        operating-system: [ "ubuntu-latest" ]
 
     steps:
       - name: "Checkout"
@@ -86,8 +86,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.1"]
-        operating-system: ["ubuntu-latest"]
+        php-version: [ "8.1" ]
+        operating-system: [ "ubuntu-latest" ]
 
     steps:
       - name: "Checkout"
@@ -139,13 +139,17 @@ jobs:
   tests:
     name: "Code tests"
     runs-on: "${{ matrix.operating-system }}"
-    needs: ["qa", "static-analysis"]
+    needs: [ "qa", "static-analysis" ]
 
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.1"]
-        operating-system: ["ubuntu-latest"]
+        php-version: [ "8.1" ]
+        operating-system: [ "ubuntu-latest", "macos-latest", "windows-latest" ]
+        include:
+          - operating-system: "ubuntu-latest"
+            php-version: "8.1"
+            composer-flags: "--prefer-lowest"
 
     steps:
       - name: "Checkout"
@@ -204,12 +208,12 @@ jobs:
   tests-code-coverage:
     name: "Code tests with code coverage"
     runs-on: "${{ matrix.operating-system }}"
-    needs: ["tests"]
+    needs: [ "tests" ]
 
     strategy:
       matrix:
-        php-version: ["8.1"]
-        operating-system: ["ubuntu-latest"]
+        php-version: [ "8.1" ]
+        operating-system: [ "ubuntu-latest" ]
       fail-fast: false
 
     if: "github.event_name == 'push'"
@@ -276,8 +280,8 @@ jobs:
 
     strategy:
       matrix:
-        php-version: ["8.1"]
-        operating-system: ["ubuntu-latest"]
+        php-version: [ "8.1" ]
+        operating-system: [ "ubuntu-latest" ]
       fail-fast: false
 
     if: "github.event_name == 'push'"
@@ -353,19 +357,19 @@ jobs:
           path: "var/coverage/mutations/infection.log"
           if-no-files-found: "ignore"
 
-  lint :
-    name : "Code linting"
-    runs-on : "${{ matrix.operating-system }}"
+  lint:
+    name: "Code linting"
+    runs-on: "${{ matrix.operating-system }}"
 
     strategy:
       matrix:
-        php-version: ["8.1"]
-        operating-system: ["ubuntu-latest"]
+        php-version: [ "8.1" ]
+        operating-system: [ "ubuntu-latest" ]
       fail-fast: false
 
-    steps :
-      - name : "Checkout"
-        uses : "actions/checkout@v3"
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v3"
 
       - name: "Setup PHP cache environment"
         id: "extcache"
@@ -407,151 +411,151 @@ jobs:
       - name: "Install dependencies"
         run: "${{ env.composer-install }}"
 
-      - name : "Setup node"
-        uses : "actions/setup-node@v3"
-        with :
-          node-version : "16"
+      - name: "Setup node"
+        uses: "actions/setup-node@v3"
+        with:
+          node-version: "16"
 
-      - name : "Get yarn cache directory path"
-        id : "yarn-cache-dir-path"
-        run : 'echo "::set-output name=dir::$(yarn cache dir)"'
+      - name: "Get yarn cache directory path"
+        id: "yarn-cache-dir-path"
+        run: 'echo "::set-output name=dir::$(yarn cache dir)"'
 
-      - uses : "actions/cache@v3"
-        with :
-          path : ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key : ${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
-          restore-keys : |
+      - uses: "actions/cache@v3"
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
             ${{ runner.os }}-node-modules-
             ${{ runner.os }}-
 
-      - name : "Install dependencies"
-        if : steps.yarn-cache.outputs.cache-hit != 'true'
-        run : "yarn install"
+      - name: "Install dependencies"
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: "yarn install"
 
-      - name : "Check js linter"
-        run : "yarn lint:js"
+      - name: "Check js linter"
+        run: "yarn lint:js"
 
-      - name : "Check ts linter"
-        run : "yarn lint:ts"
+      - name: "Check ts linter"
+        run: "yarn lint:ts"
 
       - name: "Check php linter"
         run: "make lint"
 
-  build :
-    name : "Build code for distribution"
-    runs-on : "${{ matrix.operating-system }}"
-    needs : "lint"
+  build:
+    name: "Build code for distribution"
+    runs-on: "${{ matrix.operating-system }}"
+    needs: "lint"
 
-    strategy :
-      matrix :
-        operating-system : [ "ubuntu-latest" ]
+    strategy:
+      matrix:
+        operating-system: [ "ubuntu-latest" ]
 
-    steps :
-      - name : "Checkout"
-        uses : "actions/checkout@v3"
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v3"
 
-      - name : "Install node"
-        uses : "actions/setup-node@v3"
-        with :
-          node-version : "16"
-          registry-url : "https://registry.npmjs.org"
+      - name: "Install node"
+        uses: "actions/setup-node@v3"
+        with:
+          node-version: "16"
+          registry-url: "https://registry.npmjs.org"
 
-      - name : "Install package dependencies"
-        run : "yarn install"
+      - name: "Install package dependencies"
+        run: "yarn install"
 
-      - name : "Build the project"
-        run : "yarn build"
+      - name: "Build the project"
+        run: "yarn build"
 
-      - name : "Upload build result"
-        uses : "actions/upload-artifact@v1"
-        with :
-          name : js-dist
-          path : dist
+      - name: "Upload build result"
+        uses: "actions/upload-artifact@v1"
+        with:
+          name: js-dist
+          path: dist
 
-  publish-npmjs :
-    name : "Publish code distribution to NPM"
-    runs-on : "${{ matrix.operating-system }}"
-    needs : "build"
+  publish-npmjs:
+    name: "Publish code distribution to NPM"
+    runs-on: "${{ matrix.operating-system }}"
+    needs: "build"
 
-    strategy :
-      matrix :
-        operating-system : [ "ubuntu-latest" ]
+    strategy:
+      matrix:
+        operating-system: [ "ubuntu-latest" ]
 
-    if : github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
 
-    steps :
-      - name : "Checkout"
-        uses : "actions/checkout@v3"
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v3"
 
-      - name : "Install node"
-        uses : "actions/setup-node@v3"
-        with :
-          node-version : "16"
-          registry-url : "https://registry.npmjs.org"
+      - name: "Install node"
+        uses: "actions/setup-node@v3"
+        with:
+          node-version: "16"
+          registry-url: "https://registry.npmjs.org"
 
-      - name : "Extract version"
-        uses : "battila7/get-version-action@v2"
-        id : "get_version"
+      - name: "Extract version"
+        uses: "battila7/get-version-action@v2"
+        id: "get_version"
 
-      - name : "Set up git since we will later push to the repo"
-        run : |
+      - name: "Set up git since we will later push to the repo"
+        run: |
           git config --global user.name "GitHub CD bot"
           git config --global user.email "code@fastybird.com"
 
-      - name : "Upgrade npm version in package.json to the tag used in the release"
-        run : npm version ${{ steps.get_version.outputs.version-without-v }} --allow-same-version
+      - name: "Upgrade npm version in package.json to the tag used in the release"
+        run: npm version ${{ steps.get_version.outputs.version-without-v }} --allow-same-version
 
-      - name : "Download build result"
-        uses : "actions/download-artifact@v1"
-        with :
-          name : js-dist
-          path : dist
+      - name: "Download build result"
+        uses: "actions/download-artifact@v1"
+        with:
+          name: js-dist
+          path: dist
 
-      - name : "Publish to NPM"
-        env :
-          NODE_AUTH_TOKEN : ${{ secrets.NPMJS_TOKEN }}
-        run : "npm publish --access public"
+      - name: "Publish to NPM"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPMJS_TOKEN }}
+        run: "npm publish --access public"
 
-  publish-github :
-    name : "Publish code distribution to Github packages"
-    runs-on : "${{ matrix.operating-system }}"
-    needs : [ "publish-npmjs" ]
+  publish-github:
+    name: "Publish code distribution to Github packages"
+    runs-on: "${{ matrix.operating-system }}"
+    needs: [ "publish-npmjs" ]
 
-    strategy :
-      matrix :
-        operating-system : [ "ubuntu-latest" ]
+    strategy:
+      matrix:
+        operating-system: [ "ubuntu-latest" ]
 
-    if : github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
 
-    steps :
-      - name : "Checkout"
-        uses : "actions/checkout@v3"
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v3"
 
-      - name : "Install node"
-        uses : "actions/setup-node@v3"
-        with :
-          node-version : "16"
-          registry-url : "https://npm.pkg.github.com"
+      - name: "Install node"
+        uses: "actions/setup-node@v3"
+        with:
+          node-version: "16"
+          registry-url: "https://npm.pkg.github.com"
 
-      - name : "Extract version"
-        uses : "battila7/get-version-action@v2"
-        id : "get_version"
+      - name: "Extract version"
+        uses: "battila7/get-version-action@v2"
+        id: "get_version"
 
-      - name : "Set up git since we will later push to the repo"
-        run : |
+      - name: "Set up git since we will later push to the repo"
+        run: |
           git config --global user.name "GitHub CD bot"
           git config --global user.email "code@fastybird.com"
 
-      - name : "Upgrade npm version in package.json to the tag used in the release"
-        run : npm version ${{ steps.get_version.outputs.version-without-v }} --allow-same-version
+      - name: "Upgrade npm version in package.json to the tag used in the release"
+        run: npm version ${{ steps.get_version.outputs.version-without-v }} --allow-same-version
 
-      - name : "Download build result"
-        uses : "actions/download-artifact@v1"
-        with :
-          name : js-dist
-          path : dist
+      - name: "Download build result"
+        uses: "actions/download-artifact@v1"
+        with:
+          name: js-dist
+          path: dist
 
-      - name : "Publish to NPM"
-        env :
-          NODE_AUTH_TOKEN : ${{ secrets.GITHUB_TOKEN }}
-        run : "npm publish --access public"
+      - name: "Publish to NPM"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: "npm publish --access public"
