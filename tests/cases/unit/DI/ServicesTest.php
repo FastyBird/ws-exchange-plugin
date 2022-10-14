@@ -15,11 +15,9 @@ final class ServicesTest extends BaseTestCase
 	 */
 	public function testServicesRegistration(): void
 	{
-		$container = $this->createContainer();
+		self::assertNotNull($this->container->getByType(Subscribers\Client::class, false));
 
-		self::assertNotNull($container->getByType(Subscribers\Client::class, false));
-
-		self::assertNotNull($container->getByType(Controllers\Exchange::class, false));
+		self::assertNotNull($this->container->getByType(Controllers\Exchange::class, false));
 	}
 
 }
