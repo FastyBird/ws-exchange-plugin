@@ -18,7 +18,7 @@
         <properties>
             <property name="rootNamespaces" type="array">
                 <element key="src" value="FastyBird\WsExchangePlugin"/>
-                <element key="tests/cases/unit" value="Tests\Cases\Unit"/>
+                <element key="tests/cases/unit" value="FastyBird\WsExchangePlugin\Tests\Cases\Unit"/>
             </property>
         </properties>
     </rule>

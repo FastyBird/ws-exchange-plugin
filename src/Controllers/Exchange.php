@@ -16,6 +16,7 @@
 namespace FastyBird\WsExchangePlugin\Controllers;
 
 use FastyBird\Exchange\Entities as ExchangeEntities;
+use FastyBird\Exchange\Exceptions as ExchangeExceptions;
 use FastyBird\Exchange\Publisher as ExchangePublisher;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Exceptions as MetadataExceptions;
@@ -24,6 +25,7 @@ use FastyBird\Metadata\Schemas as MetadataSchemas;
 use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\WsExchangePlugin\Events;
 use FastyBird\WsExchangePlugin\Exceptions;
+use IPub\Phone\Exceptions as PhoneExceptions;
 use IPub\WebSockets;
 use IPub\WebSocketsWAMP;
 use Nette\Utils;
@@ -75,8 +77,15 @@ final class Exchange extends WebSockets\Application\Controller\Controller
 	 * @phpstan-param WebSocketsWAMP\Entities\Topics\ITopic<mixed> $topic
 	 *
 	 * @throws Exceptions\InvalidArgument
+	 * @throws ExchangeExceptions\InvalidState
+	 * @throws PhoneExceptions\NoValidCountryException
+	 * @throws PhoneExceptions\NoValidPhoneException
 	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 * @throws Utils\JsonException
 	 */
 	public function actionCall(

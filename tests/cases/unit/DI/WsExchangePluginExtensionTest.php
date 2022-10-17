@@ -1,13 +1,13 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases\Unit\DI;
+namespace FastyBird\WsExchangePlugin\Tests\Cases\Unit\DI;
 
 use FastyBird\WsExchangePlugin\Controllers;
 use FastyBird\WsExchangePlugin\Subscribers;
+use FastyBird\WsExchangePlugin\Tests\Cases\Unit\BaseTestCase;
 use Nette;
-use Tests\Cases\Unit\BaseTestCase;
 
-final class ServicesTest extends BaseTestCase
+final class WsExchangePluginExtensionTest extends BaseTestCase
 {
 
 	/**

@@ -1,23 +1,33 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases\Unit\Publishers;
+namespace FastyBird\WsExchangePlugin\Tests\Cases\Unit\Publishers;
 
 use FastyBird\Exchange\Entities as ExchangeEntities;
+use FastyBird\Exchange\Exceptions as ExchangeExceptions;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\WsExchangePlugin\Publishers;
+use FastyBird\WsExchangePlugin\Tests\Cases\Unit\BaseTestCase;
+use IPub\Phone\Exceptions as PhoneExceptions;
 use IPub\WebSockets;
 use IPub\WebSocketsWAMP;
 use Nette;
 use Nette\Utils;
-use Tests\Cases\Unit\BaseTestCase;
 
 final class PublisherTest extends BaseTestCase
 {
 
 	/**
+	 * @throws ExchangeExceptions\InvalidState
+	 * @throws PhoneExceptions\NoValidCountryException
+	 * @throws PhoneExceptions\NoValidPhoneException
 	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 * @throws Nette\DI\MissingServiceException
 	 * @throws Utils\JsonException
 	 *
@@ -84,7 +94,15 @@ final class PublisherTest extends BaseTestCase
 	}
 
 	/**
+	 * @throws ExchangeExceptions\InvalidState
+	 * @throws PhoneExceptions\NoValidCountryException
+	 * @throws PhoneExceptions\NoValidPhoneException
 	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 * @throws Nette\DI\MissingServiceException
 	 * @throws Utils\JsonException
 	 *
@@ -150,7 +168,15 @@ final class PublisherTest extends BaseTestCase
 	}
 
 	/**
+	 * @throws ExchangeExceptions\InvalidState
+	 * @throws PhoneExceptions\NoValidCountryException
+	 * @throws PhoneExceptions\NoValidPhoneException
 	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 * @throws Nette\DI\MissingServiceException
 	 * @throws Utils\JsonException
 	 *
@@ -216,7 +242,15 @@ final class PublisherTest extends BaseTestCase
 	}
 
 	/**
+	 * @throws ExchangeExceptions\InvalidState
+	 * @throws PhoneExceptions\NoValidCountryException
+	 * @throws PhoneExceptions\NoValidPhoneException
 	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 * @throws Nette\DI\MissingServiceException
 	 * @throws Utils\JsonException
 	 *
