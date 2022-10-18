@@ -6,18 +6,18 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsExchange!
  * @subpackage     Server
  * @since          0.1.0
  *
  * @date           21.12.20
  */
 
-namespace FastyBird\WsExchangePlugin\Server;
+namespace FastyBird\Plugin\WsExchange\Server;
 
 use FastyBird\Library\Exchange\Consumer as ExchangeConsumer;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\WsExchangePlugin\Consumers;
+use FastyBird\Plugin\WsExchange\Consumers;
 use IPub\WebSockets;
 use Nette\Utils;
 use Psr\Log;
@@ -29,7 +29,7 @@ use function property_exists;
 /**
  * WS server factory
  *
- * @package         FastyBird:WsExchangePlugin!
+ * @package         FastyBird:WsExchange!
  * @subpackage      Server
  *
  * @author          Adam Kadlec <adam.kadlec@fastybird.com>

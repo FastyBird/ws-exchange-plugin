@@ -13,7 +13,7 @@
  * @date           15.01.22
  */
 
-namespace FastyBird\WsExchangePlugin\Controllers;
+namespace FastyBird\Plugin\WsExchange\Controllers;
 
 use FastyBird\Library\Exchange\Entities as ExchangeEntities;
 use FastyBird\Library\Exchange\Exceptions as ExchangeExceptions;
@@ -23,8 +23,8 @@ use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Loaders as MetadataLoaders;
 use FastyBird\Library\Metadata\Schemas as MetadataSchemas;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\WsExchangePlugin\Events;
-use FastyBird\WsExchangePlugin\Exceptions;
+use FastyBird\Plugin\WsExchange\Events;
+use FastyBird\Plugin\WsExchange\Exceptions;
 use IPub\Phone\Exceptions as PhoneExceptions;
 use IPub\WebSockets;
 use IPub\WebSocketsWAMP;

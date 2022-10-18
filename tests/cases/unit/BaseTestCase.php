@@ -1,8 +1,8 @@
 <?php declare(strict_types = 1);
 
-namespace FastyBird\WsExchangePlugin\Tests\Cases\Unit;
+namespace FastyBird\Plugin\WsExchange\Tests\Cases\Unit;
 
-use FastyBird\WsExchangePlugin;
+use FastyBird\Plugin\WsExchange;
 use Nette;
 use Nette\DI;
 use PHPUnit\Framework\TestCase;
@@ -41,7 +41,7 @@ abstract class BaseTestCase extends TestCase
 			$config->addConfig($additionalConfig);
 		}
 
-		WsExchangePlugin\DI\WsExchangePluginExtension::register($config);
+		WsExchange\DI\WsExchangeExtension::register($config);
 
 		return $config->createContainer();
 	}

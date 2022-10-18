@@ -6,18 +6,18 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsExchange!
  * @subpackage     Commands
  * @since          0.13.0
  *
  * @date           09.06.22
  */
 
-namespace FastyBird\WsExchangePlugin\Commands;
+namespace FastyBird\Plugin\WsExchange\Commands;
 
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\WsExchangePlugin\Events;
-use FastyBird\WsExchangePlugin\Server;
+use FastyBird\Plugin\WsExchange\Events;
+use FastyBird\Plugin\WsExchange\Server;
 use IPub\WebSockets;
 use Nette;
 use Psr\EventDispatcher;
@@ -32,7 +32,7 @@ use Throwable;
 /**
  * WS server command
  *
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsExchange!
  * @subpackage     Commands
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>

@@ -6,19 +6,19 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsExchange!
  * @subpackage     common
  * @since          0.1.0
  *
  * @date           09.03.20
  */
 
-namespace FastyBird\WsExchangePlugin;
+namespace FastyBird\Plugin\WsExchange;
 
 /**
  * Service constants
  *
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsExchange!
  * @subpackage     common
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>

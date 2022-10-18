@@ -1,28 +1,28 @@
 <?php declare(strict_types = 1);
 
 /**
- * WsExchangePluginExtension.php
+ * WsExchangeExtension.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsExchange!
  * @subpackage     DI
  * @since          0.1.0
  *
  * @date           22.02.21
  */
 
-namespace FastyBird\WsExchangePlugin\DI;
+namespace FastyBird\Plugin\WsExchange\DI;
 
-use FastyBird\WsExchangePlugin\Commands;
-use FastyBird\WsExchangePlugin\Consumers;
-use FastyBird\WsExchangePlugin\Controllers;
-use FastyBird\WsExchangePlugin\Events;
-use FastyBird\WsExchangePlugin\Exceptions;
-use FastyBird\WsExchangePlugin\Publishers;
-use FastyBird\WsExchangePlugin\Server;
-use FastyBird\WsExchangePlugin\Subscribers;
+use FastyBird\Plugin\WsExchange\Commands;
+use FastyBird\Plugin\WsExchange\Consumers;
+use FastyBird\Plugin\WsExchange\Controllers;
+use FastyBird\Plugin\WsExchange\Events;
+use FastyBird\Plugin\WsExchange\Exceptions;
+use FastyBird\Plugin\WsExchange\Publishers;
+use FastyBird\Plugin\WsExchange\Server;
+use FastyBird\Plugin\WsExchange\Subscribers;
 use IPub\WebSockets;
 use Nette;
 use Nette\DI;
@@ -37,12 +37,12 @@ use function sprintf;
 /**
  * WS server plugin
  *
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsExchange!
  * @subpackage     DI
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class WsExchangePluginExtension extends DI\CompilerExtension
+class WsExchangeExtension extends DI\CompilerExtension
 {
 
 	public const NAME = 'fbWsExchangePlugin';
@@ -56,7 +56,7 @@ class WsExchangePluginExtension extends DI\CompilerExtension
 			Nette\Configurator $config,
 			DI\Compiler $compiler,
 		) use ($extensionName): void {
-			$compiler->addExtension($extensionName, new WsExchangePluginExtension());
+			$compiler->addExtension($extensionName, new WsExchangeExtension());
 		};
 	}
 

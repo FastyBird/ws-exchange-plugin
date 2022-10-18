@@ -1,13 +1,13 @@
 <?php declare(strict_types = 1);
 
-namespace FastyBird\WsExchangePlugin\Tests\Cases\Unit\Publishers;
+namespace FastyBird\Plugin\WsExchange\Tests\Cases\Unit\Publishers;
 
 use FastyBird\Library\Exchange\Entities as ExchangeEntities;
 use FastyBird\Library\Exchange\Exceptions as ExchangeExceptions;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\WsExchangePlugin\Publishers;
-use FastyBird\WsExchangePlugin\Tests\Cases\Unit\BaseTestCase;
+use FastyBird\Plugin\WsExchange\Publishers;
+use FastyBird\Plugin\WsExchange\Tests\Cases\Unit\BaseTestCase;
 use IPub\Phone\Exceptions as PhoneExceptions;
 use IPub\WebSockets;
 use IPub\WebSocketsWAMP;

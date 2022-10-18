@@ -6,21 +6,21 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsExchange!
  * @subpackage     Events
  * @since          0.11.0
  *
  * @date           08.06.22
  */
 
-namespace FastyBird\WsExchangePlugin\Events;
+namespace FastyBird\Plugin\WsExchange\Events;
 
 use IPub\WebSocketsWAMP;
 
 /**
  * WS client subscribed to topic event
  *
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsExchange!
  * @subpackage     Events
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>

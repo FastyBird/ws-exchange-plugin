@@ -6,25 +6,25 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsExchange!
  * @subpackage     Consumer
  * @since          0.19.0
  *
  * @date           08.07.22
  */
 
-namespace FastyBird\WsExchangePlugin\Consumers;
+namespace FastyBird\Plugin\WsExchange\Consumers;
 
 use FastyBird\Library\Exchange\Consumer as ExchangeConsumer;
 use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\WsExchangePlugin\Publishers;
+use FastyBird\Plugin\WsExchange\Publishers;
 use Nette;
 
 /**
  * Websockets exchange publisher
  *
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsExchange!
  * @subpackage     Consumer
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>

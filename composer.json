@@ -48,12 +48,12 @@
     },
     "autoload": {
         "psr-4": {
-            "FastyBird\\WsExchangePlugin\\": "src/"
+            "FastyBird\\Plugin\\WsExchange\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "FastyBird\\WsExchangePlugin\\Tests\\Cases\\Unit\\": "tests/cases/unit"
+            "FastyBird\\Plugin\\WsExchange\\Tests\\Cases\\Unit\\": "tests/cases/unit"
         }
     },
     "config": {

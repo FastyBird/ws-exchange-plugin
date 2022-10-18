@@ -6,14 +6,14 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsExchange!
  * @subpackage     Publishers
  * @since          0.2.0
  *
  * @date           08.10.21
  */
 
-namespace FastyBird\WsExchangePlugin\Publishers;
+namespace FastyBird\Plugin\WsExchange\Publishers;
 
 use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
@@ -26,7 +26,7 @@ use Throwable;
 /**
  * Websockets exchange publisher
  *
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsExchange!
  * @subpackage     Publishers
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>

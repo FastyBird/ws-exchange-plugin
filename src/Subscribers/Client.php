@@ -6,18 +6,18 @@
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsExchange!
  * @subpackage     Subscribers
  * @since          0.2.0
  *
  * @date           15.01.22
  */
 
-namespace FastyBird\WsExchangePlugin\Subscribers;
+namespace FastyBird\Plugin\WsExchange\Subscribers;
 
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\WsExchangePlugin;
-use FastyBird\WsExchangePlugin\Events;
+use FastyBird\Plugin\WsExchange;
+use FastyBird\Plugin\WsExchange\Events;
 use IPub\WebSockets;
 use Psr\Log;
 use Symfony\Component\EventDispatcher;
@@ -27,7 +27,7 @@ use function in_array;
 /**
  * WS client events subscriber
  *
- * @package         FastyBird:WsExchangePlugin!
+ * @package         FastyBird:WsExchange!
  * @subpackage      Subscribers
  *
  * @author          Adam Kadlec <adam.kadlec@fastybird.com>
@@ -92,7 +92,7 @@ class Client implements EventDispatcher\EventSubscriberInterface
 		array $allowedOrigins,
 	): bool
 	{
-		$wsKey = $httpRequest->getHeader(WsExchangePlugin\Constants::WS_HEADER_WS_KEY);
+		$wsKey = $httpRequest->getHeader(WsExchange\Constants::WS_HEADER_WS_KEY);
 
 		if (
 			($wsKey === null && $allowedWsKeys !== [])
@@ -109,7 +109,7 @@ class Client implements EventDispatcher\EventSubscriberInterface
 			return false;
 		}
 
-		$origin = $httpRequest->getHeader(WsExchangePlugin\Constants::WS_HEADER_ORIGIN);
+		$origin = $httpRequest->getHeader(WsExchange\Constants::WS_HEADER_ORIGIN);
 
 		if (
 			($origin === null && $allowedOrigins !== [])
@@ -126,7 +126,7 @@ class Client implements EventDispatcher\EventSubscriberInterface
 			return false;
 		}
 
-		$authToken = $httpRequest->getHeader(WsExchangePlugin\Constants::WS_HEADER_AUTHORIZATION);
+		$authToken = $httpRequest->getHeader(WsExchange\Constants::WS_HEADER_AUTHORIZATION);
 
 		if ($authToken === null) {
 			$cookieToken = $httpRequest->getCookie('token');

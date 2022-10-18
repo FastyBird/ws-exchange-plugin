@@ -6,14 +6,14 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsExchange!
  * @subpackage     Events
  * @since          0.2.0
  *
  * @date           09.10.21
  */
 
-namespace FastyBird\WsExchangePlugin\Events;
+namespace FastyBird\Plugin\WsExchange\Events;
 
 use Symfony\Contracts\EventDispatcher;
 use Throwable;
@@ -21,7 +21,7 @@ use Throwable;
 /**
  * Connection error event
  *
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsExchange!
  * @subpackage     Events
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
