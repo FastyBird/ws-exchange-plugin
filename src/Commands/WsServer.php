@@ -6,22 +6,19 @@
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsServerPlugin!
  * @subpackage     Commands
  * @since          1.0.0
  *
  * @date           09.06.22
  */
 
-namespace FastyBird\Plugin\WsExchange\Commands;
+namespace FastyBird\Plugin\WsServer\Commands;
 
 use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
-use FastyBird\Library\Exchange\Consumers as ExchangeConsumers;
 use FastyBird\Library\Exchange\Exchange as ExchangeExchange;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\Plugin\WsExchange\Consumers;
-use FastyBird\Plugin\WsExchange\Events;
-use FastyBird\Plugin\WsExchange\Server;
+use FastyBird\Plugin\WsServer\Events;
 use IPub\WebSockets;
 use Nette;
 use Psr\EventDispatcher;
@@ -36,7 +33,7 @@ use Throwable;
 /**
  * WS server command
  *
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsServerPlugin!
  * @subpackage     Commands
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -46,7 +43,7 @@ final class WsServer extends Console\Command\Command
 
 	use Nette\SmartObject;
 
-	public const NAME = 'fb:ws-exchange:start';
+	public const NAME = 'fb:ws-server:start';
 
 	private Log\LoggerInterface $logger;
 
@@ -55,8 +52,7 @@ final class WsServer extends Console\Command\Command
 	 */
 	public function __construct(
 		private readonly WebSockets\Server\Configuration $configuration,
-		private readonly Server\Factory $serverFactory,
-		private readonly ExchangeConsumers\Container $consumer,
+		private readonly WebSockets\Server\Server $server,
 		private readonly EventLoop\LoopInterface $eventLoop,
 		private readonly array $exchangeFactories = [],
 		private readonly EventDispatcher\EventDispatcherInterface|null $dispatcher = null,
@@ -89,7 +85,7 @@ final class WsServer extends Console\Command\Command
 		$this->logger->info(
 			'Starting WS server',
 			[
-				'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
+				'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_SERVER,
 				'type' => 'server-command',
 			],
 		);
@@ -105,11 +101,18 @@ final class WsServer extends Console\Command\Command
 
 			$socketServer->on('error', function (Throwable $ex): void {
 				$this->dispatcher?->dispatch(new Events\Error($ex));
+
+				$this->logger->error(
+					'An error occurred during handling requests. Stopping WS server',
+					[
+						'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_SERVER,
+						'type' => 'server-command',
+						'exception' => BootstrapHelpers\Logger::buildException($ex),
+					],
+				);
 			});
 
-			$this->consumer->enable(Consumers\Consumer::class);
-
-			$this->serverFactory->create($socketServer);
+			$this->server->create($socketServer);
 
 			foreach ($this->exchangeFactories as $exchangeFactory) {
 				$exchangeFactory->create();
@@ -122,7 +125,7 @@ final class WsServer extends Console\Command\Command
 			$this->logger->error(
 				'WS server was forced to close',
 				[
-					'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
+					'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_SERVER,
 					'type' => 'server-command',
 					'exception' => BootstrapHelpers\Logger::buildException($ex),
 					'cmd' => $this->getName(),
@@ -136,7 +139,7 @@ final class WsServer extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred. Stopping WS server',
 				[
-					'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_EXCHANGE,
+					'source' => MetadataTypes\PluginSource::SOURCE_PLUGIN_WS_SERVER,
 					'type' => 'server-command',
 					'exception' => BootstrapHelpers\Logger::buildException($ex),
 					'cmd' => $this->getName(),

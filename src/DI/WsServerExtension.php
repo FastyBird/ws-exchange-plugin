@@ -1,31 +1,26 @@
 <?php declare(strict_types = 1);
 
 /**
- * WsExchangeExtension.php
+ * WsServerExtension.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsServerPlugin!
  * @subpackage     DI
  * @since          1.0.0
  *
  * @date           22.02.21
  */
 
-namespace FastyBird\Plugin\WsExchange\DI;
+namespace FastyBird\Plugin\WsServer\DI;
 
 use FastyBird\Library\Bootstrap\Boot as BootstrapBoot;
-use FastyBird\Library\Exchange\DI as ExchangeDI;
 use FastyBird\Library\Exchange\Exchange as ExchangeExchange;
-use FastyBird\Plugin\WsExchange\Commands;
-use FastyBird\Plugin\WsExchange\Consumers;
-use FastyBird\Plugin\WsExchange\Controllers;
-use FastyBird\Plugin\WsExchange\Events;
-use FastyBird\Plugin\WsExchange\Exceptions;
-use FastyBird\Plugin\WsExchange\Publishers;
-use FastyBird\Plugin\WsExchange\Server;
-use FastyBird\Plugin\WsExchange\Subscribers;
+use FastyBird\Plugin\WsServer\Commands;
+use FastyBird\Plugin\WsServer\Events;
+use FastyBird\Plugin\WsServer\Exceptions;
+use FastyBird\Plugin\WsServer\Subscribers;
 use IPub\WebSockets;
 use Nette;
 use Nette\DI;
@@ -40,15 +35,15 @@ use function sprintf;
 /**
  * WS server plugin
  *
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsServerPlugin!
  * @subpackage     DI
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class WsExchangeExtension extends DI\CompilerExtension
+class WsServerExtension extends DI\CompilerExtension
 {
 
-	public const NAME = 'fbWsExchangePlugin';
+	public const NAME = 'fbWsServerPlugin';
 
 	public static function register(
 		BootstrapBoot\Configurator $config,
@@ -80,25 +75,11 @@ class WsExchangeExtension extends DI\CompilerExtension
 		$configuration = $this->getConfig();
 		assert($configuration instanceof stdClass);
 
-		$builder->addDefinition($this->prefix('controllers.exchange'), new DI\Definitions\ServiceDefinition())
-			->setType(Controllers\Exchange::class)
-			->addTag('nette.inject');
-
-		$builder->addDefinition($this->prefix('exchange.publisher'), new DI\Definitions\ServiceDefinition())
-			->setType(Publishers\Publisher::class);
-
-		$builder->addDefinition($this->prefix('exchange.consumer'), new DI\Definitions\ServiceDefinition())
-			->setType(Consumers\Consumer::class)
-			->addTag(ExchangeDI\ExchangeExtension::CONSUMER_STATUS, false);
-
 		$builder->addDefinition($this->prefix('commands.server'), new DI\Definitions\ServiceDefinition())
 			->setType(Commands\WsServer::class)
 			->setArguments([
 				'exchangeFactories' => $builder->findByType(ExchangeExchange\Factory::class),
 			]);
-
-		$builder->addDefinition($this->prefix('server.factory'), new DI\Definitions\ServiceDefinition())
-			->setType(Server\Factory::class);
 
 		$builder->addDefinition($this->prefix('subscribers.client'), new DI\Definitions\ServiceDefinition())
 			->setType(Subscribers\Client::class)

@@ -6,21 +6,21 @@
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsServerPlugin!
  * @subpackage     Events
  * @since          1.0.0
  *
  * @date           05.10.21
  */
 
-namespace FastyBird\Plugin\WsExchange\Events;
+namespace FastyBird\Plugin\WsServer\Events;
 
 use Symfony\Contracts\EventDispatcher;
 
 /**
  * When WS server started
  *
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsServerPlugin!
  * @subpackage     Events
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>

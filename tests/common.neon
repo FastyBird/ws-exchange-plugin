@@ -4,7 +4,7 @@
 # @license        More in LICENSE.md
 # @copyright      https://www.fastybird.com
 # @author         Adam Kadlec <adam.kadlec@fastybird.com>
-# @package        FastyBird:WsExchangePlugin!
+# @package        FastyBird:WsServerPlugin!
 # @subpackage     config
 # @since          1.0.0
 #
@@ -24,7 +24,3 @@ extensions:
 services:
     - {factory: Symfony\Component\Console\Application}
     - {factory: Symfony\Component\EventDispatcher\EventDispatcher}
-
-ipubWebSockets:
-    routes:
-        '/io/exchange' : 'Exchange:'

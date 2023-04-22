@@ -1,7 +1,7 @@
 {
-  "name": "fastybird/ws-exchange-plugin",
+  "name": "fastybird/ws-server-plugin",
   "type": "fastybird-plugin",
-  "description": "FastyBird IoT WS WAMP client & server plugin for handling UI communication",
+  "description": "FastyBird IoT web sockets server plugin for handling real-time communication",
   "keywords": [
     "fastybird",
     "fb",
@@ -10,11 +10,7 @@
     "wamp",
     "wamp-server",
     "ipublikuj",
-    "wamp-client",
     "nette",
-    "vue",
-    "vue3",
-    "vuejs",
     "php"
   ],
   "homepage": "https://www.fastybird.com",
@@ -33,7 +29,7 @@
   "support": {
     "email": "code@fastybird.com",
     "issues": "https://github.com/FastyBird/fastybird/issues",
-    "source": "https://github.com/FastyBird/ws-exchange-plugin"
+    "source": "https://github.com/FastyBird/ws-server-plugin"
   },
   "require": {
     "php": ">=8.1.0",
@@ -70,12 +66,12 @@
   },
   "autoload": {
     "psr-4": {
-      "FastyBird\\Plugin\\WsExchange\\": "src/"
+      "FastyBird\\Plugin\\WsServer\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "FastyBird\\Plugin\\WsExchange\\Tests\\Cases\\Unit\\": "tests/cases/unit"
+      "FastyBird\\Plugin\\WsServer\\Tests\\Cases\\Unit\\": "tests/cases/unit"
     }
   },
   "config": {

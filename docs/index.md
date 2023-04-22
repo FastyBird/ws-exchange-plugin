@@ -1,109 +1,60 @@
-# Usage in user interface
+# Quick start
 
-## Setup in your application
+The purpose of this plugin is to create php based WS server for serving and handling sockets real time connections.
 
-Add it as a plugin to your app:
+***
 
-```js
-import { createApp } from 'vue'
-import WsExchangeClient from '@fastybird/ws-exchange-plugin'
+## Installation
 
-const app = createApp(...)
+The best way to install **fastybird/ws-server-plugin** is using [Composer](http://getcomposer.org/):
 
-const options = {
-    wsuri: 'ws://your.socker.server.com:1234'
-}
-
-app.use(WsExchangeClient, options)
+```sh
+composer require fastybird/ws-server-plugin
 ```
 
-Or, if you are using Typescript:
+After that, you have to register plugin in *config.neon*.
 
-```js
-import { createApp } from 'vue'
-import WsExchangeClient, { PluginOptions } from '@fastybird/ws-exchange-plugin'
-
-const app = createApp(...)
-
-const options: PluginOptions = {
-    wsuri: 'ws://your.socker.server.com:1234'
-}
-
-app.use(WsExchangeClient, options)
+```neon
+extensions:
+    fbWsServerPlugin: FastyBird\Plugin\WsServer\DI\WsServerExtension
 ```
 
-#### Options:
+This plugin is dependent on other extensions, and they have to be registered too
 
-- `wsuri` - is required option and this field is representing your wamp server address
-- `debug` - default is `false` and this option is to enable or disable console log of wamp events
-
-## Usage
-
-In you component you could establish connection and subscribe to wamp events:
-
-```vue
-<script>
-import { useWsExchangeClient } from '@fastybird/ws-exchange-plugin'
-
-export default {
-    setup() {
-        // Get wamp client interface
-        const { open, close, status, client } = useWsExchangeClient();
-
-        onMounted(() => {
-            open()
-
-            client.subscribe(
-              '/topic/path',
-              (data) => {
-                console.log(data) // Data sent by server to the topic
-              },
-            )
-        })
-
-        onBeforeUnmount(() => {
-            close()
-        })
-
-        // Make it available inside methods
-        return { status, client }
-    },
-
-    methods: {
-        clickButton: (data) => {
-            // Publish to specific topic
-            this.client.publish('/topic/path', 'Hello world')
-        },
-
-        clickOtherButton: (data) => {
-            // RPC
-            this.client.call('/topic/path', 'Hello world')
-                .then(() => {
-                  console.log('Call was successful')
-                })
-                .catch(() => {
-                  console.log('Something went wrong')
-                })
-        },
-    }
-}
-</script>
+```neon
+extensions:
+    ...
+    contributteConsole: Contributte\Console\DI\ConsoleExtension(%consoleMode%)
+    ipubWebsockets: IPub\WebSockets\DI\WebSocketsExtension
+    ipubWebsocketsWamp: IPub\WebSocketsWAMP\DI\WebSocketsWAMPExtension
 ```
 
-## Typescript setup
+> For information how to configure these extensions please visit their doc pages
 
-Add the types to your `"types"` array in **tsconfig.json**.
+## Configuration
 
-```json
-{
-  "compilerOptions": {
-    "types": [
-      "@fastybird/ws-exchange-plugin"
-    ]
-  }
-}
+This plugin has some configuration options:
+
+```neon
+fbWsServerPlugin:
+    access:
+        keys: f9657db3-b9e0-4a6d-a482-76a8099edbce
+        origins: yourdomain.tld,service.yourdomain.tld
+```
+
+Where:
+
+- `access -> keys` are comma separated access keys which will server validate on clients connections
+- `access -> origins` are comma separated allowed domain names which will server validate on clients connections
+
+## Running server
+
+This plugin has implemented command interface for running server. All you have to do is just run one command:
+
+```sh
+<app_root>/vendor/bin/fb-console fb:ws-server:start
 ```
 
 ***
 Homepage [https://www.fastybird.com](https://www.fastybird.com) and
-repository [https://github.com/FastyBird/ws-exchange-plugin](https://github.com/FastyBird/ws-exchange-plugin).
+repository [https://github.com/FastyBird/ws-server-pluging](https://github.com/FastyBird/ws-server-plugin).

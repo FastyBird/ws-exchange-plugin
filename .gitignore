@@ -1,8 +1,4 @@
 .idea
-/dist
-/node_modules
 /vendor
-.DS_Store
 composer.lock
-yarn.lock
-tsconfig.tsbuildinfo
+.DS_Store

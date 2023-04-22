@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
-namespace FastyBird\Plugin\WsExchange\Tests\Cases\Unit;
+namespace FastyBird\Plugin\WsServer\Tests\Cases\Unit;
 
 use FastyBird\Library\Bootstrap\Boot as BootstrapBoot;
-use FastyBird\Plugin\WsExchange;
+use FastyBird\Plugin\WsServer;
 use Nette;
 use Nette\DI;
 use PHPUnit\Framework\TestCase;
@@ -44,7 +44,7 @@ abstract class BaseTestCase extends TestCase
 
 		$config->setTimeZone('Europe/Prague');
 
-		WsExchange\DI\WsExchangeExtension::register($config);
+		WsServer\DI\WsServerExtension::register($config);
 
 		return $config->createContainer();
 	}

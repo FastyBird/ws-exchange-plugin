@@ -6,14 +6,14 @@
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:WsExchangePlugin!
+ * @package        FastyBird:WsServerPlugin!
  * @subpackage     Exceptions
  * @since          1.0.0
  *
  * @date           25.05.20
  */
 
-namespace FastyBird\Plugin\WsExchange\Exceptions;
+namespace FastyBird\Plugin\WsServer\Exceptions;
 
 use Throwable;
 
